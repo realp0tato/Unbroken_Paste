@@ -1,0 +1,118 @@
+Version:1.0
+StartHTML:0000000198
+EndHTML:0000003139
+StartFragment:0000002283
+EndFragment:0000003087
+SourceURL:file:///C:/Users/user/Desktop/kkodong_data/processed/db/public_place_licenses.csv
+
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link id=Main-File rel=Main-File
+href="file:///C:/Users/user/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
+<link rel=File-List
+href="file:///C:/Users/user/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.75in .7in .75in .7in;
+	mso-header-margin:.3in;
+	mso-footer-margin:.3in;}
+.font5
+	{color:windowtext;
+	font-size:8.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;}
+tr
+	{mso-height-source:auto;
+	mso-ruby-visibility:none;}
+col
+	{mso-width-source:auto;
+	mso-ruby-visibility:none;}
+br
+	{mso-data-placement:same-cell;}
+td
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:11.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	border:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	mso-protection:locked visible;
+	white-space:nowrap;
+	mso-rotate:0;}
+.xl65
+	{white-space:normal;}
+.xl66
+	{text-align:center;
+	white-space:normal;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:8.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-char-type:none;
+	display:none;}
+-->
+</style>
+</head>
+
+<body link="#467886" vlink="#96607D">
+
+<table border=0 cellpadding=0 cellspacing=0 width=70 style='border-collapse:
+ collapse;width:53pt'>
+<!--StartFragment-->
+ <col width=70 style='width:53pt'>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 class=xl66 width=70 style='height:17.4pt;width:53pt'>회의 안건</td>
+ </tr>
+ <tr height=116 style='height:87.0pt'>
+  <td height=116 style='height:87.0pt'>1. 상반기 실적 검토</td>
+ </tr>
+ <tr height=93 style='height:69.6pt'>
+  <td height=93 class=xl65 width=70 style='height:69.6pt;width:53pt'>2. 하반기 목표
+  설정<br />
+    담당: 영업팀</td>
+ </tr>
+ <tr height=70 style='height:52.2pt'>
+  <td height=70 style='height:52.2pt'></td>
+ </tr>
+ <tr height=46 style='height:34.8pt'>
+  <td height=46 style='height:34.8pt'>3. 기타 논의 사항</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 style='height:17.4pt'>다음 회의 11월 둘째 주</td>
+ </tr>
+<!--EndFragment-->
+</table>
+
+</body>
+
+</html>
