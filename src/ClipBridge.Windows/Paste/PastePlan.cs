@@ -59,7 +59,10 @@ internal sealed record PastePlan(PasteAction Action, IReadOnlyDictionary<string,
         if (result.Html is not null)
             payload[ClipFormats.WinHtml] = CfHtml.Wrap(result.Html);
         if (result.PlainText is not null)
-            payload[ClipFormats.WinUnicodeText] = Encoding.Unicode.GetBytes(result.PlainText + "\0");
+            payload[ClipFormats.WinUnicodeText] = TextBytes(result.PlainText);
         return payload;
     }
+
+    // CF_UNICODETEXT 바이트: UTF-16LE + \0
+    public static byte[] TextBytes(string text) => Encoding.Unicode.GetBytes(text + "\0");
 }

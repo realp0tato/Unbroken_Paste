@@ -62,15 +62,21 @@
 Windows는 작업 표시줄 트레이 아이콘, macOS는 메뉴 막대 아이콘에서 같은 메뉴를 엽니다. 별도 설정 창은 없습니다.
 
 ```text
-UP
+UP · 대기 중                      ← 현재 상태
 ├─ Markdown 처리
 │   ├─ ● 서식 적용 (기본)
 │   └─ ○ 기호 제거
 ├─ AI 검증 (외부 API 사용)
 │   ├─ ● 켜기 (기본)
 │   └─ ○ 끄기
-└─ 종료
+├─ 상태 변경      대기 / 분석 중 / 맞춤 완료 효과 보기(시연용)
+├─ 클립보드       최근 복사 10개(누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
+├─ 캐릭터         기본·고양이·녹는·구름·토끼 슬라임
+└─ UP 종료
 ```
+
+- 상태·클립보드·캐릭터는 변환 결과에 영향을 주지 않습니다. 최근 복사는 메모리에만 있고 앱을 끄면 사라지며, 비밀번호 관리자의 숨김 복사는 쌓이지 않습니다. 캐릭터와 복사 반응 설정은 저장됩니다.
+- macOS는 손쉬운 사용 권한이 없거나 변환 엔진이 연결 중일 때 안내 항목이 더 보입니다.
 
 **Markdown 처리**는 Markdown 글과 인터넷에서 복사한 글에 적용됩니다. Excel·일반 텍스트에는 적용하지 않습니다.
 
@@ -267,7 +273,7 @@ open "build/Unbroken Paste.app"
 | Excel 붙여넣기 대상·C9 인터넷 → Excel (P1, [#25](https://github.com/realp0tato/donga_hackathon/issues/25)) | 구현. 메모장 등 다른 대상은 아직 통과 |
 | 붙여넣기 대상 인식 | 한글·Word·Notion·Excel 앱, 브라우저의 Notion 웹(주소로 인식)·한컴독스(macOS는 탭 제목 `… 한컴오피스 Web … 한글`로도 인식) |
 | AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
-| Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
+| Windows 앱 (트레이·메뉴 옵션·트레이 추가 메뉴·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
 | macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
 | 성능·사용자 시간 절감 | 아직 측정하지 않음 |
 

@@ -23,10 +23,13 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\app.ico" LogicalName="ClipBridge.Windows.app.ico" />
-    <!-- 복사 때 포인터 옆에 뜨는 UP 캐릭터 배지 (#5). macOS Resources/Characters/slime/badge.png와 같은 그림 -->
-    <EmbeddedResource Include="Resources\badge.png" LogicalName="ClipBridge.Windows.badge.png" />
-    <!-- 트레이 슬라임 애니메이션 프레임 (#44). 이름 순서대로 재생한다 -->
-    <EmbeddedResource Include="Resources\Slime\*.png" LogicalName="ClipBridge.Windows.Slime.%(Filename)%(Extension)" />
+    <!-- 캐릭터별 트레이 애니메이션 프레임(이름 순서대로 재생)과 복사 때 포인터 옆 배지 (#44, #5).
+         기본 슬라임 프레임은 손으로 만든 것, 나머지는 tools/make_tray_frames.py로 macOS 프레임에서 만든 것. 배지는 macOS와 같은 그림 -->
+    <EmbeddedResource Include="Resources\Characters\slime\*.png" LogicalName="ClipBridge.Windows.Characters.slime.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\Characters\cat\*.png" LogicalName="ClipBridge.Windows.Characters.cat.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\Characters\drip\*.png" LogicalName="ClipBridge.Windows.Characters.drip.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\Characters\cloud\*.png" LogicalName="ClipBridge.Windows.Characters.cloud.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\Characters\bunny\*.png" LogicalName="ClipBridge.Windows.Characters.bunny.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!-- 브라우저 주소창을 읽는 UI Automation(System.Windows.Automation)이 WPF 쪽 어셈블리에 있다 (#79) -->

@@ -47,6 +47,29 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         return ClipboardReader.SequenceNumber();
     }
 
+    // 트레이 메뉴의 최근 복사를 다시 복사한다 (#44). 지연 렌더링 없이 실제 데이터로 넣는다.
+    // 새 복사이므로 이전 변환·원본 기록은 잊는다. 쓰면 쓴 뒤의 시퀀스 번호, 클립보드가 잠겨 있으면 null (지금 내용 유지)
+    public long? WriteText(string text)
+    {
+        if (!NativeMethods.OpenClipboard(Handle))
+            return null;
+        try
+        {
+            if (!NativeMethods.EmptyClipboard())
+                return null;
+            SetData(ClipboardReader.FormatId(ClipFormats.WinUnicodeText), PastePlan.TextBytes(text));
+        }
+        finally
+        {
+            NativeMethods.CloseClipboard();
+        }
+
+        _pending = [];
+        _writtenFor = null;
+        LastWrite = null;
+        return ClipboardReader.SequenceNumber();
+    }
+
     // 종료하면 약속한 데이터가 창과 함께 사라지므로, UP이 쓴 것이 아직 클립보드에 있으면
     // 원본을 실제 데이터로 되돌려 둔다 (macOS settleBeforeQuit과 같음, FR-19)
     public void SettleBeforeExit()
