@@ -5,7 +5,7 @@ Writes Resources/Characters/<id>/frame_XX@2x.png and a preview GIF to build/prev
 import json
 import math
 from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageOps
 
 HERE = Path(__file__).parent
 ART = HERE / "art"
@@ -160,22 +160,22 @@ def render_stickman(t, size):
     """Original stick figure doing a chest-bounce dance, drawn from lines and circles (no source picture).
     Points to keep from the reference dance: the body turned about 45 degrees (shoulders and feet
     staggered, face turned right), one arm only moving (its hand slides down across the chest and back up
-    once per cycle while the other arm hangs), the chest popping forward on the beat (4 per 1.5 s cycle),
-    and the head tilted a little to the side, nodding with the pops.
+    four times per cycle while the other arm hangs), a big chest bounce at half the arm's speed (twice per
+    1.5 s cycle: the chest swells forward, the torso leans and the shoulders rise), and the head tilted to
+    the side, nodding with the bounce. The figure faces left.
     Coordinates are in @2x pixels on a 44 px tall canvas; the active arm gets a thin cut-out edge where it
     crosses the body so it still reads in one colour."""
     cw, ch = size[0] * SS, size[1] * SS
     u = lambda v: v * SS
-    beat = (t * 4) % 1.0
-    pop = math.exp(-6 * beat) * (1 - beat)  # quick hit on the beat, then settles
-    sweep = (1 - math.cos(2 * math.pi * t)) / 2  # 0 = hand up by the far shoulder, 1 = down at the belly
+    pop = ((1 - math.cos(2 * math.pi * t * 2)) / 2) ** 0.8  # chest bounce, twice per cycle
+    sweep = (1 - math.cos(2 * math.pi * t * 4)) / 2  # 0 = hand up by the far shoulder, 1 = down at the belly
     cx = size[0] / 2
 
     hip = (cx - 0.5, 29.5)
-    neck = (cx + 0.6 + 0.5 * pop, 16.5 + 0.2 * pop)  # chest leans forward on the beat
-    chest = (cx + 1.4 + 1.8 * pop, 20.5 - 0.3 * pop)
-    head = (cx + 0.2 + 0.4 * pop, 9.8 + 0.5 * pop)  # tipped toward the back shoulder, nods with the pop
-    tilt = math.radians(20 + 5 * pop)  # head tilted to the side
+    neck = (cx + 0.6 + 1.6 * pop, 16.5 - 0.6 * pop)  # torso leans forward and shoulders rise
+    chest = (cx + 1.2 + 3.2 * pop, 20.5 - 0.8 * pop)
+    head = (cx + 0.2 + 1.0 * pop, 9.8 + 0.2 * pop)  # tipped toward the back shoulder, nods with the bounce
+    tilt = math.radians(18 + 8 * pop)  # head tilted to the side
 
     body = Image.new("L", (cw, ch), 0)
 
@@ -195,7 +195,7 @@ def render_stickman(t, size):
     line(body, (cx - 2.6, 36.0), (cx - 3.8, 42.5), 2.6)
     # Torso and a round chest that pops forward.
     line(body, hip, neck, 3.6)
-    disc(body, chest, 3.3 + 0.9 * pop)
+    disc(body, chest, 3.0 + 1.8 * pop)
     # Back arm hangs (far shoulder, slightly behind).
     back_shoulder = (neck[0] - 2.4, neck[1] + 1.4)
     line(body, back_shoulder, (cx - 5.6, 23.6), 2.2)
@@ -212,7 +212,7 @@ def render_stickman(t, size):
 
     # Active arm: front shoulder, elbow out to the side, hand sliding down across the chest and back.
     shoulder = (neck[0] + 2.2, neck[1] + 1.2)
-    hand = (cx + 4.2 - 5.4 * sweep, 18.2 + 7.6 * sweep + 0.4 * pop)
+    hand = (cx + 4.2 + 1.6 * pop - 5.4 * sweep, 18.2 - 0.6 * pop + 7.6 * sweep)
     elbow = (cx + 7.4 - 0.8 * sweep, 21.0 + 3.2 * sweep)
     arm = Image.new("L", (cw, ch), 0)
     edge = Image.new("L", (cw, ch), 0)
@@ -224,7 +224,7 @@ def render_stickman(t, size):
 
     shadow = Image.new("L", (cw, ch), 0)
     ImageDraw.Draw(shadow).ellipse((u(cx - 6), u(42.2), u(cx + 6), u(43.6)), fill=50)
-    alpha = ImageChops.lighter(alpha, shadow)
+    alpha = ImageOps.mirror(ImageChops.lighter(alpha, shadow))  # face left
     canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     canvas.putalpha(alpha)
     return canvas.resize(size, Image.LANCZOS)
