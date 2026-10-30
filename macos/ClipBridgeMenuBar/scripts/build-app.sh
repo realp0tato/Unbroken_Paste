@@ -12,6 +12,21 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/ClipBridge"
 cp -R Resources/ "$APP/Contents/Resources/"
 
+# ClipBridge.Helper (C# Core) for this Mac's architecture, next to the app executable (#36).
+# Without the .NET SDK the app still runs; every paste then passes through unchanged.
+case "$(uname -m)" in
+    arm64) RID=osx-arm64; ARCH=arm64 ;;
+    *) RID=osx-x64; ARCH=x64 ;;
+esac
+HELPER_DIR="build/helper-$ARCH"
+if command -v dotnet >/dev/null 2>&1; then
+    dotnet publish ../../src/ClipBridge.Helper -c Release -r "$RID" -o "$HELPER_DIR" --nologo -v quiet
+    cp "$HELPER_DIR/ClipBridge.Helper" "$APP/Contents/MacOS/ClipBridge.Helper-$ARCH"
+    codesign --force --sign - "$APP/Contents/MacOS/ClipBridge.Helper-$ARCH"
+else
+    echo "warning: dotnet not found; building UP without the Helper (pastes pass through)" >&2
+fi
+
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
