@@ -6,11 +6,15 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- 처음 빌드한 사람이 실제 설치된 버전으로 고정할 것 -->
+  <!-- .NET SDK 10.0.403에서 복원된 버전으로 고정 -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="*" />
-    <PackageReference Include="xunit.v3" Version="*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,4 +6,8 @@
     <RootNamespace>ClipBridge.Core</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ClipBridge.Core.Tests" />
+  </ItemGroup>
+
 </Project>
