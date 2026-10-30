@@ -15,6 +15,7 @@
   <!-- 클립보드 읽기는 Windows 앱과 같은 코드를 쓴다 -->
   <ItemGroup>
     <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\ClipboardReader.cs" LinkBase="Clipboard" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Native\WindowProcess.cs" LinkBase="Native" />
   </ItemGroup>
 
 </Project>

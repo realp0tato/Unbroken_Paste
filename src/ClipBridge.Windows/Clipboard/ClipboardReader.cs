@@ -36,7 +36,7 @@ internal static class ClipboardReader
                 var name = FormatName(id);
                 formats.Add(include is null || include(name) ? ReadFormat(id, name, maxBytesPerFormat) : new Entry(id, name, null, "읽지 않음"));
             }
-            return new Result(sequenceNumber, GetOwnerPath(), formats);
+            return new Result(sequenceNumber, WindowProcess.ImagePath(NativeMethods.GetClipboardOwner()), formats);
         }
         finally
         {
@@ -104,28 +104,6 @@ internal static class ClipboardReader
     private static bool IsHandleFormat(uint id) =>
         id is 2 or 3 or 9 or 14 or 0x80 or 0x82 or 0x83 or 0x8E || id is >= 0x200 and <= 0x3FF;
 
-    private static string? GetOwnerPath()
-    {
-        var window = NativeMethods.GetClipboardOwner();
-        if (window == 0 || NativeMethods.GetWindowThreadProcessId(window, out var processId) == 0)
-            return null;
-
-        var process = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
-        if (process == 0)
-            return null;
-
-        try
-        {
-            var buffer = new StringBuilder(1024);
-            var length = buffer.Capacity;
-            return NativeMethods.QueryFullProcessImageName(process, 0, buffer, ref length) ? buffer.ToString() : null;
-        }
-        finally
-        {
-            NativeMethods.CloseHandle(process);
-        }
-    }
-
     private static readonly Dictionary<uint, string> StandardFormats = new()
     {
         [1] = "CF_TEXT",
@@ -154,8 +132,6 @@ internal static class ClipboardReader
 
     private static class NativeMethods
     {
-        public const uint ProcessQueryLimitedInformation = 0x1000;
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(nint newOwner);
 
@@ -177,9 +153,6 @@ internal static class ClipboardReader
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
 
-        [DllImport("user32.dll")]
-        public static extern uint GetWindowThreadProcessId(nint window, out uint processId);
-
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern nuint GlobalSize(nint memory);
 
@@ -188,14 +161,5 @@ internal static class ClipboardReader
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GlobalUnlock(nint memory);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern nint OpenProcess(uint access, bool inheritHandle, uint processId);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "QueryFullProcessImageNameW")]
-        public static extern bool QueryFullProcessImageName(nint process, uint flags, StringBuilder name, ref int size);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool CloseHandle(nint handle);
     }
 }
