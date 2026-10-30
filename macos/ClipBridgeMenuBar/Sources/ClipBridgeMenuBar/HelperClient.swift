@@ -13,7 +13,18 @@ final class HelperClient: NSObject {
     private static let responseTimeout: TimeInterval = 10
     private static let maxRestartDelay: TimeInterval = 30
 
-    private(set) var isReady = false
+    enum Status {
+        /// No Helper next to the app (built without the .NET SDK).
+        case missing
+        case starting
+        case ready
+    }
+
+    private(set) var status: Status = .starting {
+        didSet { if status != oldValue { onStatusChange?() } }
+    }
+    var isReady: Bool { status == .ready }
+    var onStatusChange: (() -> Void)?
     /// Results for the current copy only (FR-17).
     private(set) var latest: HelperResults?
 
@@ -81,6 +92,7 @@ final class HelperClient: NSObject {
     private func launch() {
         guard let url = Self.executableURL() else {
             Self.log.error("helper executable not found; pasting passes through")
+            status = .missing
             return
         }
         let process = Process()
@@ -95,8 +107,8 @@ final class HelperClient: NSObject {
             DispatchQueue.main.async { self?.receive(data) }
         }
         process.terminationHandler = { [weak self] ended in
-            let status = ended.terminationStatus
-            DispatchQueue.main.async { self?.exited(process: ended, status: status) }
+            let code = ended.terminationStatus
+            DispatchQueue.main.async { self?.exited(process: ended, code: code) }
         }
         do {
             try process.run()
@@ -108,20 +120,20 @@ final class HelperClient: NSObject {
         self.process = process
         input = stdin.fileHandleForWriting
         buffer = LineBuffer()
-        isReady = false
+        status = .starting
         waitingSince = ProcessInfo.processInfo.systemUptime  // waiting for "ready"
         Self.log.info("helper started: \(url.lastPathComponent, privacy: .public)")
     }
 
-    private func exited(process ended: Process, status: Int32) {
+    private func exited(process ended: Process, code: Int32) {
         guard ended === process else { return }
         process = nil
         input = nil
-        isReady = false
+        status = .starting
         waitingSince = nil
         latest = nil
         guard !stopping else { return }
-        Self.log.error("helper exited (status \(status, privacy: .public)); restarting")
+        Self.log.error("helper exited (status \(code, privacy: .public)); restarting")
         scheduleRestart()
     }
 
@@ -161,7 +173,7 @@ final class HelperClient: NSObject {
             if version != HelperProtocol.version {
                 Self.log.error("helper protocol \(version, privacy: .public), app expects \(HelperProtocol.version, privacy: .public)")
             }
-            isReady = true
+            status = .ready
             waitingSince = nil
             restartDelay = 1
             send(.setOptions(id: takeID(), options: options))

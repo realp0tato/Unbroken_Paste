@@ -30,6 +30,7 @@ final class StatusController: NSObject {
 
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
+    private let helperItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
@@ -78,7 +79,9 @@ final class StatusController: NSObject {
         }
         pasteWatcher.start()
         refreshPermission()
+        helper.onStatusChange = { [weak self] in self?.refreshHelper() }
         helper.start(options: settings.conversionOptions)
+        refreshHelper()
     }
 
     // MARK: - Menu
@@ -90,6 +93,8 @@ final class StatusController: NSObject {
         permissionItem.target = self
         permissionItem.action = #selector(openAccessibilitySettings)
         menu.addItem(permissionItem)
+        // Shown only while the converter (Helper) is not connected; pasting then passes through (PRD 10).
+        menu.addItem(helperItem)
         menu.addItem(.separator())
 
         // PRD 4.2 menu
@@ -154,6 +159,19 @@ final class StatusController: NSObject {
     private func refreshMode() {
         headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
         for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
+    }
+
+    private func refreshHelper() {
+        switch helper.status {
+        case .ready:
+            helperItem.isHidden = true
+        case .starting:
+            helperItem.title = "변환 엔진 연결 중 · 붙여넣기는 평소대로"
+            helperItem.isHidden = false
+        case .missing:
+            helperItem.title = "변환 엔진 없음 · .NET 설치 후 다시 빌드"
+            helperItem.isHidden = false
+        }
     }
 
     private func refreshPermission() {
