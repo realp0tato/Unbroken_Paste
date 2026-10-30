@@ -34,13 +34,15 @@ final class HelperProtocolTests: XCTestCase {
             ClipFormats.macHtml: Data("<p>".utf8),
             ClipFormats.macUtf8Text: Data("p".utf8),
             ClipFormats.macRtf: Data("{\\rtf}".utf8),
+            "org.chromium.source-url": Data("https://claude.ai/chat/x".utf8),
             "com.adobe.pdf": Data(count: 1000),
             "public.tiff": Data(count: 1000),
         ], sourceApp: "com.microsoft.Excel", sequenceNumber: 9)
 
         let trimmed = HelperProtocol.snapshotForCore(snapshot)
 
-        XCTAssertEqual(Set(trimmed.formats.keys), [ClipFormats.macHtml, ClipFormats.macUtf8Text, ClipFormats.macRtf])
+        // The Chromium page address must reach Core: it is how AI answers copied in Chrome or Claude are recognised
+        XCTAssertEqual(Set(trimmed.formats.keys), [ClipFormats.macHtml, ClipFormats.macUtf8Text, ClipFormats.macRtf, "org.chromium.source-url"])
         XCTAssertEqual(trimmed.sourceApp, "com.microsoft.Excel")
         XCTAssertEqual(trimmed.sequenceNumber, 9)
     }
