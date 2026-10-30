@@ -24,6 +24,17 @@ internal static class DocHtmlRenderer
     private const double MaxTableWidthPt = 150 / 25.4 * 72;
     private static readonly string[] Bullets = ["•", "◦", "▪"];
 
+    // 표·코드 칸 너비 어림 (본문 10pt 기준)
+    private const double WideCharPt = 10.5;
+    private const double NarrowCharPt = 6.2;
+    private const double MonoCharPt = 6.2;
+    private const double BoldFactor = 1.08;
+    private const double CellPaddingPt = 5.1;
+    private const double CodePaddingPt = 6;
+    private const double SafetyPt = 6;
+    private const double MinColumnWidthPt = 30;
+    private const double MinCodeWidthPt = 80;
+
     public static string Render(MarkdownDocument document)
     {
         var html = new StringBuilder();
@@ -96,15 +107,19 @@ internal static class DocHtmlRenderer
         }
     }
 
-    // 코드 블록은 테두리 있는 한 칸 표 + 고정폭 글꼴. 줄 앞 공백은 &nbsp;로 지킨다
+    // 코드 블록은 테두리 있는 한 칸 표 + 고정폭 글꼴. 줄 앞 공백은 &nbsp;로 지킨다.
+    // 너비는 가장 긴 줄이 줄바꿈되지 않는 최소 너비 (본문 폭을 넘으면 본문 폭에서 줄바꿈)
     private static void WriteCode(StringBuilder html, CodeBlock code, int depth)
     {
         var lines = code.Lines.ToString().TrimEnd('\n').Split('\n');
-        html.Append("<table border=\"1\" style=\"border-collapse:collapse;width:")
-            .Append(Pt(MaxTableWidthPt - depth * IndentPt)).Append("pt");
-        if (depth > 0)
-            html.Append(";margin-left:").Append(Pt(depth * IndentPt)).Append("pt");
-        html.Append("\"><tr><td style=\"border:1px solid #999;padding:4pt 6pt;background:#f5f5f5\">");
+        var available = MaxTableWidthPt - depth * IndentPt;
+        var needed = lines.Max(line => TextWidthPt(line, monospace: true)) + CodePaddingPt * 2 + SafetyPt;
+        var width = Math.Clamp(needed, MinCodeWidthPt, available);
+        var nowrap = needed <= available;
+
+        OpenTable(html, width, depth);
+        html.Append("<tr>");
+        Cell(html, width, "border:1px solid #999;padding:4pt 6pt;background:#f5f5f5", nowrap);
         foreach (var line in lines)
         {
             var indent = line.Length - line.TrimStart(' ').Length;
@@ -117,7 +132,9 @@ internal static class DocHtmlRenderer
         html.Append("</td></tr></table>");
     }
 
-    // 비율만 주면 한글이 표를 좁게 잡으므로 열 너비를 pt로 준다. 글자 수에 비례해 나누고 본문 폭을 넘지 않게 줄인다
+    // 열 너비는 그 열의 가장 긴 칸이 줄바꿈되지 않는 최소 너비.
+    // 표 전체가 본문 폭 안이면 줄바꿈을 막고, 넘으면 비율대로 줄여 줄바꿈을 허용한다.
+    // 너비는 CSS와 HTML 속성으로 함께 준다 (편집기마다 읽는 쪽이 다르다)
     private static void WriteTable(StringBuilder html, MdTable table, int depth)
     {
         var rows = table.Cast<MdTableRow>().ToList();
@@ -125,16 +142,20 @@ internal static class DocHtmlRenderer
         var widths = new double[columns];
         foreach (var row in rows)
             for (var i = 0; i < row.Count; i++)
-                widths[i] = Math.Max(widths[i], Math.Clamp(DisplayWidth(CellText((MdTableCell)row[i])) * 6.5 + 14, 40, 220));
+            {
+                var text = TextWidthPt(CellText((MdTableCell)row[i]), monospace: false) * (row.IsHeader ? BoldFactor : 1);
+                widths[i] = Math.Max(widths[i], Math.Max(text + CellPaddingPt * 2 + SafetyPt, MinColumnWidthPt));
+            }
         var available = MaxTableWidthPt - depth * IndentPt;
-        var scale = widths.Sum() > available ? available / widths.Sum() : 1;
+        var nowrap = widths.Sum() <= available;
+        var scale = nowrap ? 1 : available / widths.Sum();
+        for (var i = 0; i < columns; i++)
+            widths[i] *= scale;
 
-        html.Append("<table border=\"1\" style=\"border-collapse:collapse;width:").Append(Pt(widths.Sum() * scale)).Append("pt");
-        if (depth > 0)
-            html.Append(";margin-left:").Append(Pt(depth * IndentPt)).Append("pt");
-        html.Append("\"><colgroup>");
+        OpenTable(html, widths.Sum(), depth);
+        html.Append("<colgroup>");
         foreach (var width in widths)
-            html.Append("<col style=\"width:").Append(Pt(width * scale)).Append("pt\">");
+            html.Append("<col width=\"").Append(Px(width)).Append("\" style=\"width:").Append(Pt(width)).Append("pt\">");
         html.Append("</colgroup>");
 
         foreach (var row in rows)
@@ -143,7 +164,7 @@ internal static class DocHtmlRenderer
             for (var i = 0; i < row.Count; i++)
             {
                 var cell = (MdTableCell)row[i];
-                html.Append("<td style=\"border:1px solid #000;padding:1.41pt 5.1pt;width:").Append(Pt(widths[i] * scale)).Append("pt\">");
+                Cell(html, widths[i], "border:1px solid #000;padding:1.41pt 5.1pt", nowrap);
                 html.Append("<p style=\"margin:0");
                 if (row.IsHeader)
                     html.Append(";font-weight:bold");
@@ -162,6 +183,25 @@ internal static class DocHtmlRenderer
             html.Append("</tr>");
         }
         html.Append("</table>");
+    }
+
+    private static void OpenTable(StringBuilder html, double widthPt, int depth)
+    {
+        html.Append("<table border=\"1\" width=\"").Append(Px(widthPt)).Append("\" style=\"border-collapse:collapse;width:").Append(Pt(widthPt)).Append("pt");
+        if (depth > 0)
+            html.Append(";margin-left:").Append(Pt(depth * IndentPt)).Append("pt");
+        html.Append("\">");
+    }
+
+    private static void Cell(StringBuilder html, double widthPt, string style, bool nowrap)
+    {
+        html.Append("<td width=\"").Append(Px(widthPt)).Append("\"");
+        if (nowrap)
+            html.Append(" nowrap");
+        html.Append(" style=\"").Append(style).Append(";width:").Append(Pt(widthPt)).Append("pt");
+        if (nowrap)
+            html.Append(";white-space:nowrap");
+        html.Append("\">");
     }
 
     private static void Paragraph(StringBuilder html, int depth, bool quote, Action content)
@@ -240,8 +280,15 @@ internal static class DocHtmlRenderer
     private static string CellText(MdTableCell cell) =>
         string.Concat(cell.OfType<ParagraphBlock>().Select(p => MarkdownStripper.InlineText(p.Inline)));
 
-    // 한글·한자 등 넓은 글자는 2칸으로 센다
-    private static int DisplayWidth(string text) => text.Sum(c => c >= 0x1100 ? 2 : 1);
+    // 본문 10pt 기준 글자 폭 어림값. 넉넉하게 잡아 줄바꿈되지 않게 한다
+    private static double TextWidthPt(string text, bool monospace) =>
+        text.Sum(c => IsWide(c) ? WideCharPt : monospace ? MonoCharPt : NarrowCharPt);
+
+    // 한글·한자·전각 문자
+    private static bool IsWide(char c) => c >= 0x1100 && (c <= 0x11FF || c >= 0x2E80);
+
+    // 1pt = 4/3 px. HTML width 속성은 px
+    private static string Px(double pt) => Math.Ceiling(pt * 4 / 3).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static string Pt(double value) => Math.Round(value, 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
