@@ -6,7 +6,7 @@ Swift (macOS 13 이상). 메뉴 막대에서 UP 슬라임이 통통 튀고, 아�
 
 ## 실행
 
-Xcode 또는 Command Line Tools(`xcode-select --install`)가 필요해요.
+Xcode 또는 Command Line Tools(`xcode-select --install`)가 필요해요. 변환(Helper)까지 쓰려면 [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)도 필요해요. 없으면 앱은 그대로 동작하고 붙여넣기만 변환 없이 평소대로 돼요.
 
 ```bash
 cd macos/ClipBridgeMenuBar
@@ -19,6 +19,8 @@ swift run
 ./scripts/build-app.sh
 open build/ClipBridge.app
 ```
+
+`build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 이 Mac의 아키텍처용으로 빌드해 `ClipBridge.app/Contents/MacOS/ClipBridge.Helper-arm64`(또는 `-x64`)로 넣어요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
 
 Xcode에서 열려면 `open Package.swift`.
 
@@ -55,6 +57,11 @@ UP 종료  ⌘Q
 - **손쉬운 사용 권한:** 처음 실행할 때 한 번 요청해요. 허용하기 전에는 메뉴 맨 위에 `⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기`가 보이고, 붙여넣기는 변환 없이 평소대로 돼요. 설정에서 허용하면 2초 안에 자동으로 켜지고 항목이 사라져요.
   - `./scripts/build-app.sh`로 다시 빌드하면 서명이 바뀌어서 권한이 풀릴 수 있어요. 그러면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 UP를 지우고(−) 다시 허용하세요.
   - `swift run`으로 실행하면 권한은 UP가 아니라 실행한 터미널 앱에 붙어요.
+- **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
+  - 가장 최근 복사와 순서 번호가 같은 결과만 써요. 결과가 없거나 오래됐거나 오류면 통과예요.
+  - Helper가 꺼지면 1초 뒤 다시 실행하고(실패가 이어지면 최대 30초까지 늘림), 10초 동안 답이 없으면 강제로 끄고 다시 실행해요. 다시 실행되면 현재 복사를 다시 보내요.
+  - `UP 종료` 시 `shutdown`을 보내고 Helper도 함께 끝나요. 앱이 비정상 종료돼도 Helper는 입력이 끊겨 스스로 끝나요.
+  - 받은 결과와 붙여넣기 때 쓸 변환기는 시스템 로그(`helper`, `paste` 분류)에 본문 없이 남아요. 실제로 클립보드에 쓰는 건 #35예요.
 - **포인터 옆 동그라미 아이콘 (#38):** 복사하면 UP 캐릭터 배지(`Resources/Characters/<id>/badge.png`)가 0.8초, 붙여넣으면 대상 앱 아이콘이 1초 동안 포인터 오른쪽 아래(지름 30pt)에 보이고 0.15초에 걸쳐 사라져요. 포인터를 따라다니고, 화면 가장자리에서는 반대쪽으로 뒤집혀요.
   - Notion 웹은 브라우저 대신 Notion 아이콘, 변환 대상(한글·Notion·Word)은 강조색 테두리, 그 외 앱(통과)은 얇은 회색 테두리예요. 아이콘이 없으면 앱 이름 첫 글자, 앱을 모르면 `?`를 보여줘요.
   - 포커스를 가져가지 않고 클릭이 통과하는 패널이라 입력·IME를 방해하지 않아요. 모든 Space와 전체 화면 앱 위에도 떠요.
@@ -88,6 +95,8 @@ UP 종료  ⌘Q
 | `Sources/ClipBridgeClipboard/PasteTarget.swift` | 대상 앱 판별(`TargetResolver`)과 Cmd+V 판정(`PasteKey`) (#34) |
 | `Sources/ClipBridgeMenuBar/PasteWatcher.swift` | 이벤트 탭, 손쉬운 사용 권한 요청·재확인, 브라우저 창 제목 읽기 (#34) |
 | `Sources/ClipBridgeMenuBar/CursorOverlay.swift` | 포인터 옆 동그라미 아이콘 패널 (#38) |
+| `Sources/ClipBridgeMenuBar/HelperClient.swift` | Helper 실행·재시작·요청/응답, 최근 복사의 결과 보관 (#36) |
+| `Sources/ClipBridgeContracts/HelperProtocol.swift` | Helper 메시지 타입, 보낼 포맷 고르기, 줄 단위 읽기 (#36) |
 | `Sources/ClipBridgeClipboard/OverlayLayout.swift` | 아이콘 위치 계산(가장자리 뒤집기)과 보여줄 배지 결정 (#38) |
 | `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
