@@ -1,23 +1,42 @@
-"""Extract the slime character from assets/character.png and render bounce frames."""
+"""Extract each character in assets/characters/ and render smooth bounce frames."""
+import json
+import math
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 HERE = Path(__file__).parent
-SOURCE = HERE / "assets" / "character.png"
+CHARACTERS = HERE / "assets" / "characters"
 OUT = HERE / "frames"
 NAVY = (39, 42, 74)
 SS = 4  # supersampling factor
+FRAME_COUNT = 48
+GROUND = 0.28  # share of the cycle spent on the ground
 
-# (lift 0..1, scale_x, scale_y): squash on landing, stretch on take-off and fall
-BOUNCE = [
-    (0.00, 1.24, 0.78), (0.00, 1.10, 0.90), (0.18, 0.88, 1.14), (0.48, 0.92, 1.09),
-    (0.76, 0.97, 1.03), (0.93, 1.00, 1.00), (1.00, 1.02, 0.98), (0.93, 1.00, 1.00),
-    (0.76, 0.97, 1.03), (0.48, 0.92, 1.09), (0.18, 0.90, 1.12), (0.00, 1.30, 0.70),
-]
+# Squash (sy < 1) on the ground: landing impact, rebound, wobble, anticipation, take-off stretch.
+GROUND_KEYS = [(0.0, 0.70), (0.30, 1.07), (0.55, 0.96), (0.80, 0.86), (1.0, 1.12)]
 
 
-def extract():
-    im = Image.open(SOURCE).convert("RGB")
+def _smooth(keys, g):
+    for (g0, v0), (g1, v1) in zip(keys, keys[1:]):
+        if g <= g1:
+            s = (g - g0) / (g1 - g0)
+            return v0 + (v1 - v0) * s * s * (3 - 2 * s)
+    return keys[-1][1]
+
+
+def bounce(t):
+    """Return (lift 0..1, scale_x, scale_y) for cycle position t in [0, 1)."""
+    if t < GROUND:
+        lift, sy = 0.0, _smooth(GROUND_KEYS, t / GROUND)
+    else:
+        u = (t - GROUND) / (1 - GROUND)
+        lift = 4 * u * (1 - u)
+        sy = 1 + 0.12 * abs(1 - 2 * u) ** 1.6  # stretched while fast, round at the apex
+    return lift, 1 / math.sqrt(sy) ** 1.6, sy
+
+
+def extract(source):
+    im = Image.open(source).convert("RGB")
     w, h = im.size
     lum = im.convert("L")
     dark = lum.point(lambda v: 255 if v < 120 else 0)
@@ -79,23 +98,24 @@ def render(filled, white, lift, sx, sy, size, base_h, max_lift, style):
     return canvas.resize(size, Image.LANCZOS)
 
 
-def build():
-    filled, white = extract()
-    mac, win = OUT / "mac", OUT / "win"
+def build(character_id):
+    filled, white = extract(CHARACTERS / character_id / "character.png")
+    mac, win = OUT / character_id / "mac", OUT / character_id / "win"
     mac.mkdir(parents=True, exist_ok=True)
     win.mkdir(parents=True, exist_ok=True)
+    poses = [bounce(i / FRAME_COUNT) for i in range(FRAME_COUNT)]
     # macOS menu bar: 36x22pt drawn at @2x; black + alpha = template image.
-    mac_frames = [render(filled, white, *f, (72, 44), 26, 13, "template") for f in BOUNCE]
+    mac_frames = [render(filled, white, *p, (72, 44), 26, 13, "template") for p in poses]
     # Windows tray: 32x32 colour icon, readable on light and dark taskbars.
-    win_frames = [render(filled, white, *f, (32, 32), 17, 10, "color") for f in BOUNCE]
+    win_frames = [render(filled, white, *p, (32, 32), 17, 10, "color") for p in poses]
     for i, (m, wi) in enumerate(zip(mac_frames, win_frames)):
-        m.save(mac / f"slime_{i:02d}@2x.png")
-        wi.save(win / f"slime_{i:02d}.png")
-    preview(mac_frames, win_frames)
+        m.save(mac / f"frame_{i:02d}@2x.png")
+        wi.save(win / f"frame_{i:02d}.png")
+    preview(mac_frames, win_frames, OUT / character_id / "preview.gif")
     return len(mac_frames)
 
 
-def preview(mac_frames, win_frames):
+def preview(mac_frames, win_frames, path):
     scale, pages = 4, []
     for m, wi in zip(mac_frames, win_frames):
         page = Image.new("RGB", (72 * scale * 2 + 32 * scale + 40, 44 * scale + 20), (255, 255, 255))
@@ -108,8 +128,10 @@ def preview(mac_frames, win_frames):
         tray.alpha_composite(wi.resize(tray.size, Image.NEAREST))
         page.paste(tray.convert("RGB"), (30 + 72 * scale * 2, 10 + (44 - 32) * scale // 2))
         pages.append(page)
-    pages[0].save(OUT / "preview.gif", save_all=True, append_images=pages[1:], duration=90, loop=0)
+    pages[0].save(path, save_all=True, append_images=pages[1:], duration=30, loop=0)
 
 
 if __name__ == "__main__":
-    print(f"{build()} frames written to {OUT}")
+    for entry in json.loads((HERE / "assets" / "characters.json").read_text(encoding="utf-8")):
+        if (CHARACTERS / entry["id"] / "character.png").exists():
+            print(f"{entry['name']}: {build(entry['id'])} frames → {OUT / entry['id']}")
