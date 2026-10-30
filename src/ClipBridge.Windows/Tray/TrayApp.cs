@@ -142,6 +142,7 @@ internal sealed class TrayApp : ApplicationContext
             _headerItem, new ToolStripSeparator(),
             markdown, ai, new ToolStripSeparator(),
             state, _clipboardItem, _characterItem, new ToolStripSeparator(),
+            new ToolStripMenuItem("Unbroken Paste 정보", null, (_, _) => AboutWindow.ShowOrActivate()),
             new ToolStripMenuItem("UP 종료", null, (_, _) => ExitThread()),
         ]);
         RefreshMenu();
