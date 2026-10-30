@@ -34,10 +34,11 @@ public static class MarkdownEngine
         return new MarkdownOutput(html, plainText, signals);
     }
 
-    // 줄바꿈을 \n으로 맞춘 뒤 구문 트리로 해석한다. text는 맞춘 원문 (원문 위치 계산용)
+    // 줄바꿈을 \n으로 맞춘 뒤 구문 트리로 해석한다. text는 맞춘 원문 (원문 위치 계산용).
+    // NBSP만 있는 줄은 Markdown에서 빈 줄이 아니라 빈 문단이 되므로 먼저 빈 줄로 바꾼다 (PRD 6.4)
     internal static MarkdownDocument Parse(string markdown, out string text)
     {
-        text = markdown.Replace("\r\n", "\n").Replace('\r', '\n');
+        text = LineSpacing.BlankToEmpty(markdown);
         return Markdig.Markdown.Parse(text, Pipeline);
     }
 
@@ -56,6 +57,14 @@ public static class MarkdownEngine
         {
             if (!autolink.IsEmail && !IsSafeLink(autolink.Url))
                 autolink.ReplaceBy(new LiteralInline(autolink.Url), copyChildren: false);
+        }
+
+        // 느슨한 목록(항목 사이 빈 줄)은 <li><p>…</p></li>가 되어 문단 여백만큼 항목 간격이 벌어진다 (PRD 6.4, #51 리뷰).
+        // 항목마다 문단이 하나뿐이면 붙은 목록으로 낸다. 문단이 여러 개면 문단을 구분해야 하므로 그대로 둔다
+        foreach (var list in document.Descendants<ListBlock>())
+        {
+            if (list.IsLoose && list.Cast<ListItemBlock>().All(item => item.OfType<ParagraphBlock>().Count() <= 1))
+                list.IsLoose = false;
         }
 
         using var writer = new StringWriter();

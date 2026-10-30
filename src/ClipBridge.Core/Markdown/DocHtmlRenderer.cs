@@ -204,15 +204,24 @@ internal static class DocHtmlRenderer
         html.Append("\">");
     }
 
+    // 글자가 없는 문단(빈 대체 글자 이미지 등)은 빈 문단이 되므로 쓰지 않는다 (PRD 6.4)
     private static void Paragraph(StringBuilder html, int depth, bool quote, Action content)
     {
+        var start = html.Length;
         html.Append("<p style=\"").Append(Margin(depth, "0 0 4pt"));
         if (quote)
             html.Append(";color:#555");
         html.Append("\">");
+        var contentStart = html.Length;
         content();
-        html.Append("</p>");
+        if (IsBlank(html.ToString(contentStart, html.Length - contentStart)))
+            html.Length = start;
+        else
+            html.Append("</p>");
     }
+
+    private static bool IsBlank(string content) =>
+        content.Replace("&nbsp;", "").Replace("<br>", "").Trim().Length == 0;
 
     private static string Margin(int depth, string margin) =>
         depth == 0 ? "margin:" + margin : $"margin:{margin};margin-left:{Pt(depth * IndentPt)}pt";
