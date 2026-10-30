@@ -1,0 +1,57 @@
+<meta charset='utf-8'><html><head></head><body><h1>클립보드 테스트 샘플</h1>
+<p>이 문서는 <strong>복사·붙여넣기 변환기</strong>를 시험하기 위한 <em>예시 글</em>입니다.</p>
+<h2>1. 주요 기능</h2>
+<p>UP은 복사한 글의 <strong>서식</strong>과 <em>줄간격</em>을 정리해 줍니다.</p>
+<ul>
+<li>기호 제거 모드</li>
+<li>서식 적용 모드
+<ul>
+<li>제목은 실제 제목으로</li>
+<li><strong>굵게</strong>는 굵은 글자로</li>
+</ul>
+</li>
+<li>줄간격 보정</li>
+</ul>
+<h2>2. 사용 순서</h2>
+<ol>
+<li>원본 앱에서 글을 복사합니다.</li>
+<li>대상 앱을 엽니다.
+<ol>
+<li>한글</li>
+<li>Notion</li>
+</ol>
+</li>
+<li><code>Cmd+V</code>로 붙여넣습니다.</li>
+</ol>
+<h2>3. 지원 대상</h2>
+<table>
+<thead>
+<tr>
+<th>출처</th>
+<th>대상</th>
+<th>변환기</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>인터넷</td>
+<td>한글</td>
+<td>C3</td>
+</tr>
+<tr>
+<td>Markdown</td>
+<td>Notion</td>
+<td>C6</td>
+</tr>
+<tr>
+<td>Excel</td>
+<td>Word</td>
+<td>통과</td>
+</tr>
+</tbody>
+</table>
+<h2>4. 코드 예시</h2>
+<pre><code class="language-python">def greet(name):
+    print(f"안녕하세요, {name}님!")
+</code></pre>
+<p>자세한 내용은 <a href="https://www.markdownguide.org/">Markdown 안내서</a>를 참고하세요.</p></body></html>
