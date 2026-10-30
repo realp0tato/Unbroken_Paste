@@ -19,8 +19,9 @@ internal static class ClipboardReader
             SequenceNumber);
     }
 
-    // 클립보드를 열지 못하면 null. owner는 클립보드를 여는 창 핸들(0이면 현재 작업)
-    public static Result? Read(nint owner = 0, long maxBytesPerFormat = long.MaxValue)
+    // 클립보드를 열지 못하면 null. owner는 클립보드를 여는 창 핸들(0이면 현재 작업).
+    // include가 있으면 그 포맷만 데이터를 읽는다 (지연 렌더링 포맷은 읽을 때 원본 앱이 데이터를 만든다)
+    public static Result? Read(nint owner = 0, long maxBytesPerFormat = long.MaxValue, Func<string, bool>? include = null)
     {
         if (!TryOpen(owner))
             return null;
@@ -31,8 +32,11 @@ internal static class ClipboardReader
             long sequenceNumber = NativeMethods.GetClipboardSequenceNumber();
             var formats = new List<Entry>();
             for (uint id = NativeMethods.EnumClipboardFormats(0); id != 0; id = NativeMethods.EnumClipboardFormats(id))
-                formats.Add(ReadFormat(id, maxBytesPerFormat));
-            return new Result(sequenceNumber, GetOwnerPath(), formats);
+            {
+                var name = FormatName(id);
+                formats.Add(include is null || include(name) ? ReadFormat(id, name, maxBytesPerFormat) : new Entry(id, name, null, "읽지 않음"));
+            }
+            return new Result(sequenceNumber, WindowProcess.ImagePath(NativeMethods.GetClipboardOwner()), formats);
         }
         finally
         {
@@ -65,9 +69,8 @@ internal static class ClipboardReader
         return false;
     }
 
-    private static Entry ReadFormat(uint id, long maxBytes)
+    private static Entry ReadFormat(uint id, string name, long maxBytes)
     {
-        var name = FormatName(id);
         if (IsHandleFormat(id))
             return new Entry(id, name, null, "GDI 핸들 포맷");
 
@@ -101,28 +104,6 @@ internal static class ClipboardReader
     private static bool IsHandleFormat(uint id) =>
         id is 2 or 3 or 9 or 14 or 0x80 or 0x82 or 0x83 or 0x8E || id is >= 0x200 and <= 0x3FF;
 
-    private static string? GetOwnerPath()
-    {
-        var window = NativeMethods.GetClipboardOwner();
-        if (window == 0 || NativeMethods.GetWindowThreadProcessId(window, out var processId) == 0)
-            return null;
-
-        var process = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
-        if (process == 0)
-            return null;
-
-        try
-        {
-            var buffer = new StringBuilder(1024);
-            var length = buffer.Capacity;
-            return NativeMethods.QueryFullProcessImageName(process, 0, buffer, ref length) ? buffer.ToString() : null;
-        }
-        finally
-        {
-            NativeMethods.CloseHandle(process);
-        }
-    }
-
     private static readonly Dictionary<uint, string> StandardFormats = new()
     {
         [1] = "CF_TEXT",
@@ -151,8 +132,6 @@ internal static class ClipboardReader
 
     private static class NativeMethods
     {
-        public const uint ProcessQueryLimitedInformation = 0x1000;
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(nint newOwner);
 
@@ -174,9 +153,6 @@ internal static class ClipboardReader
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
 
-        [DllImport("user32.dll")]
-        public static extern uint GetWindowThreadProcessId(nint window, out uint processId);
-
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern nuint GlobalSize(nint memory);
 
@@ -185,14 +161,5 @@ internal static class ClipboardReader
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GlobalUnlock(nint memory);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern nint OpenProcess(uint access, bool inheritHandle, uint processId);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "QueryFullProcessImageNameW")]
-        public static extern bool QueryFullProcessImageName(nint process, uint flags, StringBuilder name, ref int size);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool CloseHandle(nint handle);
     }
 }

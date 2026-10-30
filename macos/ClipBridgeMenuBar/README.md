@@ -61,11 +61,17 @@ UP 종료  ⌘Q
   - 가장 최근 복사와 순서 번호가 같은 결과만 써요. 결과가 없거나 오래됐거나 오류면 통과예요.
   - Helper가 꺼지면 1초 뒤 다시 실행하고(실패가 이어지면 최대 30초까지 늘림), 10초 동안 답이 없으면 강제로 끄고 다시 실행해요. 다시 실행되면 현재 복사를 다시 보내요.
   - `UP 종료` 시 `shutdown`을 보내고 Helper도 함께 끝나요. 앱이 비정상 종료돼도 Helper는 입력이 끊겨 스스로 끝나요.
-  - 받은 결과와 붙여넣기 때 쓸 변환기는 시스템 로그(`helper`, `paste` 분류)에 본문 없이 남아요. 실제로 클립보드에 쓰는 건 #35예요.
+  - 받은 결과는 시스템 로그(`helper` 분류)에 본문 없이 남아요.
+- **붙여넣기 때 결과 기록 (#35):** Cmd+V가 대상 앱에 닿기 전에 그 대상의 결과를 클립보드에 넣어요. 바이트는 대상 앱이 달라고 할 때 건네는 지연 제공(`NSPasteboardItemDataProvider`)이라 기록이 빨라요. HTML은 `public.html`에 헤더 없이, 글은 `public.utf8-plain-text`에 넣어요.
+  - 결과가 없거나 통과면 건드리지 않아요. 앞서 변환 결과를 넣었는데 이번 대상이 통과면 원본 스냅샷을 다시 넣어요(PRD 6.5). 같은 대상에 다시 붙이면 다시 쓰지 않아요.
+  - 스냅샷 이후 다른 앱이 클립보드를 바꿨으면(아직 감지 전인 새 복사) 절대 덮어쓰지 않아요.
+  - UP가 쓴 변경은 새 복사로 치지 않고 최근 복사에도 넣지 않아요. `UP 종료` 때 클립보드가 UP의 기록이면 원본을 실제 데이터로 되돌려 놓아요(지연 제공 데이터는 앱이 꺼지면 사라지기 때문).
+  - 로그: `paste write·restore·leave converter=… target=… <ms>`
+  - Helper가 연결되지 않으면 메뉴 첫 줄 아래에 `변환 엔진 연결 중 · 붙여넣기는 평소대로` 또는 (Helper 없이 빌드했을 때) `변환 엔진 없음 · .NET 설치 후 다시 빌드`가 보여요. 연결되면 사라져요.
 - **포인터 옆 동그라미 아이콘 (#38):** 복사하면 UP 캐릭터 배지(`Resources/Characters/<id>/badge.png`)가 0.8초, 붙여넣으면 대상 앱 아이콘이 1초 동안 포인터 오른쪽 아래(지름 30pt)에 보이고 0.15초에 걸쳐 사라져요. 포인터를 따라다니고, 화면 가장자리에서는 반대쪽으로 뒤집혀요.
   - Notion 웹은 브라우저 대신 Notion 아이콘, 변환 대상(한글·Notion·Word)은 강조색 테두리, 그 외 앱(통과)은 얇은 회색 테두리예요. 아이콘이 없으면 앱 이름 첫 글자, 앱을 모르면 `?`를 보여줘요.
   - 포커스를 가져가지 않고 클릭이 통과하는 패널이라 입력·IME를 방해하지 않아요. 모든 Space와 전체 화면 앱 위에도 떠요.
-  - 대상 앱이 데이터를 가져가는 순간 바로 사라지게 하는 건 클립보드 기록(#35)에서 `CursorOverlay.dataTaken()`으로 연결해요.
+  - 대상 앱이 데이터를 가져가는 순간(지연 제공 요청) 바로 사라지고, 그 신호가 없으면 1초 뒤 사라져요. 테두리는 실제로 변환 결과를 넣었을 때만 강조색이에요.
 
 ### 대상 앱 매핑 (PRD 4.5)
 
@@ -77,7 +83,7 @@ UP 종료  ⌘Q
 | 한글 (한컴오피스) | 번들 ID가 `com.hancom.`으로 시작하고 `hwp`가 들어 있거나, 앱 이름에 `HWP`·`한글`이 있음 (버전마다 ID가 달라 규칙으로 판별, 맥에서 미확인) |
 | 한글 (한컴독스 웹) | 브라우저 주소가 `webhwp.*hancomdocs.com`(웹 한글 편집기)이거나, 창 제목에 `한컴독스`·`Hancom Docs`가 있음. 아이콘은 `한` 글자 배지 |
 | Notion 웹 | 브라우저 주소가 `notion.so`·`*.notion.site`이거나, 창 제목에 `Notion`이 있음 |
-| (브라우저 공통) | Safari·Chrome·Edge·Firefox·Whale·Arc. 주소는 브라우저가 손쉬운 사용으로 알려줄 때만(Safari 등) 쓰고, 아니면 창 제목으로 판단. 둘 다 안 되면 통과 |
+| (브라우저 공통) | Safari·Chrome·Edge·Firefox·Whale·Arc. 주소는 창의 `AXDocument`, 없으면 페이지 영역(`AXWebArea`)의 `AXURL`에서 읽고(30ms 안에서만 찾음), 못 읽으면 창 제목으로 판단. 둘 다 안 되면 통과. 로그에 `browser url=<도메인> via=document·webArea·none title=yes·no`가 남아요(전체 주소·제목은 남기지 않음) |
 | 그 외 | 통과 |
 
 설치된 앱의 번들 ID 확인: `osascript -e 'id of app "Microsoft Word"'` (앱 이름만 바꿔서 실행)
@@ -97,6 +103,8 @@ UP 종료  ⌘Q
 | `Sources/ClipBridgeMenuBar/CursorOverlay.swift` | 포인터 옆 동그라미 아이콘 패널 (#38) |
 | `Sources/ClipBridgeMenuBar/HelperClient.swift` | Helper 실행·재시작·요청/응답, 최근 복사의 결과 보관 (#36) |
 | `Sources/ClipBridgeContracts/HelperProtocol.swift` | Helper 메시지 타입, 보낼 포맷 고르기, 줄 단위 읽기 (#36) |
+| `Sources/ClipBridgeClipboard/PastePlan.swift` | 붙여넣기 순간 클립보드에 무엇을 할지 결정 (쓰기·원본 복원·그대로) (#35) |
+| `Sources/ClipBridgeClipboard/PasteWriter.swift` | 지연 제공으로 결과·원본 기록, 데이터 요청 알림, 종료 시 원본 복원 (#35) |
 | `Sources/ClipBridgeClipboard/OverlayLayout.swift` | 아이콘 위치 계산(가장자리 뒤집기)과 보여줄 배지 결정 (#38) |
 | `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |

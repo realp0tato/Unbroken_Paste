@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Windows 앱 중 Windows API를 쓰지 않는 코드만 가져와 시험한다. net10.0이라 macOS·Linux에서도 실행된다 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- ClipBridge.Core.Tests와 같은 버전 -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ClipBridge.Core\ClipBridge.Core.csproj" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\CopyTracker.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Paste\PasteRules.cs" LinkBase="Windows" />
+  </ItemGroup>
+
+</Project>
