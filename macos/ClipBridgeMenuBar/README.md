@@ -1,8 +1,8 @@
-# ClipBridge macOS 메뉴 막대 앱
+# UP macOS 메뉴 막대 앱
 
-Swift (macOS 13 이상). 메뉴 막대에서 ClipBridge 슬라임이 통통 튀고, 아이콘을 누르면 메뉴가 열려요. (#23)
+Swift (macOS 13 이상). 메뉴 막대에서 UP 슬라임이 통통 튀고, 아이콘을 누르면 메뉴가 열려요. (#23)
 
-메뉴 항목과 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대)을 따른다. 그 외 항목(상태 변경·클립보드·캐릭터)은 팀 합의 전 제안 기능이다.
+공통 메뉴와 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대), 추가 메뉴(상태 변경·클립보드·캐릭터)는 PRD 4.2.2를 따른다. 화면에 보이는 이름은 UP이고, 폴더·모듈·번들 ID 같은 코드 이름은 README 규칙대로 당분간 `ClipBridge`를 유지한다.
 
 ## 실행
 
@@ -31,7 +31,7 @@ swift test
 ## 메뉴
 
 ```text
-ClipBridge · 대기 중
+UP · 대기 중
 ──────────
 Markdown 처리 ▸            ✓ 기호 제거 (기본) / 서식 적용
 AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API 전송 안내
@@ -40,7 +40,7 @@ AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API �
 클립보드 ▸    최근 복사 10개 (누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
 캐릭터 ▸      ✓ 기본 슬라임 / 새 캐릭터 (준비 중) / 시즌 한정 캐릭터 (준비 중)
 ──────────
-ClipBridge 종료  ⌘Q
+UP 종료  ⌘Q
 ```
 
 - **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)

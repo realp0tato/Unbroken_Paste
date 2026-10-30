@@ -40,11 +40,11 @@ final class StatusController: NSObject {
         super.init()
 
         if let button = statusItem.button {
-            button.toolTip = "ClipBridge"
+            button.toolTip = "UP"
             if let first = frames.first {
                 button.image = first
             } else {
-                button.title = "ClipBridge"  // frames missing: still usable as a text item
+                button.title = "UP"  // frames missing: still usable as a text item
             }
         }
         statusItem.menu = buildMenu()
@@ -98,7 +98,7 @@ final class StatusController: NSObject {
         }
         menu.addItem(.separator())
 
-        addItem("ClipBridge 종료", to: menu, action: #selector(quit), key: "q")
+        addItem("UP 종료", to: menu, action: #selector(quit), key: "q")
         return menu
     }
 
@@ -125,7 +125,7 @@ final class StatusController: NSObject {
     }
 
     private func refreshMode() {
-        headerItem.title = "ClipBridge · " + (Self.headers[animator.mode] ?? "")
+        headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
         for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
     }
 
@@ -237,7 +237,7 @@ final class StatusController: NSObject {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
-            content.title = "ClipBridge"
+            content.title = "UP"
             content.body = body
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
         }

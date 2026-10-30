@@ -6,7 +6,7 @@ enum ClipBridgeMenuBarApp {
     @MainActor
     static func main() {
         guard SingleInstance.acquire() else {
-            FileHandle.standardError.write(Data("ClipBridge is already running in the menu bar.\n".utf8))
+            FileHandle.standardError.write(Data("UP is already running in the menu bar.\n".utf8))
             return
         }
         let app = NSApplication.shared
