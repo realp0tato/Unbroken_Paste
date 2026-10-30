@@ -7,10 +7,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>ClipBridge.Windows</RootNamespace>
-    <!-- 화면·작업 관리자·파일 속성에 보이는 이름은 UP (코드 이름은 추후 UnbrokenPaste.*로 변경, PRD 이름 규칙) -->
-    <AssemblyName>UP</AssemblyName>
-    <AssemblyTitle>UP</AssemblyTitle>
-    <Product>UP (UnbrokenPaste)</Product>
+    <!-- 프로그램 이름(실행 파일·작업 관리자·파일 속성)은 Unbroken Paste, 트레이·메뉴 등 그 밖의 화면은 UP
+         (코드 이름은 추후 UnbrokenPaste.*로 변경, PRD 이름 규칙) -->
+    <AssemblyName>Unbroken Paste</AssemblyName>
+    <AssemblyTitle>Unbroken Paste</AssemblyTitle>
+    <Product>Unbroken Paste</Product>
     <!-- 파일 속성의 버전 (macOS DMG와 같은 번호). 제품 버전에 커밋 해시를 붙이지 않는다 -->
     <Version>0.1.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

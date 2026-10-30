@@ -215,11 +215,11 @@ dotnet test                    # 변환기 단위 테스트
 dotnet publish src/ClipBridge.Windows -p:PublishProfile=win-x64
 ```
 
-- `publish\windows\UP.exe` 파일 하나가 생깁니다(약 76MB). .NET을 함께 넣어서 **이 파일만 옮기면** .NET이 설치되지 않은 Windows 10/11 x64 PC에서도 실행됩니다.
+- `publish\windows\Unbroken Paste.exe` 파일 하나가 생깁니다(약 76MB). .NET을 함께 넣어서 **이 파일만 옮기면** .NET이 설치되지 않은 Windows 10/11 x64 PC에서도 실행됩니다.
 - 처음 실행할 때 "Windows의 PC 보호"(SmartScreen) 창이 뜨면 `추가 정보` → `실행`을 누르세요. 서명하지 않은 파일이라 인터넷에서 받으면 뜹니다.
 - 첫 실행은 몇 초 걸릴 수 있습니다(필요한 파일을 `%TEMP%\.net`에 풉니다). 다음부터는 바로 뜹니다.
-- Windows를 켤 때 자동으로 실행하려면 `Win+R` → `shell:startup` 폴더에 `UP.exe` 바로가기를 넣으세요.
-- 지우려면 트레이 메뉴에서 `UP 종료` 후 `UP.exe`를 삭제합니다. 설정까지 지우려면 `%APPDATA%\UnbrokenPaste` 폴더도 삭제합니다.
+- Windows를 켤 때 자동으로 실행하려면 `Win+R` → `shell:startup` 폴더에 `Unbroken Paste.exe` 바로가기를 넣으세요.
+- 지우려면 트레이 메뉴에서 `UP 종료` 후 `Unbroken Paste.exe`를 삭제합니다. 설정까지 지우려면 `%APPDATA%\UnbrokenPaste` 폴더도 삭제합니다.
 
 **Windows 앱 (개발 중 실행)**
 
@@ -227,7 +227,7 @@ dotnet publish src/ClipBridge.Windows -p:PublishProfile=win-x64
 dotnet run --project src/ClipBridge.Windows
 ```
 
-- 실행 파일은 `UP.exe`입니다 (`src/ClipBridge.Windows/bin/Debug/net10.0-windows/`). 작업 관리자에도 UP으로 보입니다.
+- 실행 파일은 `Unbroken Paste.exe`입니다 (`src/ClipBridge.Windows/bin/Debug/net10.0-windows/`). 작업 관리자에도 Unbroken Paste로 보입니다.
 - 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
 - 아이콘을 오른쪽 클릭하면 메뉴(Markdown 처리·AI 검증·`UP 종료`)가 열립니다. 옵션은 `%APPDATA%\UnbrokenPaste\settings.json`에 값만 저장돼 재실행 후에도 유지됩니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
 - 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다.
@@ -261,7 +261,7 @@ open "build/Unbroken Paste.app"
 | 변환기 C1–C6, TX | 구현 |
 | 변환기 C7(인터넷 → Word)·C8(Markdown → Word) | 개발 전, 지금은 통과 |
 | AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
-| Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 UP.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
+| Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
 | macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
 | 성능·사용자 시간 절감 | 아직 측정하지 않음 |
 
