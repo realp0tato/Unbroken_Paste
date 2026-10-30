@@ -7,6 +7,19 @@
     <RootNamespace>ClipBridge.Helper</RootNamespace>
   </PropertyGroup>
 
+  <!-- dotnet publish -r osx-arm64 (또는 osx-x64) → .NET 설치 없이 실행되는 단일 파일 (README.md).
+       RID를 줄 때만 적용한다 (테스트 프로젝트가 참조할 수 있도록) -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ClipBridge.Helper.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ClipBridge.Core\ClipBridge.Core.csproj" />
   </ItemGroup>
