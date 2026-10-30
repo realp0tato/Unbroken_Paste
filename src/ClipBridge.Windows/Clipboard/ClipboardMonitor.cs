@@ -94,9 +94,20 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
             return;
         }
 
-        var clipboard = ClipboardReader.Read(include: SnapshotFormats.Contains);
-        if (!IsCurrent(clipboard, sequenceNumber))
-            return;
+        // 원본 앱이 아직 복사 중이면 지연 렌더링 포맷(HTML·텍스트)을 받지 못한다. 잠깐 기다렸다 다시 읽는다 (SnapshotRetry)
+        ClipboardReader.Result? clipboard = null;
+        for (var attempt = 1; attempt <= SnapshotRetry.MaxAttempts; attempt++)
+        {
+            if (attempt > 1)
+                Thread.Sleep(SnapshotRetry.Delay);
+            clipboard = ClipboardReader.Read(include: SnapshotFormats.Contains);
+            if (!IsCurrent(clipboard, sequenceNumber))
+                return;
+            var formats = clipboard!.Formats.Select(f => (f.Name, f.Data is not null, f.SkipReason)).ToList();
+            if (!SnapshotRetry.NeedsRetry(formats))
+                break;
+            DevLog.Info("copy", $"retry seq={sequenceNumber} attempt={attempt} missing={SnapshotRetry.Missing(formats)}");
+        }
 
         var snapshot = clipboard!.ToSnapshot();
         DevLog.Info("copy", $"copy seq={snapshot.SequenceNumber} app={snapshot.SourceApp ?? "unknown"} formats={string.Join(",", snapshot.Formats.Keys)}");

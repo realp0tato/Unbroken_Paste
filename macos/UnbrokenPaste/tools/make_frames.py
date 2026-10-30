@@ -122,7 +122,7 @@ def render_drip(filled, white, t, size, base_h, tips):
     aspect = filled.width / filled.height
     breathe = 1 + 0.03 * math.sin(2 * math.pi * t * 2)
     bh, bw = base_h * breathe * SS, base_h * aspect / math.sqrt(breathe) * SS
-    top = (2.5 + 1.5 * (1 - math.cos(2 * math.pi * t)) / 2) * SS  # gentle bob, 1.5px
+    top = (6.5 + 1.5 * (1 - math.cos(2 * math.pi * t)) / 2) * SS  # upper middle of the bar, gentle 1.5px bob
     left = (cw - bw) / 2
     ground = ch - 1 * SS
     body_f = filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS)
