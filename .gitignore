@@ -1,0 +1,33 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+TestResults/
+*.nupkg
+publish/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# Xcode / Swift
+xcuserdata/
+DerivedData/
+*.xcuserstate
+.build/
+.swiftpm/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# 비밀 정보 (API 키 등)
+.env
+*.local.json

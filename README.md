@@ -125,9 +125,19 @@ README.md
 - Excel·브라우저가 클립보드에 넣는 HTML은 Windows에서만 정확히 얻을 수 있습니다. Windows PC에서 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 이 샘플로 테스트합니다.
 - 한글·Word 실제 붙여넣기 검증은 Windows PC에서만 할 수 있습니다.
 
+## 빌드와 테스트
+
+```bash
+dotnet build ClipBridge.slnx   # macOS에서도 Windows 앱까지 빌드됨 (실행은 Windows에서만)
+dotnet test                    # 변환기 단위 테스트
+```
+
+- 외부 패키지(AngleSharp, HtmlSanitizer, Markdig)는 해당 기능 담당자가 작업할 때 `dotnet add src/ClipBridge.Core package <이름>`으로 추가합니다.
+- 테스트 프로젝트의 패키지 버전은 `*`로 되어 있습니다. 처음 빌드한 사람이 실제 설치된 버전으로 고정합니다.
+
 ## 설치 및 실행
 
-준비 중입니다. 소스와 실행 방법은 구현 후 추가합니다.
+준비 중입니다. 실행 방법은 구현 후 추가합니다.
 
 ## 문서
 
