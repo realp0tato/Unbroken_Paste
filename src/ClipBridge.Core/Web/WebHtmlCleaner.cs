@@ -286,7 +286,7 @@ public static partial class WebHtmlCleaner
                 var label = InlineText(element, keepLinks);
                 var href = element.GetAttribute("href");
                 if (keepLinks && label.Length > 0 && href is not null && IsWebLink(href))
-                    md.Append('[').Append(label).Append("](").Append(href.Replace(" ", "%20").Replace(")", "%29")).Append(')');
+                    md.Append('[').Append(label).Append("](").Append(href.Replace(" ", "%20").Replace("(", "%28").Replace(")", "%29")).Append(')');
                 else
                     md.Append(label);
                 break;

@@ -93,6 +93,18 @@ public class WebHtmlCleanerTests
         Assert.Equal(expected, Md(html, keepLinks));
     }
 
+    // 위키백과 주소의 괄호(시_(행정_구역))가 짝이 안 맞으면 Markdown이 링크로 읽지 못해 [글](주소)가 글자로 붙는다
+    [Fact]
+    public void LinkWithParentheses_StaysLinkInNotionHtml()
+    {
+        var html = "<p><a href=\"https://ko.wikipedia.org/wiki/Si_(unit)\">시</a></p>";
+
+        var result = WebToNotionConverter.Convert(html);
+
+        Assert.Contains("<a href=\"https://ko.wikipedia.org/wiki/Si_%28unit%29\">시</a>", result.Html);
+        Assert.DoesNotContain("](", result.Html);
+    }
+
     [Fact]
     public void MergedCells_AreUnmergedWithValueInFirstCell()
     {
