@@ -102,17 +102,51 @@ ClipBridge
 ## 저장소 구조
 
 ```text
+ClipBridge.slnx            # 솔루션: C# 프로젝트 3개를 묶는 목록
+global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
+Directory.Build.props      # 모든 C# 프로젝트 공통 설정
+.gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
 src/
-  ClipBridge.Core/         # 변환기 라이브러리 (OS 무관)
-  ClipBridge.Windows/      # Windows 트레이 앱 (Core 참조)
+  ClipBridge.Core/         # ① 변환기 라이브러리 (OS 무관)
+  ClipBridge.Windows/      # ② Windows 트레이 앱 (Core 참조)
 tests/
-  ClipBridge.Core.Tests/   # 변환기 단위 테스트
-  fixtures/                # Windows에서 수집한 클립보드 원본 샘플 (Excel·웹·Markdown)
+  ClipBridge.Core.Tests/   # ③ 변환기 단위 테스트
+  fixtures/                # ④ Windows에서 수집한 클립보드 원본 샘플
 macos/
-  ClipBridgeMenuBar/       # macOS 메뉴 막대 앱 (Xcode 프로젝트)
+  ClipBridgeMenuBar/       # ⑤ macOS 메뉴 막대 앱 (Swift, 솔루션에 포함 안 됨)
 prd.md
 README.md
+CONTRIBUTING.md
 ```
+
+### 기본 개념
+
+- **프로젝트:** 코드 묶음 하나. 폴더 안의 `.csproj` 파일이 그 프로젝트의 종류와 설정을 정한다.
+- **솔루션:** 여러 프로젝트를 한 번에 열고 빌드하기 위한 목록. `dotnet build ClipBridge.slnx` 한 번으로 ①②③이 모두 빌드된다.
+- **라이브러리:** 혼자 실행되지 않고, 다른 프로그램이 가져다 쓰는 기능 모음.
+- **참조:** 한 프로젝트가 다른 프로젝트의 코드를 가져다 쓰는 것. ②와 ③이 ①을 참조한다.
+
+### 각 부분의 역할
+
+| | 위치 | 하는 일 | 담당 |
+|---|---|---|---|
+| ① | `src/ClipBridge.Core/` | 변환 로직 전부: 출처 판별, 변환기 C1–C8, 줄간격 보정, AI 검증. **Windows API를 쓰지 않으므로 macOS에서 개발·테스트할 수 있다** | 장세찬, 박재현 |
+| ② | `src/ClipBridge.Windows/` | 실제 실행되는 프로그램: 트레이 아이콘, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. 붙여넣기를 감지하면 ①을 호출해 결과를 받는다 | 이창민 |
+| ③ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
+| ④ | `tests/fixtures/` | Excel·웹에서 복사했을 때 클립보드에 실제로 들어가는 데이터를 파일로 저장. ③의 입력으로 쓴다 ([규칙](tests/fixtures/README.md)) | 이창민 수집 |
+| ⑤ | `macos/ClipBridgeMenuBar/` | macOS 메뉴 막대 앱. Swift라서 C# 솔루션과 별도로 Xcode에서 연다 | 윤승희 |
+
+### 흐름
+
+```text
+Ctrl+V ─▶ ② Windows 앱이 감지 ─▶ ① Core에 "이 원본을 이 앱용으로" 요청
+       ◀─ ① 변환 결과 반환 ◀─────┘
+       ─▶ ② 클립보드에 기록 ─▶ 대상 앱에 붙여넣기
+
+③ 테스트는 ④ 샘플을 ①에 넣어 결과가 맞는지 확인 (Windows 없이 macOS에서 실행)
+```
+
+①과 ② 사이에서 주고받는 타입과 호출 방식은 `src/ClipBridge.Core/Contracts/`에 둔다 ([#29](https://github.com/realp0tato/donga_hackathon/issues/29)에서 확정).
 
 ## 개발 환경
 
