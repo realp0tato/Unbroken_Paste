@@ -5,7 +5,8 @@ using ClipBridge.Core;
 
 namespace ClipBridge.Windows;
 
-internal sealed record Paste(string Key, TargetApp Target, string? Process);
+// ProcessPath는 붙여넣는 앱의 실행 파일 경로 (커서 아이콘, #5)
+internal sealed record Paste(string Key, TargetApp Target, string? Process, string? ProcessPath);
 
 // 붙여넣기 키(Ctrl+V, Shift+Insert)를 감지하고 대상 앱을 판별한다 (FR-05).
 // 저수준 키보드 훅은 키를 막거나 다시 보내지 않고 그대로 넘긴다. 훅은 이 객체를 만든 UI 스레드에서 돈다.
@@ -117,10 +118,11 @@ internal sealed class PasteWatcher : NativeWindow, IDisposable
     private static Paste Resolve(string key)
     {
         var window = NativeMethods.GetForegroundWindow();
-        var process = Path.GetFileName(WindowProcess.ImagePath(window));
+        var path = WindowProcess.ImagePath(window);
+        var process = Path.GetFileName(path);
         // 창 제목에는 문서 이름이 들어 있으므로 브라우저일 때만 읽고 로그에도 남기지 않는다
         var title = PasteTargets.IsBrowser(process) ? WindowTitle(window) : null;
-        return new Paste(key, PasteTargets.Resolve(process, title), process);
+        return new Paste(key, PasteTargets.Resolve(process, title), process, path);
     }
 
     private static string? WindowTitle(nint window)

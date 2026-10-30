@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\app.ico" LogicalName="ClipBridge.Windows.app.ico" />
+    <!-- 복사 때 포인터 옆에 뜨는 UP 캐릭터 배지 (#5). macOS Resources/Characters/slime/badge.png와 같은 그림 -->
+    <EmbeddedResource Include="Resources\badge.png" LogicalName="ClipBridge.Windows.badge.png" />
     <!-- 트레이 슬라임 애니메이션 프레임 (#44). 이름 순서대로 재생한다 -->
     <EmbeddedResource Include="Resources\Slime\*.png" LogicalName="ClipBridge.Windows.Slime.%(Filename)%(Extension)" />
   </ItemGroup>
