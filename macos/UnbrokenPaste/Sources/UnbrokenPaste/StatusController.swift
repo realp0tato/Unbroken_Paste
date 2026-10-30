@@ -5,7 +5,6 @@ import os
 
 @MainActor
 final class StatusController: NSObject {
-    private static let headers: [SlimeMode: String] = [.idle: "대기 중", .busy: "구조 분석 중", .cpu: "CPU 연동 중"]
     private static let copyReaction: TimeInterval = 1.2
     private static let pollInterval: TimeInterval = 0.3
     private static let log = Logger(subsystem: "app.unbrokenpaste.menubar", category: "paste")
@@ -28,9 +27,9 @@ final class StatusController: NSObject {
     private let helper = HelperClient()
     private let writer = PasteWriter()
 
-    private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
     private let helperItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let warningSeparator = NSMenuItem.separator()
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
@@ -59,7 +58,6 @@ final class StatusController: NSObject {
         }
         statusItem.menu = buildMenu()
         refreshOptions()
-        refreshHeader()
         refreshCharacters()
         refreshClipboard()
 
@@ -89,14 +87,13 @@ final class StatusController: NSObject {
 
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(headerItem)
         // Shown only while Accessibility is missing (FR-30): pasting still works, without conversion.
         permissionItem.target = self
         permissionItem.action = #selector(openAccessibilitySettings)
         menu.addItem(permissionItem)
         // Shown only while the converter (Helper) is not connected; pasting then passes through (PRD 10).
         menu.addItem(helperItem)
-        menu.addItem(.separator())
+        menu.addItem(warningSeparator)  // hidden with the two warnings so the menu never starts with a line
 
         // PRD 4.2 menu
         let markdown = addSubmenu("Markdown 처리", to: menu)
@@ -149,10 +146,6 @@ final class StatusController: NSObject {
         for (value, item) in aiItems { item.state = value == settings.aiVerification ? .on : .off }
     }
 
-    private func refreshHeader() {
-        headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
-    }
-
     private func refreshHelper() {
         switch helper.status {
         case .ready:
@@ -164,10 +157,16 @@ final class StatusController: NSObject {
             helperItem.title = "변환 엔진 없음 · .NET 설치 후 다시 빌드"
             helperItem.isHidden = false
         }
+        refreshWarningSeparator()
     }
 
     private func refreshPermission() {
         permissionItem.isHidden = pasteWatcher.isActive
+        refreshWarningSeparator()
+    }
+
+    private func refreshWarningSeparator() {
+        warningSeparator.isHidden = permissionItem.isHidden && helperItem.isHidden
     }
 
     private func refreshCharacters() {
