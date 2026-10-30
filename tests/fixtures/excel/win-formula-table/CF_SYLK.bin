@@ -51,6 +51,10 @@ P;P"Yes";;"Yes";;"No"
 P;P"True";;"True";;"False"
 P;P"On";;"On";;"Off"
 P;P[$¢Ê-2]\ #,##0.00_);;[Red]\([$¢Ê-2]\ #,##0.00\)
+P;P[$-412]yyyy"≥‚"\ m"ø˘"\ d"¿œ"\ dddd
+P;P[$-412]AM/PM\ h:mm:ss
+P;P#,##0_ 
+P;P0.0%
 P;F∏º¿∫ ∞ÌµÒ;M220;L9
 P;F∏º¿∫ ∞ÌµÒ;M220;L9
 P;F∏º¿∫ ∞ÌµÒ;M220;L9
@@ -79,12 +83,14 @@ P;E∏º¿∫ ∞ÌµÒ;M220;SU;L26
 P;E∏º¿∫ ∞ÌµÒ;M220;SB;L9
 P;EArial Unicode MS;M200;L9
 P;EArial Unicode MS;M200;L9
+P;E∏º¿∫ ∞ÌµÒ;M220;L9
 F;P0;DG0G8;M348
 B;Y2477;X35;D0 0 5 4
 O;L;D;V0;K47;G100 0.001
 F;W2 2 10
 F;W30 30 9
 F;M1740;R2
+F;M1392;R3
 F;M1044;R4
 F;M696;R5
 F;SDM26;Y1;X1
@@ -99,28 +105,33 @@ F;SDM26;X5
 C;K"∫Ò¿≤"
 F;Y2;X1
 C;K"≥Î∆Æ∫œ"
-F;X2
+F;P54;FI0G;X2
 C;K1250000
 F;X3
 C;K3
 F;X4
 C;K3750000;ERC[-2]*RC[-1]
-F;X5
+F;P55;F%1G;X5
 C;K0.646551724137931;ERC[-1]/R5C4
-C;Y3;X1;K"∏¥œ≈Õ"
-C;X2;K320000
-C;X3;K5
-C;X4;K1600000;ERC[-2]*RC[-1]
-C;X5;K0.275862068965517;ERC[-1]/R5C4
+F;Y3;X1
+C;K"∏¥œ≈Õ"
+F;P54;FI0G;X2
+C;K320000
+F;X3
+C;K5
+F;X4
+C;K1600000;ERC[-2]*RC[-1]
+F;P55;F%1G;X5
+C;K0.275862068965517;ERC[-1]/R5C4
 F;Y4;X1
 C;K"≈∞∫∏µÂ"
-F;X2
+F;P54;FI0G;X2
 C;K45000
 F;X3
 C;K10
 F;X4
 C;K450000;ERC[-2]*RC[-1]
-F;X5
+F;P55;F%1G;X5
 C;K0.0775862068965517;ERC[-1]/R5C4
 F;SDM26;Y5;X1
 C;K"«’∞Ë"
@@ -129,7 +140,7 @@ F;SDM26;X3
 C;K18;ESUM(R[-3]C:R[-1]C)
 F;SDM26;X4
 C;K5800000;ESUM(R[-3]C:R[-1]C)
-F;SDM26;X5
+F;P55;F%1G;SDM26;X5
 C;K1;ESUM(R[-3]C:R[-1]C)
 C;Y6;X1;K"¿€º∫¿œ"
 F;P19;FG0G;X2
