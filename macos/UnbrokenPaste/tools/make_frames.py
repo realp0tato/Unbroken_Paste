@@ -156,6 +156,65 @@ def render_drip(filled, white, t, size, base_h, tips):
     return canvas.resize(size, Image.LANCZOS)
 
 
+def render_dance(filled, white, t, size, base_h):
+    """Slime with two little arms doing a hand-sweep dance: one forearm slides across the chest and back
+    while the other rests on the hip, then the arms swap. The body bobs on every beat and sways.
+    An arm in front of the body is drawn with a thin cut-out edge so it still reads in one colour."""
+    cw, ch = size[0] * SS, size[1] * SS
+    aspect = filled.width / filled.height
+    beat = abs(math.sin(2 * math.pi * t * 2))  # two beats per sweep, four per cycle
+    sy = 1 - 0.06 * (1 - beat)
+    bh, bw = base_h * sy * SS, base_h * aspect / math.sqrt(sy) * SS
+    sway = 1.2 * math.sin(2 * math.pi * t) * SS
+    ground = ch - 1 * SS
+    bottom = ground - 1.5 * beat * SS
+    left, top = (cw - bw) / 2 + sway, bottom - bh
+    body_f = filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS)
+    body_w = white.resize(body_f.size, Image.LANCZOS)
+    body = Image.new("L", (cw, ch), 0)
+    body.paste(body_w, (round(left), round(top)), body_f)
+
+    arm_w, hand_r, gap = 2.0 * SS, 1.6 * SS, 1.2 * SS
+    chest = top + 0.86 * bh  # belly height, below the eyes
+    arms = Image.new("L", (cw, ch), 0)
+    draw = ImageDraw.Draw(arms)
+
+    def limb(points, hand):
+        draw.line(points, fill=255, width=round(arm_w), joint="curve")
+        for x, y in points[:-1]:
+            draw.ellipse((x - arm_w / 2, y - arm_w / 2, x + arm_w / 2, y + arm_w / 2), fill=255)
+        hx, hy = hand
+        draw.ellipse((hx - hand_r, hy - hand_r, hx + hand_r, hy + hand_r), fill=255)
+
+    active = 0 if t < 0.5 else 1  # 0 = right arm sweeps, 1 = left arm sweeps
+    u = (t % 0.5) / 0.5
+    sweep = math.sin(math.pi * u) ** 1.3  # 0 = out at its own side, 1 = across the chest
+    for side in (0, 1):
+        sign = 1 if side == 0 else -1  # +1 = right edge of the body
+        shoulder = (left + bw / 2 + sign * bw * 0.44, chest - 0.05 * bh)
+        if side == active:
+            reach_out = left + bw / 2 + sign * (bw / 2 + 4.0 * SS)
+            reach_in = left + bw / 2 - sign * bw * 0.30
+            hx = reach_out + (reach_in - reach_out) * sweep
+            hy = chest + (0.6 * math.sin(2 * math.pi * u * 2)) * SS
+            elbow = (left + bw / 2 + sign * (bw / 2 + 3.2 * SS * (1 - 0.5 * sweep)), chest + 1.0 * SS)
+            limb([shoulder, elbow, (hx, hy)], (hx, hy))
+        else:  # hand on the hip, elbow pointing out
+            elbow = (left + bw / 2 + sign * (bw / 2 + 3.0 * SS), chest + 1.8 * SS)
+            hip = (left + bw / 2 + sign * bw * 0.46, bottom - 0.04 * bh)
+            limb([shoulder, elbow, hip], hip)
+
+    edge = arms.filter(ImageFilter.MaxFilter(2 * round(gap / 2) + 1))
+    alpha = ImageChops.lighter(ImageChops.subtract(body, edge), arms)
+    shadow = Image.new("L", (cw, ch), 0)
+    sw = base_h * aspect * SS * 0.9
+    ImageDraw.Draw(shadow).ellipse((cw / 2 - sw / 2, ground - 1.0 * SS, cw / 2 + sw / 2, ground + 0.5 * SS), fill=50)
+    alpha = ImageChops.lighter(alpha, shadow)
+    canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+    canvas.putalpha(alpha)
+    return canvas.resize(size, Image.LANCZOS)
+
+
 def make_badge(source, size=96):
     """Full-colour round copy badge: the dark circle cropped square, outside made transparent."""
     im = Image.open(source).convert("RGBA")
@@ -175,16 +234,24 @@ def frame_width(filled, base_h):
     return w + w % 2
 
 
+def art_of(entry):
+    """Source picture: `art` names another character's folder when a character reuses its drawing."""
+    return ART / entry.get("art", entry["id"]) / "character.png"
+
+
 def build(entry):
     """`height` (px @2x, default 26) and `lift` (bounce height, default 13) tune each character's size;
-    `motion` picks the animation: "bounce" (default) or "drip"."""
+    `motion` picks the animation: "bounce" (default), "drip" or "dance"; `width` (px @2x) overrides the
+    frame width when arms reach past the body."""
     character_id = entry["id"]
-    filled, white = extract(ART / character_id / "character.png")
+    filled, white = extract(art_of(entry))
     out = RESOURCES / "Characters" / character_id
     out.mkdir(parents=True, exist_ok=True)
     base_h, max_lift = entry.get("height", 26), entry.get("lift", 13)
-    size = (frame_width(filled, base_h), FRAME_HEIGHT)
-    if entry.get("motion") == "drip":
+    size = (entry.get("width") or frame_width(filled, base_h), FRAME_HEIGHT)
+    if entry.get("motion") == "dance":
+        frames = [render_dance(filled, white, i / FRAME_COUNT, size, base_h) for i in range(FRAME_COUNT)]
+    elif entry.get("motion") == "drip":
         frames = [render_drip(filled, white, i / FRAME_COUNT, size, base_h, drip_tips(filled)) for i in range(FRAME_COUNT)]
     else:
         frames = [render(filled, white, *bounce(i / FRAME_COUNT), size, base_h, max_lift) for i in range(FRAME_COUNT)]
@@ -192,7 +259,7 @@ def build(entry):
         old.unlink()
     for i, frame in enumerate(frames):
         frame.save(out / f"frame_{i:02d}@2x.png")
-    make_badge(ART / character_id / "character.png").save(out / "badge.png")
+    make_badge(art_of(entry)).save(out / "badge.png")
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     preview(frames, PREVIEWS / f"{character_id}.gif")
     return len(frames)
@@ -215,5 +282,5 @@ def preview(frames, path):
 
 if __name__ == "__main__":
     for entry in json.loads((RESOURCES / "characters.json").read_text(encoding="utf-8")):
-        if (ART / entry["id"] / "character.png").exists():
+        if art_of(entry).exists():
             print(f"{entry['name']}: {build(entry)} frames → {RESOURCES / 'Characters' / entry['id']}")
