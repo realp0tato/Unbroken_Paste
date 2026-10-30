@@ -202,7 +202,7 @@ dotnet run --project src/ClipBridge.Windows
 
 - 실행 파일은 `UP.exe`입니다 (`src/ClipBridge.Windows/bin/Debug/net10.0-windows/`). 작업 관리자에도 UP으로 보입니다.
 - 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
-- 아이콘을 오른쪽 클릭해 `종료`로 끕니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
+- 아이콘을 오른쪽 클릭하면 메뉴(Markdown 처리·AI 검증·`UP 종료`)가 열립니다. 옵션은 `%APPDATA%\UnbrokenPaste\settings.json`에 값만 저장돼 재실행 후에도 유지됩니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
 - 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다.
   ```text
   10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
