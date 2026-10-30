@@ -1,0 +1,101 @@
+Version:1.0
+StartHTML:0000000198
+EndHTML:0000003311
+StartFragment:0000002023
+EndFragment:0000003259
+SourceURL:file:///C:/Users/user/Desktop/kkodong_data/processed/db/public_place_licenses.csv
+
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link id=Main-File rel=Main-File
+href="file:///C:/Users/user/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
+<link rel=File-List
+href="file:///C:/Users/user/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.75in .7in .75in .7in;
+	mso-header-margin:.3in;
+	mso-footer-margin:.3in;}
+tr
+	{mso-height-source:auto;
+	mso-ruby-visibility:none;}
+col
+	{mso-width-source:auto;
+	mso-ruby-visibility:none;}
+br
+	{mso-data-placement:same-cell;}
+td
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:11.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	border:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	mso-protection:locked visible;
+	white-space:nowrap;
+	mso-rotate:0;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:8.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"맑은 고딕", monospace;
+	mso-font-charset:129;
+	mso-char-type:none;
+	display:none;}
+-->
+</style>
+</head>
+
+<body link="#467886" vlink="#96607D">
+
+<table border=0 cellpadding=0 cellspacing=0 width=210 style='border-collapse:
+ collapse;width:159pt'>
+<!--StartFragment-->
+ <col width=70 span=3 style='width:53pt'>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 colspan=3 width=210 style='height:17.4pt;mso-ignore:colspan;
+  width:159pt'>license_no,place_id,license_type,status,licensed_on,closed_on,suspended_from,suspended_until</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 colspan=3 style='height:17.4pt;mso-ignore:colspan'>325000001019960001,&quot;34456db5-ce0d-5b6d-9f24-84efdd47e265&quot;,&quot;clinic&quot;,&quot;open&quot;,&quot;1996-06-20&quot;,,,</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 colspan=3 style='height:17.4pt;mso-ignore:colspan'>325000001019980001,&quot;530cda27-9095-5b02-95d8-2600aa0c4f71&quot;,&quot;clinic&quot;,&quot;open&quot;,&quot;1998-01-09&quot;,,,</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 colspan=3 style='height:17.4pt;mso-ignore:colspan'>325000001019990001,,&quot;clinic&quot;,&quot;closed&quot;,&quot;1999-05-10&quot;,&quot;2010-05-26&quot;,,</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 colspan=3 style='height:17.4pt;mso-ignore:colspan'>325000001019990002,,&quot;clinic&quot;,&quot;closed&quot;,&quot;1999-11-01&quot;,&quot;2025-12-30&quot;,,</td>
+ </tr>
+<!--EndFragment-->
+</table>
+
+</body>
+
+</html>

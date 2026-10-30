@@ -1,0 +1,53 @@
+{
+  "os": "windows",
+  "osVersion": "Microsoft Windows 10.0.26200",
+  "sourceApp": "chrome.exe",
+  "sourceAppVersion": "156.0.8078.74",
+  "description": "뉴스 기사 본문",
+  "capturedAt": "2026-10-30T08:44:44.5979052+00:00",
+  "sequenceNumber": 1060,
+  "formats": [
+    {
+      "id": 49350,
+      "name": "HTML Format",
+      "file": "HTML Format.bin",
+      "size": 12670
+    },
+    {
+      "id": 13,
+      "name": "CF_UNICODETEXT",
+      "file": "CF_UNICODETEXT.txt",
+      "size": 1644
+    },
+    {
+      "id": 49649,
+      "name": "Chromium internal source RFH token",
+      "file": "Chromium internal source RFH token.bin",
+      "size": 24
+    },
+    {
+      "id": 49511,
+      "name": "Chromium internal source URL",
+      "file": "Chromium internal source URL.bin",
+      "size": 47
+    },
+    {
+      "id": 16,
+      "name": "CF_LOCALE",
+      "file": "CF_LOCALE.bin",
+      "size": 4
+    },
+    {
+      "id": 1,
+      "name": "CF_TEXT",
+      "file": "CF_TEXT.txt",
+      "size": 1359
+    },
+    {
+      "id": 7,
+      "name": "CF_OEMTEXT",
+      "file": "CF_OEMTEXT.txt",
+      "size": 1359
+    }
+  ]
+}
