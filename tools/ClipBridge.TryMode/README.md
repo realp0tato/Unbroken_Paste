@@ -1,6 +1,6 @@
 # UP 시험 모드 (개발용, #55)
 
-앱 껍데기(#35)와 변환기 선택(#14)이 완성되기 전에, **변환 결과를 직접 붙여 보며 눈으로 비교**하기 위한 도구입니다. 켜 두면 복사할 때마다 변환 결과를 클립보드에 넣어 둡니다.
+**변환 결과를 직접 붙여 보며 눈으로 비교**하기 위한 도구입니다. 켜 두면 복사할 때마다 변환 결과를 클립보드에 넣어 둡니다. 앱을 다시 빌드하지 않고 Core 변경을 바로 확인할 때나, 붙여넣는 대상을 고정해 비교할 때 씁니다.
 
 ```bash
 # 켜기 (저장소 루트에서). 처음 한 번은 변환기를 빌드하느라 수십 초 걸립니다
@@ -18,7 +18,7 @@ swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format
 
 ```text
 [오후 6:47:34] C5 변환 (Markdown 글 → Hangul, Format) → 클립보드에 넣음
-[오후 6:47:38] 통과 (인터넷 등 → 아직 변환기 없음)
+[오후 6:47:38] 통과 (Excel → Word, Office 기본 붙여넣기)
 ```
 
 ## 비교하는 법
@@ -32,10 +32,10 @@ swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format
 
 | 복사한 것 | Hangul | Notion | Word |
 |---|---|---|---|
-| Markdown 글 (일반 텍스트, 또는 Claude 앱 복사) | C5 | C6 | 통과 (C8 #12 전) |
+| Markdown 글 (일반 텍스트, Claude 앱 복사, 웹에 글자로 보이는 Markdown 원문) | C5 | C6 | 통과 (C8 #12 전) |
 | Excel | C1 | C2 | 통과 (Office 기본) |
 | 인터넷 (AI 답변 드래그 복사 포함) | C3 | C4 | 통과 (C7 #10 전) |
-| 일반 텍스트 | 통과 (TX #6 전) | 통과 | 통과 |
+| 일반 텍스트 | TX | TX | TX |
 
 변환기가 Core에 추가되면 시험 모드도 자동으로 따라갑니다.
 
