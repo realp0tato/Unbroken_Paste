@@ -190,7 +190,18 @@ dotnet test                    # 변환기 단위 테스트
 
 ## 설치 및 실행
 
-준비 중입니다. 실행 방법은 구현 후 추가합니다.
+배포 패키지는 준비 중입니다. 개발 중에는 저장소 루트에서 실행합니다.
+
+**Windows 앱**
+
+```bash
+dotnet run --project src/ClipBridge.Windows
+```
+
+- 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
+- 아이콘을 오른쪽 클릭해 `종료`로 끕니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
+
+**macOS 앱:** [macOS 앱 README](macos/ClipBridgeMenuBar/README.md)
 
 ## 문서
 
