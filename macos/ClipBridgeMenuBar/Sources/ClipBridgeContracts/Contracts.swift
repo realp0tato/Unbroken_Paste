@@ -57,7 +57,7 @@ public struct ConversionOptions: Codable, Equatable, Sendable {
         self.aiVerification = aiVerification
     }
 
-    public static let `default` = ConversionOptions(markdownMode: .strip, aiVerification: true)
+    public static let `default` = ConversionOptions(markdownMode: .format, aiVerification: true)
 }
 
 /// Suspicion signal S1–S9 (PRD 6.6.2).

@@ -102,8 +102,8 @@ final class StatusController: NSObject {
 
         // PRD 4.2 menu
         let markdown = addSubmenu("Markdown 처리", to: menu)
-        markdownItems[.strip] = addItem("기호 제거 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.strip.rawValue)
-        markdownItems[.format] = addItem("서식 적용", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.format.rawValue)
+        markdownItems[.format] = addItem("서식 적용 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.format.rawValue)
+        markdownItems[.strip] = addItem("기호 제거", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.strip.rawValue)
 
         let ai = addSubmenu("AI 검증 (외부 API 사용)", to: menu)
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
