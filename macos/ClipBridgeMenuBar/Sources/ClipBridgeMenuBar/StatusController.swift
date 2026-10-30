@@ -72,6 +72,8 @@ final class StatusController: NSObject {
         let ai = addSubmenu("AI 검증 (외부 API 사용)", to: menu)
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
         aiItems[false] = addItem("끄기", to: ai, action: #selector(pickAI(_:)), object: false)
+        ai.addItem(.separator())
+        addItem("켜져 있으면 복사 내용 일부가 외부 AI API로 전송돼요", to: ai, action: nil)
         menu.addItem(.separator())
 
         // Slime and clipboard extras

@@ -28,7 +28,7 @@ Xcode에서 열려면 `open Package.swift`.
 ClipBridge · 대기 중
 ──────────
 Markdown 처리 ▸            ✓ 기호 제거 (기본) / 서식 적용
-AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기
+AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API 전송 안내
 ──────────
 상태 변경 ▸   ✓ 대기 / 분석 중 / 맞춤 완료 효과 보기
 클립보드 ▸    최근 복사 10개 (누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
@@ -37,7 +37,8 @@ AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기
 ClipBridge 종료  ⌘Q
 ```
 
-- **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. PRD 4.2의 macOS 저장 위치(미정) 제안.
+- **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
+- **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.clipbridge.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
 - **Markdown 처리·AI 검증:** 지금은 값만 저장해요. 변환기 연결은 Core 작업 후 진행.
 - **클립보드:** 텍스트 복사 최근 10개를 메모리에만 보관해요. 비밀번호 관리자가 숨김 표시를 한 복사는 기록하지 않아요.
 - **CPU 연동:** 코드에는 있지만 메뉴에서 숨겨 두었어요 (`StatusController.swift`의 `cpu.isHidden`).
