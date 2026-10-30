@@ -62,15 +62,21 @@
 Windows는 작업 표시줄 트레이 아이콘, macOS는 메뉴 막대 아이콘에서 같은 메뉴를 엽니다. 별도 설정 창은 없습니다.
 
 ```text
-UP
+UP · 대기 중                      ← 현재 상태
 ├─ Markdown 처리
 │   ├─ ● 서식 적용 (기본)
 │   └─ ○ 기호 제거
 ├─ AI 검증
 │   ├─ ● 켜기 (기본)
 │   └─ ○ 끄기
-└─ 종료
+├─ 상태 변경      대기 / 분석 중 / 맞춤 완료 효과 보기(시연용)
+├─ 클립보드       최근 복사 10개(누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
+├─ 캐릭터         기본·고양이·녹는·구름·토끼 슬라임
+└─ UP 종료
 ```
+
+- 상태·클립보드·캐릭터는 변환 결과에 영향을 주지 않습니다. 최근 복사는 메모리에만 있고 앱을 끄면 사라지며, 비밀번호 관리자의 숨김 복사는 쌓이지 않습니다. 캐릭터와 복사 반응 설정은 저장됩니다.
+- macOS는 손쉬운 사용 권한이 없거나 변환 엔진이 연결 중일 때 안내 항목이 더 보입니다.
 
 **Markdown 처리**는 Markdown 글과 인터넷에서 복사한 글에 적용됩니다. Excel·일반 텍스트에는 적용하지 않습니다.
 
@@ -125,7 +131,7 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 ## 저장소 구조
 
 ```text
-ClipBridge.slnx            # 솔루션: C# 프로젝트 8개를 묶는 목록
+ClipBridge.slnx            # 솔루션: C# 프로젝트 9개를 묶는 목록
 global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
 Directory.Build.props      # 모든 C# 프로젝트 공통 설정
 .gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
@@ -139,10 +145,12 @@ tests/
   ClipBridge.Windows.Tests/ # ② 중 Windows API를 쓰지 않는 부분 테스트 (macOS에서도 실행)
   fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
 tools/
-  ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구
+  ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구 (restore: 샘플을 클립보드에 되돌려 넣기)
+  ClipBridge.Measure/      # 결과 준비·붙여넣기 시간 측정 (NFR-02·NFR-03, docs/qa/windows.md)
   ClipBridge.TryMode/      # 복사할 때마다 변환 결과를 클립보드에 넣어 보는 개발용 시험 모드 (macOS)
 macos/
   UnbrokenPaste/           # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
+docs/qa/                   # Windows·macOS 검증표
 prd.md
 README.md
 CONTRIBUTING.md
@@ -230,12 +238,14 @@ dotnet run --project src/ClipBridge.Windows
 ```
 
 - 실행 파일은 `Unbroken Paste.exe`입니다 (`src/ClipBridge.Windows/bin/Debug/net10.0-windows/`). 작업 관리자에도 Unbroken Paste로 보입니다.
+- 한글·Word·Notion 창이 앞에 오면 그 앱용 변환 결과를 미리 클립보드에 써 두고, 다른 앱으로 가면 원본으로 되돌립니다. 그래서 메뉴·리본·오른쪽 클릭 붙여넣기도 변환됩니다(#26). UP이 쓴 내용은 Windows 클립보드 기록(Win+V)에 남지 않습니다.
 - 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
 - 아이콘을 오른쪽 클릭하면 메뉴(Markdown 처리·AI 검증·`UP 종료`)가 열립니다. 옵션은 `%APPDATA%\UnbrokenPaste\settings.json`에 값만 저장돼 재실행 후에도 유지됩니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
-- 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다.
+- 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다. 검증·측정할 때는 `-- --log up.log`를 붙이면 같은 줄이 파일에도 남습니다 ([Windows 검증표](docs/qa/windows.md)).
   ```text
   10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
-  10:21:03.540 [convert] results seq=812 source=Excel Hangul=C1 Notion=C2 Word=PASS Other=PASS
+  10:21:03.540 [convert] results seq=812 source=Excel Hangul=C1 Notion=C2 Word=PASS Excel=PASS Other=PASS prepare=24.0ms
+  10:21:03.598 [copy] original seq=812 formats=19 bytes=48213 skipped=DataObject,Ole Private Data,CF_ENHMETAFILE,CF_BITMAP elapsed=58.2ms
   10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=C1 plan=WriteResult elapsed=1.8ms
   10:21:07.131 [paste] data taken format=HTML Format
   ```
@@ -264,7 +274,7 @@ open "build/Unbroken Paste.app"
 | Excel 붙여넣기 대상·C9 인터넷 → Excel (P1, [#25](https://github.com/realp0tato/donga_hackathon/issues/25)) | 구현. 메모장 등 다른 대상은 아직 통과 |
 | 붙여넣기 대상 인식 | 한글·Word·Notion·Excel 앱, 브라우저의 Notion 웹(주소로 인식)·한컴독스(macOS는 탭 제목 `… 한컴오피스 Web … 한글`로도 인식) |
 | AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
-| Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
+| Windows 앱 (트레이·메뉴 옵션·트레이 추가 메뉴·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
 | macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
 | 성능·사용자 시간 절감 | 아직 측정하지 않음 |
 

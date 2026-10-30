@@ -14,7 +14,8 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
 
     // 지금 클립보드에 약속한 포맷 → 바이트. UI 스레드에서만 읽고 쓴다
     private Dictionary<uint, byte[]> _pending = [];
-    private ClipboardSnapshot? _writtenFor;
+    // UP이 마지막으로 쓴 복사의 원본 포맷 (종료할 때 되돌린다)
+    private IReadOnlyDictionary<string, byte[]>? _writtenFor;
     private bool _taken;
 
     public ClipboardWriter()
@@ -23,25 +24,50 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         CreateHandle(new CreateParams { Parent = HWND_MESSAGE });
     }
 
-    // 대상 앱이 쓴 데이터를 처음 가져갈 때 UI 스레드에서 발생한다 (커서 아이콘이 사라지는 신호, #5)
-    public event Action<string>? DataTaken;
+    // 대상 앱이 쓴 데이터를 처음 가져갈 때 UI 스레드에서 발생한다 (커서 아이콘이 사라지는 신호, #5).
+    // (포맷 이름, 가져간 앱의 실행 파일 이름 또는 null)
+    public event Action<string, string?>? DataTaken;
 
     public LastWrite? LastWrite { get; private set; }
 
     public bool OwnsClipboard => NativeMethods.GetClipboardOwner() == Handle;
 
-    // 붙여넣기 키를 처리하는 중(키보드 훅 안)에 부른다. 썼으면 쓴 뒤의 클립보드 시퀀스 번호, 아니면 null
-    public long? Apply(PastePlan plan, ClipboardSnapshot? snapshot, TargetApp target)
+    // 붙여넣기 키를 처리하는 중(키보드 훅 안)에 부른다. 썼으면 쓴 뒤의 클립보드 시퀀스 번호, 아니면 null.
+    // original: 원본을 되돌릴 때 쓸 포맷, 복사한 순서대로 (#80, CopyTracker.OriginalOf)
+    public long? Apply(PastePlan plan, ClipboardSnapshot? snapshot, IReadOnlyDictionary<string, byte[]> original, TargetApp target)
     {
         if (snapshot is null || plan.Action == PasteAction.Leave)
             return null;
 
-        var payload = plan.Action == PasteAction.WriteResult ? plan.Payload : snapshot.Formats;
+        var payload = plan.Action == PasteAction.WriteResult ? plan.Payload : original;
         if (!Promise(payload))
             return null;
 
         LastWrite = new LastWrite(snapshot.SequenceNumber, plan.Action == PasteAction.WriteResult ? target : null);
-        _writtenFor = snapshot;
+        _writtenFor = original;
+        return ClipboardReader.SequenceNumber();
+    }
+
+    // 트레이 메뉴의 최근 복사를 다시 복사한다 (#44). 지연 렌더링 없이 실제 데이터로 넣는다.
+    // 새 복사이므로 이전 변환·원본 기록은 잊는다. 쓰면 쓴 뒤의 시퀀스 번호, 클립보드가 잠겨 있으면 null (지금 내용 유지)
+    public long? WriteText(string text)
+    {
+        if (!NativeMethods.OpenClipboard(Handle))
+            return null;
+        try
+        {
+            if (!NativeMethods.EmptyClipboard())
+                return null;
+            SetData(ClipboardReader.FormatId(ClipFormats.WinUnicodeText), PastePlan.TextBytes(text));
+        }
+        finally
+        {
+            NativeMethods.CloseClipboard();
+        }
+
+        _pending = [];
+        _writtenFor = null;
+        LastWrite = null;
         return ClipboardReader.SequenceNumber();
     }
 
@@ -55,12 +81,13 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         try
         {
             NativeMethods.EmptyClipboard();
-            foreach (var (name, data) in _writtenFor.Formats)
+            foreach (var (name, data) in _writtenFor)
             {
                 var id = ClipboardReader.FormatId(name);
                 if (id != 0)
                     SetData(id, data);
             }
+            MarkNotForHistory();
         }
         finally
         {
@@ -90,7 +117,9 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
                 if (!_taken)
                 {
                     _taken = true;
-                    DataTaken?.Invoke(ClipboardReader.FormatName(format));
+                    // 데이터를 달라고 한 앱은 지금 클립보드를 열고 있는 창의 앱이다
+                    var requester = Path.GetFileName(WindowProcess.ImagePath(NativeMethods.GetOpenClipboardWindow()));
+                    DataTaken?.Invoke(ClipboardReader.FormatName(format), string.IsNullOrEmpty(requester) ? null : requester);
                 }
                 m.Result = 0;
                 return;
@@ -139,6 +168,7 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
                 pending[id] = data;
                 NativeMethods.SetClipboardData(id, 0);  // 데이터는 WM_RENDERFORMAT에서
             }
+            MarkNotForHistory();
             _pending = pending;
             _taken = false;
             return true;
@@ -147,6 +177,16 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         {
             NativeMethods.CloseClipboard();
         }
+    }
+
+    // UP이 쓴 변환 결과·되돌린 원본은 Windows 클립보드 기록(Win+V)과 클라우드 동기화에 새 항목으로 남기지 않는다.
+    // 앞 창을 바꿀 때마다 미리 쓰므로(#26) 표시가 없으면 기록이 그 결과로 채워진다. 원본 복사는 이미 기록에 있다.
+    // 클립보드가 열려 있는 상태에서 호출한다
+    private static void MarkNotForHistory()
+    {
+        byte[] no = BitConverter.GetBytes(0);
+        SetData(ClipboardReader.FormatId(ConcealedCopy.CanIncludeInHistory), no);
+        SetData(ClipboardReader.FormatId(ConcealedCopy.CanUploadToCloud), no);
     }
 
     // 클립보드가 열려 있는 상태에서 호출한다
@@ -186,6 +226,9 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
 
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
+
+        [DllImport("user32.dll")]
+        public static extern nint GetOpenClipboardWindow();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern nint GlobalAlloc(uint flags, nuint bytes);

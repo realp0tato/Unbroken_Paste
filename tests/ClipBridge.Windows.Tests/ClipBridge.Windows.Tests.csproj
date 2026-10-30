@@ -22,10 +22,16 @@
     <ProjectReference Include="..\..\src\ClipBridge.Core\ClipBridge.Core.csproj" />
     <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\CopyTracker.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\ConcealedCopy.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\SnapshotRetry.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\OriginalFormats.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\ConverterWarmup.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Paste\PasteRules.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Paste\PastePlan.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Overlay\OverlayRules.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Settings\AppSettings.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Tray\TrayCharacters.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Tray\SlimeClock.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\ClipboardHistory.cs" LinkBase="Windows" />
   </ItemGroup>
 
 </Project>

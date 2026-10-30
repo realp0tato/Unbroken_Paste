@@ -1,0 +1,3 @@
+# 클립보드 샘플은 복사한 순간의 원본 바이트다. Windows Git(core.autocrlf)이 맥 샘플의 줄바꿈(LF)을
+# CRLF로 바꾸면 같은 샘플이 PC마다 다른 입력이 되므로 줄바꿈을 바꾸지 않는다 (#24)
+tests/fixtures/** -text

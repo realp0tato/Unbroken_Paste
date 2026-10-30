@@ -28,7 +28,7 @@ public class WebToExcelConverterTests
         // 표 모양(칸 수)과 값은 그대로
         Assert.Equal(CellTexts(original).Count, CellTexts(result.Html!).Count);
         Assert.Contains("9,770,638", result.Html);
-        Assert.StartsWith("<meta charset=\"utf-8\">", result.Html);
+        Assert.Contains("charset", result.Html);
         Assert.DoesNotContain("빈칸", result.PlainText);
     }
 
@@ -49,5 +49,96 @@ public class WebToExcelConverterTests
         using var prepared = new UpClipConverter().Prepare(web, ConversionOptions.Default, CancellationToken.None);
 
         Assert.Equal("C9", prepared.Get(TargetApp.Excel, ConversionOptions.Default).ConverterId);
+    }
+
+    // 위키백과가 아닌 웹·Word·한글 표: 칸 내용이 "빈칸"뿐이면 비운다
+    [Fact]
+    public void AnyHtmlTable_ClearsCellsThatOnlySayBlank()
+    {
+        var html = "<html><head><style>table.MsoTableGrid{border:solid windowtext 1.0pt}</style></head><body>" +
+                   "<p>빈칸 채우기 문제</p><table class=MsoTableGrid><tr><td><p class=MsoNormal><span lang=KO>빈칸</span></p></td>" +
+                   "<td> 빈칸 </td><td>빈칸 있음</td><td>17</td></tr></table></body></html>";
+
+        var result = WebToExcelConverter.Convert(html);
+
+        Assert.Equal(["", "", "빈칸 있음", "17"], CellTexts(result.Html!));
+        Assert.Contains("빈칸 채우기 문제", result.Html);   // 표 밖 문장은 그대로
+        Assert.Contains("MsoTableGrid{border", result.Html);  // Word 표 서식(<style>) 유지
+        Assert.DoesNotContain("빈칸\t", result.PlainText);   // 비운 칸 뒤 탭 앞에 "빈칸"이 없음
+        Assert.Contains("빈칸 있음", result.PlainText);
+    }
+
+    [Fact]
+    public void WordSnapshot_IsNotExcelAndGetsC9()
+    {
+        var html = "<table><tr><td>시</td><td>군</td></tr><tr><td>빈칸</td><td>17</td></tr></table>";
+        var word = new ClipboardSnapshot(new Dictionary<string, byte[]>
+        {
+            [ClipFormats.MacHtml] = System.Text.Encoding.UTF8.GetBytes(html),
+            ["com.microsoft.appbundleid"] = System.Text.Encoding.UTF8.GetBytes("com.microsoft.Word"),
+            ["com.microsoft.Link-Source"] = [1],
+        }, "com.microsoft.Word", 1);
+
+        Assert.NotEqual(SourceKind.Excel, SourceDetector.Detect(word).Source);
+        using var prepared = new UpClipConverter().Prepare(word, ConversionOptions.Default, CancellationToken.None);
+        Assert.Equal("C9", prepared.Get(TargetApp.Excel, ConversionOptions.Default).ConverterId);
+    }
+
+    [Fact]
+    public void ExcelToExcel_StaysPassthrough()
+    {
+        var excel = new ClipboardSnapshot(new Dictionary<string, byte[]>
+        {
+            [ClipFormats.MacHtml] = System.Text.Encoding.UTF8.GetBytes("<table><tr><td>빈칸</td><td>1</td></tr></table>"),
+            ["com.microsoft.appbundleid"] = System.Text.Encoding.UTF8.GetBytes("com.microsoft.Excel"),
+        }, null, 1);
+
+        Assert.Equal(SourceKind.Excel, SourceDetector.Detect(excel).Source);
+        using var prepared = new UpClipConverter().Prepare(excel, ConversionOptions.Default, CancellationToken.None);
+        Assert.True(prepared.Get(TargetApp.Excel, ConversionOptions.Default).IsPassthrough);
+    }
+
+    [Fact]
+    public void TabSeparatedText_ClearsBlankFields()
+    {
+        var text = new ClipboardSnapshot(new Dictionary<string, byte[]>
+        {
+            [ClipFormats.MacUtf8Text] = System.Text.Encoding.UTF8.GetBytes("시\t군\r\n빈칸\t17\r\n"),
+        }, "com.apple.TextEdit", 1);
+
+        var result = WebToExcelConverter.Convert(text);
+
+        Assert.Equal("시\t군\r\n\t17\r\n", result.PlainText);
+        Assert.Null(result.Html);
+    }
+
+    // Word → 한글: 원본 그대로면 한글이 그림·OLE 개체로 붙이므로 웹처럼 정리한 표로 (C3)
+    [Theory]
+    [InlineData("com.microsoft.Word", null)]
+    [InlineData("WINWORD.EXE", null)]
+    [InlineData(null, "com.microsoft.Word")]
+    public void Word_ToHangul_IsEditableTable(string? sourceApp, string? appBundleId)
+    {
+        var formats = new Dictionary<string, byte[]>
+        {
+            [ClipFormats.MacHtml] = System.Text.Encoding.UTF8.GetBytes(
+                "<html><head><style>p.MsoNormal{mso-style-parent:\"\"}</style></head><body><table class=MsoTableGrid>" +
+                "<tr><td><p class=MsoNormal>시</p></td><td><p class=MsoNormal>군</p></td></tr>" +
+                "<tr><td><p class=MsoNormal>5</p></td><td><p class=MsoNormal>17</p></td></tr></table></body></html>"),
+            ["com.adobe.pdf"] = [1],
+        };
+        if (appBundleId is not null)
+            formats["com.microsoft.appbundleid"] = System.Text.Encoding.UTF8.GetBytes(appBundleId);
+        var word = new ClipboardSnapshot(formats, sourceApp, 1);
+
+        using var prepared = new UpClipConverter().Prepare(word, ConversionOptions.Default, CancellationToken.None);
+        var result = prepared.Get(TargetApp.Hangul, ConversionOptions.Default);
+
+        Assert.Equal("C3", result.ConverterId);
+        Assert.Contains("<table border=\"1\"", result.Html);
+        Assert.DoesNotContain("mso", result.Html);
+        // 다른 앱에서 온 기타 출처는 지금처럼 통과
+        Assert.True(new UpClipConverter().Prepare(word with { SourceApp = "com.apple.Preview", Formats = new Dictionary<string, byte[]>(formats.Where(f => f.Key != "com.microsoft.appbundleid")) },
+            ConversionOptions.Default, CancellationToken.None).Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
     }
 }

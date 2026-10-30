@@ -33,3 +33,9 @@ Thumbs.db
 # 비밀 정보 (API 키 등)
 .env
 *.local.json
+
+# Windows 검증 로그 (docs/qa/windows.md). 앱 이름·도메인이 들어 있어 올리지 않는다
+up.log
+
+# Python 캐시 (캐릭터 프레임 생성 스크립트 등)
+__pycache__/

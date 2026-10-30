@@ -129,6 +129,46 @@ public class CopyTrackerTests
         Assert.True(converter.Prepared[1].Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
     }
 
+    // 실제 로그: 같은 seq=2369를 Biff12·XML Spreadsheet만 있을 때 한 번, HTML·텍스트까지 올라온 뒤 한 번 더 읽었다
+    [Fact]
+    public async Task SameSequenceWithMoreFormats_ReplacesSnapshot()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+        var partial = new ClipboardSnapshot(new Dictionary<string, byte[]> { ["Biff12"] = [1] }, "EXCEL.EXE", 5);
+        var full = Copy(5, "표");
+        var fullFormats = new Dictionary<string, byte[]>(full.Formats) { ["Biff12"] = [1] };
+        full = new ClipboardSnapshot(fullFormats, "EXCEL.EXE", 5);
+
+        await tracker.OnCopied(partial);
+        await tracker.OnCopied(full);
+        Assert.Same(full, tracker.Snapshot);
+
+        // 같은 번호에 포맷이 같거나 적으면 바꾸지 않는다 (같은 알림이 두 번 온 경우)
+        await tracker.OnCopied(partial);
+        Assert.Same(full, tracker.Snapshot);
+    }
+
+    // #80: 모든 포맷을 읽은 뒤에는 원본 되돌리기에 그것을 쓰고, 읽기 전이면 스냅샷 포맷을 쓴다
+    [Fact]
+    public async Task OriginalOf_UsesFullFormatsOnlyForCurrentCopy()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+        var first = Copy(1, "A");
+        await tracker.OnCopied(first);
+        Assert.Same(first.Formats, tracker.OriginalOf(first));
+
+        var full = new Dictionary<string, byte[]> { ["Biff12"] = [1], [ClipFormats.WinUnicodeText] = first.Formats[ClipFormats.WinUnicodeText] };
+        tracker.SetOriginal(1, full);
+        Assert.Same(full, tracker.OriginalOf(first));
+
+        // 다음 복사가 오면 이전 원본은 버린다. 늦게 온 이전 복사의 원본도 받지 않는다
+        var second = Copy(2, "B");
+        await tracker.OnCopied(second);
+        tracker.SetOriginal(1, full);
+        Assert.Same(second.Formats, tracker.OriginalOf(second));
+        Assert.Same(first.Formats, tracker.OriginalOf(first));
+    }
+
     // 로그에는 번호·변환기 ID만 남고 복사한 본문은 남지 않는다 (macOS 로그와 같은 규칙)
     [Fact]
     public async Task Log_HasConverterIdsButNoCopiedText()
@@ -139,7 +179,7 @@ public class CopyTrackerTests
         await tracker.OnCopied(Copy(7, "비밀번호1234"));
 
         var line = Assert.Single(log);
-        Assert.Equal("results seq=7 source=PlainText Hangul=STUB Notion=STUB Word=STUB Excel=PASS Other=PASS", line);
+        Assert.Matches(@"^results seq=7 source=PlainText Hangul=STUB Notion=STUB Word=STUB Excel=PASS Other=PASS prepare=\d+\.\dms$", line);
         Assert.DoesNotContain("비밀번호", line);
     }
 

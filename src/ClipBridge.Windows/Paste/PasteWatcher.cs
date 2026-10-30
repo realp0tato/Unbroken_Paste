@@ -117,7 +117,8 @@ internal sealed class PasteWatcher : NativeWindow, IDisposable
         return NativeMethods.CallNextHookEx(_hook, code, wParam, lParam);
     }
 
-    private Paste Resolve(string key)
+    // 앞 창의 붙여넣기 대상. 키 입력 없이 앞 창 미리 쓰기에서도 부른다 (#26). UI 스레드
+    public Paste Resolve(string key)
     {
         var window = NativeMethods.GetForegroundWindow();
         var path = WindowProcess.ImagePath(window);
