@@ -1,0 +1,27 @@
+{
+  "description" : "수식 표: 곱셈 =B2*C2, 합계 =SUM, 백분율 0.0%, 날짜 yyyy-mm-dd, 굵은 머리글·합계 행",
+  "formats" : [
+    "public.html",
+    "public.utf16-plain-text",
+    "public.utf8-plain-text",
+    "com.adobe.pdf",
+    "public.png",
+    "public.tiff",
+    "public.rtf",
+    "public.utf16-external-plain-text",
+    "com.microsoft.Embed-Source",
+    "com.microsoft.Object-Descriptor",
+    "com.microsoft.Link-Source",
+    "com.microsoft.Link-Source-Descriptor",
+    "com.microsoft.Link",
+    "com.microsoft.DSP-Text",
+    "com.apple.webarchive",
+    "com.microsoft.ole.source.41267.0x9bd247e30",
+    "com.microsoft.DataObject",
+    "com.microsoft.appbundleid"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.2.0",
+  "sourceApp" : "com.microsoft.Excel",
+  "sourceAppVersion" : "16.112.4"
+}

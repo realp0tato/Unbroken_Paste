@@ -1,0 +1,27 @@
+{
+  "description" : "단일 열(글): 빈 셀 A2, 셀 안 줄바꿈 A3, 따옴표가 든 셀 A4",
+  "formats" : [
+    "public.html",
+    "public.utf16-plain-text",
+    "public.utf8-plain-text",
+    "com.adobe.pdf",
+    "public.png",
+    "public.tiff",
+    "public.rtf",
+    "public.utf16-external-plain-text",
+    "com.microsoft.Embed-Source",
+    "com.microsoft.Object-Descriptor",
+    "com.microsoft.Link-Source",
+    "com.microsoft.Link-Source-Descriptor",
+    "com.microsoft.Link",
+    "com.microsoft.DSP-Text",
+    "com.apple.webarchive",
+    "com.microsoft.ole.source.41267.0x9bd194a00",
+    "com.microsoft.DataObject",
+    "com.microsoft.appbundleid"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.2.0",
+  "sourceApp" : "com.microsoft.Excel",
+  "sourceAppVersion" : "16.112.4"
+}
