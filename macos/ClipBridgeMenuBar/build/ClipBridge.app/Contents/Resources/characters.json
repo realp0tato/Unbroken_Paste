@@ -1,0 +1,5 @@
+[
+  {"id": "slime", "name": "기본 슬라임"},
+  {"id": "coming-soon-1", "name": "새 캐릭터 (준비 중)", "coming_soon": true},
+  {"id": "coming-soon-2", "name": "시즌 한정 캐릭터 (준비 중)", "coming_soon": true}
+]

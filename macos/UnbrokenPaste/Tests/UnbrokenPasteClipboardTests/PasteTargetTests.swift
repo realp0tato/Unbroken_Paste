@@ -10,6 +10,7 @@ final class PasteTargetTests: XCTestCase {
     func testDesktopApps() {
         // Bundle IDs confirmed on a Mac (#34)
         XCTAssertEqual(resolve("com.microsoft.Word"), .word)
+        XCTAssertEqual(resolve("com.microsoft.Excel"), .excel)
         XCTAssertEqual(resolve("notion.id"), .notion)
         XCTAssertEqual(resolve("net.golbin.hop"), .hangul)
     }
@@ -49,10 +50,14 @@ final class PasteTargetTests: XCTestCase {
     func testHancomDocsFromBrowserTitle() {
         XCTAssertEqual(resolve("com.google.Chrome", title: "보고서.hwp - 한컴독스"), .hangul)
         XCTAssertEqual(resolve("com.google.Chrome", title: "Report - Hancom Docs"), .hangul)
+        // Web editor tab title as Safari shows it on macOS 26
+        XCTAssertEqual(resolve("com.apple.Safari", title: "새 한글.hwpx - 한컴오피스 Web v2 한글"), .hangul)
+        // Hancom's spreadsheet and slides editors are not Hangul
+        XCTAssertEqual(resolve("com.apple.Safari", title: "예산.cell - 한컴오피스 Web v2 한셀"), .other)
     }
 
     func testUnknownOrMissingAppPassesThrough() {
-        XCTAssertEqual(resolve("com.microsoft.Excel"), .other)
+        XCTAssertEqual(resolve("com.microsoft.Powerpoint"), .other)
         XCTAssertEqual(resolve(nil), .other)
     }
 

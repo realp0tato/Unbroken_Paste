@@ -43,7 +43,7 @@ public class HelperSessionTests
         Assert.Equal("PlainText", results.GetProperty("source").GetString());
 
         var byTarget = results.GetProperty("results");
-        Assert.Equal(["Hangul", "Notion", "Word", "Other"], byTarget.EnumerateObject().Select(p => p.Name));
+        Assert.Equal(["Hangul", "Notion", "Word", "Excel", "Other"], byTarget.EnumerateObject().Select(p => p.Name));
         Assert.Equal("[ClipBridge] a<b", byTarget.GetProperty("Hangul").GetProperty("plainText").GetString());
         Assert.True(byTarget.GetProperty("Other").GetProperty("isPassthrough").GetBoolean());
     }

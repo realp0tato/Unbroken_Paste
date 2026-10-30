@@ -158,3 +158,44 @@ public class ExcelToHangulConverterTests
         Assert.Contains(result.Signals, signal => signal.Id == "S7");
     }
 }
+
+public class ExcelBlankPlaceholderTests
+{
+    private static ClipboardSnapshot Html(string body) => new(
+        new Dictionary<string, byte[]> { [ClipFormats.MacHtml] = Encoding.UTF8.GetBytes($"<table><col width=100 span=3>{body}</table>") }, null, 1);
+
+    [Fact]
+    public void BlankPlaceholderCells_AreEmptiedInC1AndC2()
+    {
+        // 위키백과 표를 Excel에 붙였다가 다시 복사한 모양
+        var snapshot = Html("<tr><td>시</td><td>군</td><td>구</td></tr><tr><td>빈칸</td><td> 빈칸 </td><td>25</td></tr>");
+
+        var c1 = ExcelToHangulConverter.Convert(snapshot);
+        var c2 = ExcelToNotionConverter.Convert(snapshot);
+
+        Assert.DoesNotContain("빈칸", c1.Html);
+        Assert.DoesNotContain("빈칸", c2.Html);
+        Assert.Equal("시\t군\t구\n\t\t25", c1.PlainText);
+        Assert.Contains("<td></td><td></td><td>25</td>", c2.Html);
+        // 열 너비 등 표 정보는 그대로
+        Assert.Contains("width:225pt", c1.Html);
+    }
+
+    [Fact]
+    public void TextContainingPlaceholderWord_IsKept()
+    {
+        var snapshot = Html("<tr><td>빈칸 있음</td><td>빈칸채우기</td><td>x</td></tr><tr><td>a</td><td>b</td><td>c</td></tr>");
+
+        Assert.Contains("빈칸 있음", ExcelToHangulConverter.Convert(snapshot).Html);
+        Assert.Contains("빈칸채우기", ExcelToHangulConverter.Convert(snapshot).Html);
+    }
+
+    [Fact]
+    public void TsvPlaceholder_IsEmptied()
+    {
+        var snapshot = new ClipboardSnapshot(
+            new Dictionary<string, byte[]> { [ClipFormats.MacUtf8Text] = Encoding.UTF8.GetBytes("a\t빈칸\r\nb\tc\r\n") }, null, 1);
+
+        Assert.Equal("a\t\nb\tc", ExcelToHangulConverter.Convert(snapshot).PlainText);
+    }
+}

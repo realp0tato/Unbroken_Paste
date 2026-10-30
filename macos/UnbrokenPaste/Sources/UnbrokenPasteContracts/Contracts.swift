@@ -23,7 +23,7 @@ public enum ContentKind: String, Codable, Sendable {
 
 /// Paste target. The app shell detects it and passes only this value to Core (PRD 4.5).
 public enum TargetApp: String, Codable, Sendable, CaseIterable {
-    case hangul = "Hangul", notion = "Notion", word = "Word", other = "Other"
+    case hangul = "Hangul", notion = "Notion", word = "Word", excel = "Excel", other = "Other"
 }
 
 /// Markdown handling option (PRD 4.2, 6.3.5).
