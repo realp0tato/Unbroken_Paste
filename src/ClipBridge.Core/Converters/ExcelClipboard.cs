@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 
 namespace ClipBridge.Core;
@@ -24,6 +25,32 @@ internal static class ExcelClipboard
         var text = ClipText.GetPlainText(snapshot);
         return text is null || text.Length > MaxTextLength ? null : TsvParser.Parse(text);
     }
+
+    // 글(단일 열): 셀마다 한 문단. 빈 셀은 문단을 만들지 않는다 (C1·C2)
+    public static string TextHtml(TableModel table) =>
+        string.Concat(Cells(table).Where(cell => cell.Text.Length > 0).Select(cell => $"<p>{InlineHtml(cell)}</p>"));
+
+    // 일반 텍스트 표: 칸은 탭, 행은 줄바꿈. 셀 안 줄바꿈은 표 모양이 깨지지 않게 공백으로
+    public static string TablePlainText(TableModel table) =>
+        string.Join('\n', table.Rows.Select(row => string.Join('\t', row.Select(cell => cell.Text.Replace('\n', ' ')))));
+
+    public static string TextPlainText(TableModel table) =>
+        string.Join('\n', Cells(table).Where(cell => cell.Text.Length > 0).Select(cell => cell.Text));
+
+    // 셀 안 줄바꿈은 <br>, 굵게·기울임은 태그로
+    public static string InlineHtml(TableCell cell)
+    {
+        var text = string.Join("<br>", cell.Text.Split('\n').Select(WebUtility.HtmlEncode));
+        if (text.Length == 0)
+            return text;
+        if (cell.Italic)
+            text = $"<i>{text}</i>";
+        if (cell.Bold)
+            text = $"<b>{text}</b>";
+        return text;
+    }
+
+    private static IEnumerable<TableCell> Cells(TableModel table) => table.Rows.SelectMany(row => row);
 
     // S2 표 모양 불규칙(병합 셀)·S7 빈 셀 과다 (PRD 6.6.2)
     public static IReadOnlyList<SuspicionSignal> Signals(TableModel table)
