@@ -7,7 +7,17 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>ClipBridge.Windows</RootNamespace>
+    <!-- 커서 아이콘(#5)이 포인터가 있는 모니터의 DPI를 따르도록 -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- 실행 파일 아이콘. 트레이 아이콘도 같은 파일을 쓴다 -->
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\app.ico" LogicalName="ClipBridge.Windows.app.ico" />
+    <!-- 트레이 슬라임 애니메이션 프레임 (#44). 이름 순서대로 재생한다 -->
+    <EmbeddedResource Include="Resources\Slime\*.png" LogicalName="ClipBridge.Windows.Slime.%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ClipBridge.Core\ClipBridge.Core.csproj" />

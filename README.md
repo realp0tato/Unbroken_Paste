@@ -48,7 +48,7 @@
 | C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표 |
 | C4 | 인터넷 → Notion | C3 + 링크·코드 블록 유지 |
 | C7 | 인터넷 → Word | C3 + 링크 유지, 제목을 Word 제목 스타일로 |
-| C5·C6·C8 | Markdown → 한글·Notion·Word | 기본: **기호 제거** / 옵션: **서식 적용** (`##`→부제목, `**`→굵게) |
+| C5·C6·C8 | Markdown → 한글·Notion·Word | 기본 **서식 적용**: Notion은 제목·굵게·목록·표 그대로, Word·한글은 `#`→큰 굵은 글자·`**`→굵게(제목 스타일 미사용) / 옵션: **기호 제거** |
 | 공통 | 줄간격 보정 | 연속 빈 줄·빈 문단·이중 문단 간격 정리 (모든 변환기에 적용) |
 
 변환 규칙 상세: [PRD 6절](prd.md#6-변환기-및-변환-규칙)
@@ -60,8 +60,8 @@ Windows는 작업 표시줄 트레이 아이콘, macOS는 메뉴 막대 아이�
 ```text
 UP
 ├─ Markdown 처리
-│   ├─ ● 기호 제거 (기본)
-│   └─ ○ 서식 적용
+│   ├─ ● 서식 적용 (기본)
+│   └─ ○ 기호 제거
 ├─ AI 검증 (외부 API 사용)
 │   ├─ ● 켜기 (기본)
 │   └─ ○ 끄기
@@ -109,7 +109,7 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 ## 저장소 구조
 
 ```text
-ClipBridge.slnx            # 솔루션: C# 프로젝트 6개를 묶는 목록
+ClipBridge.slnx            # 솔루션: C# 프로젝트 8개를 묶는 목록
 global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
 Directory.Build.props      # 모든 C# 프로젝트 공통 설정
 .gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
@@ -120,9 +120,11 @@ src/
 tests/
   ClipBridge.Core.Tests/   # ④ 변환기 단위 테스트
   ClipBridge.Helper.Tests/ # ③ Helper 테스트
+  ClipBridge.Windows.Tests/ # ② 중 Windows API를 쓰지 않는 부분 테스트 (macOS에서도 실행)
   fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
 tools/
   ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구
+  ClipBridge.TryMode/      # 복사할 때마다 변환 결과를 클립보드에 넣어 보는 개발용 시험 모드 (macOS)
 macos/
   ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
 prd.md
@@ -190,7 +192,24 @@ dotnet test                    # 변환기 단위 테스트
 
 ## 설치 및 실행
 
-준비 중입니다. 실행 방법은 구현 후 추가합니다.
+배포 패키지는 준비 중입니다. 개발 중에는 저장소 루트에서 실행합니다.
+
+**Windows 앱**
+
+```bash
+dotnet run --project src/ClipBridge.Windows
+```
+
+- 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
+- 아이콘을 오른쪽 클릭해 `종료`로 끕니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
+- 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다.
+  ```text
+  10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
+  10:21:03.540 [convert] results seq=812 source=PlainText Hangul=STUB Notion=STUB Word=STUB Other=PASS
+  10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=STUB
+  ```
+
+**macOS 앱:** [macOS 앱 README](macos/ClipBridgeMenuBar/README.md)
 
 ## 문서
 

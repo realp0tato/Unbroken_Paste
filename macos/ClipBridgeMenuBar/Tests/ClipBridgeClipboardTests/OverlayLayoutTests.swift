@@ -47,6 +47,14 @@ final class OverlayLayoutTests: XCTestCase {
                        .letter("한", passthrough: false))
     }
 
+    func testBorderFollowsWhetherAResultWasWritten() {
+        // Word target, but Core passed through (e.g. Excel → Word): quiet border
+        XCTAssertEqual(OverlayBadge.forPaste(target: .word, bundleID: "com.microsoft.Word", appName: "Microsoft Word", converted: false),
+                       .app(bundleID: "com.microsoft.Word", letter: "W", passthrough: true))
+        XCTAssertEqual(OverlayBadge.forPaste(target: .hangul, bundleID: "net.golbin.hop", appName: "HOP", converted: true),
+                       .app(bundleID: "net.golbin.hop", letter: "H", passthrough: false))
+    }
+
     func testOtherAppsAreMarkedPassthrough() {
         XCTAssertEqual(OverlayBadge.forPaste(target: .other, bundleID: "com.apple.TextEdit", appName: "텍스트 편집기"),
                        .app(bundleID: "com.apple.TextEdit", letter: "텍", passthrough: true))
