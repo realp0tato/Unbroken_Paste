@@ -181,7 +181,8 @@ def run_mac():
                 item.state = int(cid == self.character)
 
         def _refresh_clipboard(self):
-            self.clip_menu.clear()
+            if len(self.clip_menu):  # rumps creates the submenu lazily; clear() fails before the first item
+                self.clip_menu.clear()
             entries = []
             if self.history.items:
                 entries.append(rumps.MenuItem("최근 복사 · 누르면 다시 복사"))
