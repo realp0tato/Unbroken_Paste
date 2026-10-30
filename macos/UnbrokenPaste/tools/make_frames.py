@@ -11,8 +11,8 @@ HERE = Path(__file__).parent
 ART = HERE / "art"
 RESOURCES = HERE.parent / "Resources"
 PREVIEWS = HERE.parent / "build" / "previews"
-# 24x22pt menu bar image drawn at @2x. The slime is 20pt wide, so 2pt each side like other menu bar icons.
-FRAME_SIZE = (48, 44)
+# 20x22pt menu bar image drawn at @2x: exactly as wide as the slime at its widest, so the menu bar adds only its usual spacing.
+FRAME_SIZE = (40, 44)
 SS = 4  # supersampling factor
 FRAME_COUNT = 48
 GROUND = 0.28  # share of the cycle spent on the ground

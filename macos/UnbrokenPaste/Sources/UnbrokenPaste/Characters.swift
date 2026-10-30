@@ -31,7 +31,7 @@ struct SlimeCharacter: Decodable {
         comingSoon != true && FileManager.default.fileExists(atPath: folder.path)
     }
 
-    /// 24x22pt template frames (slime 20pt + 2pt each side): the system tints them for light and dark menu bars.
+    /// 20x22pt template frames, as wide as the slime at its widest: the system tints them for light and dark menu bars.
     func frames() -> [NSImage] {
         let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
         return files
@@ -39,7 +39,7 @@ struct SlimeCharacter: Decodable {
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .compactMap { url in
                 guard let image = NSImage(contentsOf: url) else { return nil }
-                image.size = NSSize(width: 24, height: 22)
+                image.size = NSSize(width: 20, height: 22)
                 image.isTemplate = true
                 return image
             }
