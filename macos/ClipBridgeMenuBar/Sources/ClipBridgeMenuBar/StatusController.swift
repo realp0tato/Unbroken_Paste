@@ -1,4 +1,6 @@
 import AppKit
+import ClipBridgeClipboard
+import ClipBridgeContracts
 import UserNotifications
 
 @MainActor
@@ -9,7 +11,9 @@ final class StatusController: NSObject {
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let settings: Settings
-    private let history = ClipboardHistory()
+    private let monitor = ClipboardMonitor(pasteboard: SystemPasteboard()) {
+        NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    }
     private let characters: [SlimeCharacter]
     private let animator: SlimeAnimator
     private var frames: [NSImage]
@@ -18,7 +22,10 @@ final class StatusController: NSObject {
     private var nextPoll: TimeInterval = 0
     private var timer: Timer?
 
+    private let pasteWatcher = PasteWatcher()
+
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
@@ -39,11 +46,11 @@ final class StatusController: NSObject {
         super.init()
 
         if let button = statusItem.button {
-            button.toolTip = "ClipBridge"
+            button.toolTip = "UP"
             if let first = frames.first {
                 button.image = first
             } else {
-                button.title = "ClipBridge"  // frames missing: still usable as a text item
+                button.title = "UP"  // frames missing: still usable as a text item
             }
         }
         statusItem.menu = buildMenu()
@@ -55,6 +62,10 @@ final class StatusController: NSObject {
         let timer = Timer(timeInterval: 1.0 / 60, target: self, selector: #selector(tick), userInfo: nil, repeats: true)
         RunLoop.main.add(timer, forMode: .common)  // keep animating while the menu is open
         self.timer = timer
+
+        pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
+        pasteWatcher.start()
+        refreshPermission()
     }
 
     // MARK: - Menu
@@ -62,12 +73,16 @@ final class StatusController: NSObject {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(headerItem)
+        // Shown only while Accessibility is missing (FR-30): pasting still works, without conversion.
+        permissionItem.target = self
+        permissionItem.action = #selector(openAccessibilitySettings)
+        menu.addItem(permissionItem)
         menu.addItem(.separator())
 
         // PRD 4.2 menu
         let markdown = addSubmenu("Markdown 처리", to: menu)
-        markdownItems[.stripSymbols] = addItem("기호 제거 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.stripSymbols.rawValue)
-        markdownItems[.applyFormatting] = addItem("서식 적용", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.applyFormatting.rawValue)
+        markdownItems[.strip] = addItem("기호 제거 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.strip.rawValue)
+        markdownItems[.format] = addItem("서식 적용", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.format.rawValue)
 
         let ai = addSubmenu("AI 검증 (외부 API 사용)", to: menu)
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
@@ -97,7 +112,7 @@ final class StatusController: NSObject {
         }
         menu.addItem(.separator())
 
-        addItem("ClipBridge 종료", to: menu, action: #selector(quit), key: "q")
+        addItem("UP 종료", to: menu, action: #selector(quit), key: "q")
         return menu
     }
 
@@ -124,8 +139,12 @@ final class StatusController: NSObject {
     }
 
     private func refreshMode() {
-        headerItem.title = "ClipBridge · " + (Self.headers[animator.mode] ?? "")
+        headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
         for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
+    }
+
+    private func refreshPermission() {
+        permissionItem.isHidden = pasteWatcher.isActive
     }
 
     private func refreshCharacters() {
@@ -134,12 +153,12 @@ final class StatusController: NSObject {
 
     private func refreshClipboard() {
         clipboardMenu.removeAllItems()
-        if history.items.isEmpty {
+        if monitor.history.isEmpty {
             addItem("아직 복사한 내용이 없어요", to: clipboardMenu, action: nil)
         } else {
             addItem("최근 복사 · 누르면 다시 복사", to: clipboardMenu, action: nil)
-            for (index, text) in history.items.enumerated() {
-                let item = addItem("\(index + 1). \(ClipboardHistory.preview(text))", to: clipboardMenu, action: #selector(recopy(_:)))
+            for (index, text) in monitor.history.enumerated() {
+                let item = addItem("\(index + 1). \(ClipboardMonitor.preview(text))", to: clipboardMenu, action: #selector(recopy(_:)))
                 item.tag = index
             }
             clipboardMenu.addItem(.separator())
@@ -190,18 +209,22 @@ final class StatusController: NSObject {
     }
 
     @objc private func recopy(_ sender: NSMenuItem) {
-        history.recopy(at: sender.tag)
+        monitor.recopy(at: sender.tag)
         refreshClipboard()
     }
 
     @objc private func clearHistory() {
-        history.clear()
+        monitor.clearHistory()
         refreshClipboard()
     }
 
     @objc private func toggleReact() {
         settings.reactOnCopy.toggle()
         refreshClipboard()
+    }
+
+    @objc private func openAccessibilitySettings() {
+        NSWorkspace.shared.open(PasteWatcher.accessibilitySettingsURL)
     }
 
     @objc private func quit() {
@@ -221,11 +244,14 @@ final class StatusController: NSObject {
         }
         if now >= nextPoll {
             nextPoll = now + Self.pollInterval
-            if history.poll() {
+            switch monitor.poll() {
+            case .copied?:
                 if settings.reactOnCopy {
                     animator.react(seconds: Self.copyReaction, now: now)
                 }
                 refreshClipboard()
+            case .ignored?, nil:
+                break
             }
         }
     }
@@ -233,13 +259,12 @@ final class StatusController: NSObject {
     private func notify(_ body: String) {
         // Notifications need an app bundle; `swift run` has none, so skip there.
         guard Bundle.main.bundleIdentifier != nil else { return }
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
-            content.title = "ClipBridge"
+            content.title = "UP"
             content.body = body
-            center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
         }
     }
 }

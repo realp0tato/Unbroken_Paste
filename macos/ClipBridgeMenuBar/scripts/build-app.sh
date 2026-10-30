@@ -18,8 +18,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key><string>app.clipbridge.menubar</string>
-    <key>CFBundleName</key><string>ClipBridge</string>
-    <key>CFBundleDisplayName</key><string>ClipBridge</string>
+    <key>CFBundleName</key><string>UP</string>
+    <key>CFBundleDisplayName</key><string>UP</string>
     <key>CFBundleExecutable</key><string>ClipBridge</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>0.1.0</string>

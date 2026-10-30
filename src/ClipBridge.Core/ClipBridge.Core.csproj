@@ -8,6 +8,12 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ClipBridge.Core.Tests" />
+    <InternalsVisibleTo Include="ClipBridge.Helper.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.8.6" />
+    <PackageReference Include="Markdig" Version="1.5.1" />
   </ItemGroup>
 
 </Project>

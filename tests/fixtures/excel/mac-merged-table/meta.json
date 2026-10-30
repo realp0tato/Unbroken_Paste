@@ -1,0 +1,27 @@
+{
+  "description" : "병합 셀 표: 가로 병합 A1:B1(상반기 실적), 세로 병합 C1:C2(비고), 굵게·가운데 머리글",
+  "formats" : [
+    "public.html",
+    "public.utf16-plain-text",
+    "public.utf8-plain-text",
+    "com.adobe.pdf",
+    "public.png",
+    "public.tiff",
+    "public.rtf",
+    "public.utf16-external-plain-text",
+    "com.microsoft.Embed-Source",
+    "com.microsoft.Object-Descriptor",
+    "com.microsoft.Link-Source",
+    "com.microsoft.Link-Source-Descriptor",
+    "com.microsoft.Link",
+    "com.microsoft.DSP-Text",
+    "com.apple.webarchive",
+    "com.microsoft.ole.source.41267.0x9bb85b7a0",
+    "com.microsoft.DataObject",
+    "com.microsoft.appbundleid"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.2.0",
+  "sourceApp" : "com.microsoft.Excel",
+  "sourceAppVersion" : "16.112.4"
+}

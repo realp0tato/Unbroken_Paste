@@ -41,6 +41,35 @@ public class FixtureTests
         }
     }
 
+    [Fact]
+    public void LoadFrom_ReadsMacTypeNameList()
+    {
+        var directory = Directory.CreateTempSubdirectory("clipbridge-fixture-");
+        try
+        {
+            File.WriteAllBytes(Path.Combine(directory.FullName, "public.html.bin"), [1, 2]);
+            File.WriteAllBytes(Path.Combine(directory.FullName, "public.utf8-plain-text.txt"), "표"u8.ToArray());
+            File.WriteAllText(Path.Combine(directory.FullName, "meta.json"), """
+                {
+                  "formats" : [ "public.html", "public.utf8-plain-text" ],
+                  "os" : "mac",
+                  "sourceApp" : "com.microsoft.Excel"
+                }
+                """);
+
+            var snapshot = Fixture.LoadFrom(directory.FullName);
+
+            Assert.Equal("com.microsoft.Excel", snapshot.SourceApp);
+            Assert.Equal(0, snapshot.SequenceNumber);
+            Assert.Equal([1, 2], snapshot.Formats[ClipFormats.MacHtml]);
+            Assert.Equal("표"u8.ToArray(), snapshot.Formats[ClipFormats.MacUtf8Text]);
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
     // 올라온 샘플의 meta.json과 파일이 서로 맞는지 확인한다
     [Fact]
     public void AllCommittedSamples_Load()

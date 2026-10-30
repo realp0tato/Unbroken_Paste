@@ -14,14 +14,23 @@ public static class Fixture
 
     public static ClipboardSnapshot LoadFrom(string directory)
     {
-        var metaPath = Path.Combine(directory, "meta.json");
-        var meta = JsonSerializer.Deserialize<Meta>(File.ReadAllText(metaPath), JsonOptions)
-            ?? throw new InvalidDataException($"meta.json이 비어 있습니다: {metaPath}");
+        using var meta = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "meta.json")));
+        var root = meta.RootElement;
 
-        var formats = meta.Formats
-            .Where(f => f.File is not null)
-            .ToDictionary(f => f.Name, f => File.ReadAllBytes(Path.Combine(directory, f.File!)));
-        return new ClipboardSnapshot(formats, meta.SourceApp, meta.SequenceNumber);
+        var formats = new Dictionary<string, byte[]>();
+        foreach (var format in root.GetProperty("formats").EnumerateArray())
+        {
+            // Windows 도구는 {name, file} 객체로, macOS 스크립트는 타입 이름 문자열로 기록한다
+            var (name, file) = format.ValueKind == JsonValueKind.String
+                ? (format.GetString()!, MacFileName(directory, format.GetString()!))
+                : (format.GetProperty("name").GetString()!, format.TryGetProperty("file", out var f) ? f.GetString() : null);
+            if (file is not null)
+                formats[name] = File.ReadAllBytes(Path.Combine(directory, file));
+        }
+
+        var sourceApp = root.TryGetProperty("sourceApp", out var app) ? app.GetString() : null;
+        var sequenceNumber = root.TryGetProperty("sequenceNumber", out var seq) ? seq.GetInt64() : 0;
+        return new ClipboardSnapshot(formats, sourceApp, sequenceNumber);
     }
 
     // 저장소에 있는 모든 샘플 (예: "excel/win-basic-table")
@@ -32,9 +41,11 @@ public static class Fixture
                 .Order()
             : [];
 
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
-    private sealed record Meta(string? SourceApp, long SequenceNumber, IReadOnlyList<MetaFormat> Formats);
-
-    private sealed record MetaFormat(string Name, string? File);
+    // dump-mac-clipboard.swift 규칙: '/'만 '_'로 바꾸고 텍스트 타입은 .txt, 나머지는 .bin
+    private static string MacFileName(string directory, string type)
+    {
+        var stem = type.Replace('/', '_');
+        return new[] { stem + ".txt", stem + ".bin" }.FirstOrDefault(file => File.Exists(Path.Combine(directory, file)))
+            ?? throw new FileNotFoundException($"{type} 파일이 없습니다", Path.Combine(directory, stem + ".bin"));
+    }
 }

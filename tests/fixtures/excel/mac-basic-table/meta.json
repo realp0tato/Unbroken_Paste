@@ -1,0 +1,27 @@
+{
+  "description" : "다열 표: 굵게·가운데 정렬 머리글(이름·부서·금액), 셀 안 줄바꿈(개발/2팀), 쉼표 스타일 숫자 1,234.50, 수식 =C2*2",
+  "formats" : [
+    "public.html",
+    "public.utf16-plain-text",
+    "public.utf8-plain-text",
+    "com.adobe.pdf",
+    "public.png",
+    "public.tiff",
+    "public.rtf",
+    "public.utf16-external-plain-text",
+    "com.microsoft.Embed-Source",
+    "com.microsoft.Object-Descriptor",
+    "com.microsoft.Link-Source",
+    "com.microsoft.Link-Source-Descriptor",
+    "com.microsoft.Link",
+    "com.microsoft.DSP-Text",
+    "com.apple.webarchive",
+    "com.microsoft.ole.source.41267.0x9bc859540",
+    "com.microsoft.DataObject",
+    "com.microsoft.appbundleid"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.2.0",
+  "sourceApp" : "com.microsoft.Excel",
+  "sourceAppVersion" : "16.112.4"
+}

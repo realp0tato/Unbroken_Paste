@@ -49,6 +49,8 @@ Windows PC와 Mac에서 복사 직후 클립보드에 들어 있는 **모든 포
 
 Windows 등록 포맷의 `id`는 실행할 때마다 달라지므로 참고용이다. 포맷은 `name`으로 찾는다.
 
+macOS 스크립트(`dump-mac-clipboard.swift`)는 `formats`를 타입 이름 문자열 배열로 적고 `sequenceNumber`를 적지 않는다. 파일 이름은 타입 이름에서 `/`만 `_`로 바꾼 것이다. `Fixture.Load`는 두 형식을 모두 읽는다.
+
 ## Windows에서 수집하기 (#28)
 
 `tools/ClipBridge.FixtureDump`가 클립보드를 읽어 위 형식으로 저장한다. 저장소 루트에서 실행한다.
@@ -67,6 +69,28 @@ Windows 등록 포맷의 `id`는 실행할 때마다 달라지므로 참고용�
 - 포맷 하나가 1MB를 넘으면 저장하지 않고 `meta.json`에만 적는다 (이미지 포맷 등). 바꾸려면 `--max-kb 4096`처럼 지정한다.
 - 비트맵·메타파일처럼 바이트로 읽을 수 없는 포맷은 `skipped`로 기록된다.
 - 이미지(`CF_DIB` 등)와 OLE 개체·링크 포맷(`Embed Source`, `Native`, `Biff8`, `Link`, `Hyperlink` 등)은 저장하지 않고 `skipped`에 `제외:`로 기록한다. 변환기가 쓰지 않고 크기가 크며, 통합 문서 파일 경로나 다른 시트 내용이 들어갈 수 있기 때문이다. 꼭 필요하면 `--all`을 붙인다.
+
+## 수집 도구 (macOS)
+
+`tools/`의 스크립트는 저장소 루트에서 실행한다.
+
+| 도구 | 하는 일 |
+|---|---|
+| `dump-mac-clipboard.swift` | 지금 클립보드의 모든 타입을 위 규칙대로 저장하고 `meta.json`을 만든다 |
+| `collect-excel-samples.sh` | Excel에 샘플 표 4종(`make-excel-samples.applescript`)을 만들고, 시트마다 복사해 `excel/mac-*/`에 저장한다 |
+
+```bash
+# 원본 앱에서 복사한 직후 실행 (다른 것을 복사하기 전에)
+swift tests/fixtures/tools/dump-mac-clipboard.swift <저장 폴더> <원본 앱 번들 ID> "<설명>"
+# 예) Safari에서 복사한 웹 글
+swift tests/fixtures/tools/dump-mac-clipboard.swift tests/fixtures/web/mac-safari-article com.apple.Safari "뉴스 기사 본문 3문단"
+
+# Excel 샘플 4종 다시 만들기 (처음 실행 시 "터미널이 Microsoft Excel을 제어" 권한 허용)
+bash tests/fixtures/tools/collect-excel-samples.sh
+```
+
+- 파일 이름은 타입 이름 그대로이고, 텍스트 타입(`public.utf8-plain-text` 등)은 `.txt`, 나머지는 `.bin`이다.
+- macOS Excel은 HTML에 CF_HTML 헤더가 없고, 마지막 행 뒤 줄바꿈 없는 TSV를 넣는다. 이미지·PDF 등 18개 타입을 함께 넣는다.
 
 ## 테스트에서 쓰기
 
