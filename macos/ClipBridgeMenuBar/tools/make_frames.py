@@ -89,6 +89,20 @@ def render(filled, white, lift, sx, sy, size, base_h, max_lift):
     return canvas.resize(size, Image.LANCZOS)
 
 
+def make_badge(source, size=96):
+    """Full-colour round copy badge: the dark circle cropped square, outside made transparent."""
+    im = Image.open(source).convert("RGBA")
+    x0, y0, x1, y1 = im.convert("L").point(lambda v: 255 if v < 120 else 0).getbbox()
+    side = max(x1 - x0, y1 - y0)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    crop = im.crop((round(cx - side / 2), round(cy - side / 2), round(cx + side / 2), round(cy + side / 2)))
+    crop = crop.resize((side * 4, side * 4), Image.LANCZOS)
+    mask = Image.new("L", crop.size, 0)
+    ImageDraw.Draw(mask).ellipse((2, 2, crop.width - 3, crop.height - 3), fill=255)
+    crop.putalpha(ImageChops.multiply(crop.getchannel("A"), mask))
+    return crop.resize((size, size), Image.LANCZOS)
+
+
 def build(character_id):
     filled, white = extract(ART / character_id / "character.png")
     out = RESOURCES / "Characters" / character_id
@@ -97,6 +111,7 @@ def build(character_id):
     frames = [render(filled, white, *bounce(i / FRAME_COUNT), (72, 44), 26, 13) for i in range(FRAME_COUNT)]
     for i, frame in enumerate(frames):
         frame.save(out / f"frame_{i:02d}@2x.png")
+    make_badge(ART / character_id / "character.png").save(out / "badge.png")
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     preview(frames, PREVIEWS / f"{character_id}.gif")
     return len(frames)
