@@ -7,6 +7,7 @@ public enum TargetResolver {
     public static let bundleTargets: [String: TargetApp] = [
         "com.microsoft.Word": .word,
         "notion.id": .notion,
+        "net.golbin.hop": .hangul,  // HOP, open-source HWP editor for macOS
     ]
 
     /// Browsers where Notion web is recognised from the focused window title (PRD 6.2).

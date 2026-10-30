@@ -60,9 +60,10 @@ UP 종료  ⌘Q
 
 | 대상 | 판별 기준 |
 |---|---|
-| Word | 번들 ID `com.microsoft.Word` |
-| Notion 앱 | 번들 ID `notion.id` |
-| 한글 | 번들 ID가 `com.hancom.`으로 시작하고 `hwp`가 들어 있거나, 앱 이름에 `HWP`·`한글`이 있음 (버전마다 ID가 달라 규칙으로 판별) |
+| Word | 번들 ID `com.microsoft.Word` (맥에서 확인) |
+| Notion 앱 | 번들 ID `notion.id` (맥에서 확인) |
+| 한글 (HOP) | 번들 ID `net.golbin.hop` (맥에서 확인). [HOP](https://github.com/golbin/hop)는 HWP 파일을 여는 오픈소스 편집기 |
+| 한글 (한컴오피스) | 번들 ID가 `com.hancom.`으로 시작하고 `hwp`가 들어 있거나, 앱 이름에 `HWP`·`한글`이 있음 (버전마다 ID가 달라 규칙으로 판별, 맥에서 미확인) |
 | Notion 웹 | 브라우저(Safari, Chrome, Edge, Firefox, Whale, Arc)의 앞쪽 창 제목에 `Notion`이 있음. 확인할 수 없으면 통과 |
 | 그 외 | 통과 |
 

@@ -8,8 +8,10 @@ final class PasteTargetTests: XCTestCase {
     }
 
     func testDesktopApps() {
+        // Bundle IDs confirmed on a Mac (#34)
         XCTAssertEqual(resolve("com.microsoft.Word"), .word)
         XCTAssertEqual(resolve("notion.id"), .notion)
+        XCTAssertEqual(resolve("net.golbin.hop"), .hangul)
     }
 
     func testHancomHwpVariants() {
