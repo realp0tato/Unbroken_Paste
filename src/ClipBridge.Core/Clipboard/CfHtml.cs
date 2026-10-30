@@ -35,4 +35,31 @@ public static class CfHtml
         var header = string.Format(CultureInfo.InvariantCulture, HeaderFormat, startHtml, endHtml, startFragment, endFragment);
         return Encoding.UTF8.GetBytes(header + sourceLine + prefix + fragment + suffix);
     }
+
+    // CF_HTML 바이트에서 HTML 문서(StartHTML~EndHTML)와 SourceURL을 꺼낸다. 헤더가 잘못되면 null
+    public static (string Html, string? SourceUrl)? Unwrap(byte[] data)
+    {
+        // 헤더는 ASCII라 앞부분만 읽어도 된다
+        var head = Encoding.UTF8.GetString(data, 0, Math.Min(data.Length, 1024));
+        var fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in head.Split(["\r\n", "\n", "\r"], StringSplitOptions.None))
+        {
+            var colon = line.IndexOf(':');
+            if (colon <= 0 || line.StartsWith('<'))
+                break;
+            fields[line[..colon]] = line[(colon + 1)..];
+        }
+
+        if (!fields.TryGetValue("StartHTML", out var startText) || !int.TryParse(startText, out var start)
+            || !fields.TryGetValue("EndHTML", out var endText) || !int.TryParse(endText, out var end))
+            return null;
+
+        // 일부 앱은 EndHTML을 -1이나 실제보다 크게 쓴다
+        if (end < 0 || end > data.Length)
+            end = data.Length;
+        if (start < 0 || start > end)
+            return null;
+
+        return (Encoding.UTF8.GetString(data, start, end - start).TrimEnd('\0'), fields.GetValueOrDefault("SourceURL"));
+    }
 }
