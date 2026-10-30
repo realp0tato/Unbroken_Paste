@@ -58,8 +58,10 @@ internal sealed class CopyTracker(
         CancellationTokenSource preparing;
         lock (_lock)
         {
-            // 스냅샷을 백그라운드에서 읽으므로 이전 복사가 늦게 도착할 수 있다
-            if (snapshot.SequenceNumber <= _latest)
+            // 스냅샷을 백그라운드에서 읽으므로 이전 복사가 늦게 도착할 수 있다.
+            // Excel은 번호가 같은 채로 포맷을 더 올리기도 하므로, 같은 번호면 포맷이 더 많은 스냅샷으로 바꾼다
+            if (snapshot.SequenceNumber < _latest
+                || (snapshot.SequenceNumber == _latest && snapshot.Formats.Count <= (_snapshot?.Formats.Count ?? int.MaxValue)))
             {
                 log?.Invoke($"ignored older copy seq={snapshot.SequenceNumber} current={_latest}");
                 return Task.CompletedTask;

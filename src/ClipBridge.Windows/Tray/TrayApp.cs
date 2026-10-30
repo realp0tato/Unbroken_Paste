@@ -29,7 +29,16 @@ internal sealed class TrayApp : ApplicationContext
     {
         _options = _settings.Load();
         _paste = new PasteWatcher(_addresses);
-        _copies = new CopyTracker(new UpClipConverter(), () => _options, log: message => DevLog.Info("convert", message));
+        var converter = new UpClipConverter();
+        _copies = new CopyTracker(converter, () => _options, log: message => DevLog.Info("convert", message));
+        // 첫 복사의 준비 시간이 늦지 않게 변환 코드를 미리 한 번 돌려 둔다 (NFR-02)
+        var options = _options;
+        Task.Run(() =>
+        {
+            var started = Stopwatch.GetTimestamp();
+            ConverterWarmup.Run(converter, options);
+            DevLog.Info("convert", $"warmed up elapsed={Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0}ms");
+        });
         BuildMenu();
         _tray = new NotifyIcon { Icon = _icon, Text = "UP", ContextMenuStrip = _menu, Visible = true };
         _animation = SlimeAnimation.Start(_tray, SystemInformation.SmallIconSize);

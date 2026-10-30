@@ -129,6 +129,25 @@ public class CopyTrackerTests
         Assert.True(converter.Prepared[1].Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
     }
 
+    // 실제 로그: 같은 seq=2369를 Biff12·XML Spreadsheet만 있을 때 한 번, HTML·텍스트까지 올라온 뒤 한 번 더 읽었다
+    [Fact]
+    public async Task SameSequenceWithMoreFormats_ReplacesSnapshot()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+        var partial = new ClipboardSnapshot(new Dictionary<string, byte[]> { ["Biff12"] = [1] }, "EXCEL.EXE", 5);
+        var full = Copy(5, "표");
+        var fullFormats = new Dictionary<string, byte[]>(full.Formats) { ["Biff12"] = [1] };
+        full = new ClipboardSnapshot(fullFormats, "EXCEL.EXE", 5);
+
+        await tracker.OnCopied(partial);
+        await tracker.OnCopied(full);
+        Assert.Same(full, tracker.Snapshot);
+
+        // 같은 번호에 포맷이 같거나 적으면 바꾸지 않는다 (같은 알림이 두 번 온 경우)
+        await tracker.OnCopied(partial);
+        Assert.Same(full, tracker.Snapshot);
+    }
+
     // #80: 모든 포맷을 읽은 뒤에는 원본 되돌리기에 그것을 쓰고, 읽기 전이면 스냅샷 포맷을 쓴다
     [Fact]
     public async Task OriginalOf_UsesFullFormatsOnlyForCurrentCopy()
