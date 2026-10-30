@@ -8,11 +8,12 @@
 
 ## 시작 전에 (한 번만)
 
-1. 앱을 터미널에서 켜고 로그를 파일로도 남긴다 (PowerShell, 저장소 루트).
+1. 앱을 터미널에서 켜고 로그를 파일로도 남긴다 (저장소 루트).
    ```powershell
-   dotnet run -c Release --project src/ClipBridge.Windows | Tee-Object -FilePath up.log
+   dotnet run -c Release --project src/ClipBridge.Windows -- --log up.log
    ```
-   터미널에 줄이 나오는데 `up.log`가 비어 있으면, 끝날 때 터미널 창에서 모두 선택 → 복사해 메모장에 붙여 `up.log`로 저장한다.
+   첫 줄에 `log file=C:\...\up.log`처럼 저장 위치가 나온다. 같은 파일에 계속 덧붙이므로, 새로 재려면 UP을 끄고 파일을 지운 뒤 다시 켠다.
+   배포용 실행 파일도 같다: `& ".\Unbroken Paste.exe" --log up.log`
 2. 붙여넣을 때마다 이런 줄이 나온다.
    ```text
    10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=C1 plan=WriteResult elapsed=1.8ms
