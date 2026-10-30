@@ -47,10 +47,6 @@ P;Pyyyy"Ò´"\ mm"êÅ"\ dd"ìí"
 P;Pmm/dd
 P;Pyyyy\/mm\/dd
 P;Pyyyy/mm/dd
-P;P"Yes";;"Yes";;"No"
-P;P"True";;"True";;"False"
-P;P"On";;"On";;"Off"
-P;P[$¢æ-2]\ #,##0.00_);;[Red]\([$¢æ-2]\ #,##0.00\)
 P;F¸¼Àº °íµñ;M220;L9
 P;F¸¼Àº °íµñ;M220;L9
 P;F¸¼Àº °íµñ;M220;L9
@@ -74,34 +70,26 @@ P;E¸¼Àº °íµñ;M220;SB;L9
 P;E¸¼Àº °íµñ;M220;L10
 P;EMalgun Gothic;M200;L9
 P;E¸¼Àº °íµñ;M160
-P;E¸¼Àº °íµñ;M220;SU;L50
-P;E¸¼Àº °íµñ;M220;SU;L26
 P;E¸¼Àº °íµñ;M220;SB;L9
-P;EArial Unicode MS;M200;L9
-P;EArial Unicode MS;M200;L9
 F;P0;DG0G8;M348
-B;Y2477;X35;D8 27 12 29
+B;Y5;X3;D0 0 4 2
 O;L;D;V0;K47;G100 0.001
-F;W30 30 9
-F;M1740;R2
-F;M1044;R4
-F;M696;R5
-C;Y9;X28;K"ÀÌ¸§"
-C;X29;K"ºÎ¼­"
-C;X30;K"Á¡¼ö"
-F;SDM26;Y10;X28
-C;K"±è¹Î¼ö"
-F;SDM26;X29
-C;K"¿µ¾÷ÆÀ"
-F;SDM26;X30
-C;K85
-C;Y11;X28;K"ÀÌÁöÀº"
-C;X29;K"°³¹ßÆÀ"
-C;X30;K92
-C;Y12;X28;K"¹Ú¼­ÁØ"
-C;X29;K"±âÈ¹ÆÀ"
-C;X30;K78
-C;Y13;X28;K"ÃÖÀ¯³ª"
-C;X29;K"µðÀÚÀÎÆÀ"
-C;X30;K88
+F;SDM24;Y1;X1
+C;K"ÀÌ¸§"
+F;SDM24;X2
+C;K"ºÎ¼­"
+F;SDM24;X3
+C;K"Á¡¼ö"
+C;Y2;X1;K"±è¹Î¼ö"
+C;X2;K"¿µ¾÷ÆÀ"
+C;X3;K85
+C;Y3;X1;K"ÀÌÁöÀº"
+C;X2;K"°³¹ßÆÀ"
+C;X3;K92
+C;Y4;X1;K"¹Ú¼­ÁØ"
+C;X2;K"±âÈ¹ÆÀ"
+C;X3;K78
+C;Y5;X1;K"ÃÖÀ¯³ª"
+C;X2;K"µðÀÚÀÎÆÀ"
+C;X3;K88
 E

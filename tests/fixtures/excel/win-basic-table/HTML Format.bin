@@ -1,9 +1,8 @@
 Version:1.0
-StartHTML:0000000198
-EndHTML:0000003492
-StartFragment:0000002311
-EndFragment:0000003440
-SourceURL:file:///C:/Users/user/Desktop/kkodong_data/processed/db/public_place_licenses.csv
+StartHTML:0000000105
+EndHTML:0000003082
+StartFragment:0000002137
+EndFragment:0000003030
 
 <html xmlns:v="urn:schemas-microsoft-com:vml"
 xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -63,13 +62,8 @@ td
 	mso-protection:locked visible;
 	white-space:nowrap;
 	mso-rotate:0;}
-.xl65
+.xl63
 	{font-weight:700;}
-.xl66
-	{white-space:normal;}
-.xl67
-	{font-weight:700;
-	white-space:normal;}
 ruby
 	{ruby-align:left;}
 rt
@@ -88,34 +82,33 @@ rt
 
 <body link="#467886" vlink="#96607D">
 
-<table border=0 cellpadding=0 cellspacing=0 width=218 style='border-collapse:
- collapse;width:165pt'>
+<table border=0 cellpadding=0 cellspacing=0 width=210 style='border-collapse:
+ collapse;width:159pt'>
 <!--StartFragment-->
- <col width=70 span=2 style='width:53pt'>
- <col width=78 style='mso-width-source:userset;mso-width-alt:2508;width:59pt'>
+ <col width=70 span=3 style='width:53pt'>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 width=70 style='height:17.4pt;width:53pt'>이름</td>
-  <td class=xl66 width=70 style='width:53pt'>부서</td>
-  <td width=78 style='width:59pt'>점수</td>
+  <td height=23 class=xl63 width=70 style='height:17.4pt;width:53pt'>이름</td>
+  <td class=xl63 width=70 style='width:53pt'>부서</td>
+  <td class=xl63 width=70 style='width:53pt'>점수</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 class=xl65 style='height:17.4pt'>김민수</td>
-  <td class=xl67 width=70 style='width:53pt'>영업팀</td>
-  <td class=xl65 align=right>85</td>
+  <td height=23 style='height:17.4pt'>김민수</td>
+  <td>영업팀</td>
+  <td align=right>85</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
   <td height=23 style='height:17.4pt'>이지은</td>
-  <td class=xl66 width=70 style='width:53pt'>개발팀</td>
+  <td>개발팀</td>
   <td align=right>92</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
   <td height=23 style='height:17.4pt'>박서준</td>
-  <td class=xl66 width=70 style='width:53pt'>기획팀</td>
+  <td>기획팀</td>
   <td align=right>78</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
   <td height=23 style='height:17.4pt'>최유나</td>
-  <td class=xl66 width=70 style='width:53pt'>디자인팀</td>
+  <td>디자인팀</td>
   <td align=right>88</td>
  </tr>
 <!--EndFragment-->
