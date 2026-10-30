@@ -1,0 +1,15 @@
+{
+  "description" : "블로그형 글: MDN 'Clipboard API' 소제목·목록·코드 예시 구간 (https://developer.mozilla.org/ko/docs/Web/API/Clipboard_API)",
+  "formats" : [
+    "com.apple.webarchive",
+    "public.rtf",
+    "public.html",
+    "public.utf8-plain-text",
+    "com.apple.WebKit.custom-pasteboard-data",
+    "public.utf16-external-plain-text"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.6.2",
+  "sourceApp" : "com.apple.Safari",
+  "sourceAppVersion" : "26.6.2"
+}

@@ -33,6 +33,24 @@ final class PasteTargetTests: XCTestCase {
         XCTAssertEqual(resolve("com.apple.TextEdit", title: "Notion 메모"), .other)
     }
 
+    func testWebTargetsFromBrowserAddress() {
+        func web(_ url: String?, title: String? = "제목 없음") -> TargetApp {
+            TargetResolver.resolve(bundleID: "com.apple.Safari", appName: "Safari", windowTitle: title, windowURL: url)
+        }
+        // Address checked first, so pages whose title lacks the service name still count
+        XCTAssertEqual(web("https://webhwp.hancomdocs.com/webhwp/?mode=HWP_EDITOR&docId=abc&lang=ko_KR"), .hangul)
+        XCTAssertEqual(web("https://www.notion.so/Meeting-notes-123"), .notion)
+        XCTAssertEqual(web("https://team.notion.site/page"), .notion)
+        // Other Hancom Docs pages (file list, other editors) are not the HWP editor
+        XCTAssertEqual(web("https://www.hancomdocs.com/ko/home"), .other)
+        XCTAssertEqual(web("https://example.com/notion.so"), .other)
+    }
+
+    func testHancomDocsFromBrowserTitle() {
+        XCTAssertEqual(resolve("com.google.Chrome", title: "보고서.hwp - 한컴독스"), .hangul)
+        XCTAssertEqual(resolve("com.google.Chrome", title: "Report - Hancom Docs"), .hangul)
+    }
+
     func testUnknownOrMissingAppPassesThrough() {
         XCTAssertEqual(resolve("com.microsoft.Excel"), .other)
         XCTAssertEqual(resolve(nil), .other)

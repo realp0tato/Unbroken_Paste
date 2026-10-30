@@ -45,6 +45,11 @@ struct SlimeCharacter: Decodable {
             }
     }
 
+    /// Round full-colour character image for the copy badge (#38). `badge.png` in the character folder.
+    func badge() -> NSImage? {
+        NSImage(contentsOf: folder.appendingPathComponent("badge.png"))
+    }
+
     static func loadAll() -> [SlimeCharacter] {
         let url = AppResources.root.appendingPathComponent("characters.json")
         guard let data = try? Data(contentsOf: url),
