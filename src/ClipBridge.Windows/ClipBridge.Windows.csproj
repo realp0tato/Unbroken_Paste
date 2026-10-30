@@ -7,6 +7,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>ClipBridge.Windows</RootNamespace>
+    <!-- 화면·작업 관리자·파일 속성에 보이는 이름은 UP (코드 이름은 추후 UnbrokenPaste.*로 변경, PRD 이름 규칙) -->
+    <AssemblyName>UP</AssemblyName>
+    <AssemblyTitle>UP</AssemblyTitle>
+    <Product>UP (UnbrokenPaste)</Product>
     <!-- 커서 아이콘(#5)이 포인터가 있는 모니터의 DPI를 따르도록 -->
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <!-- 실행 파일 아이콘. 트레이 아이콘도 같은 파일을 쓴다 -->
