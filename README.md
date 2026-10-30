@@ -66,6 +66,8 @@ ClipBridge
 └─ 종료
 ```
 
+macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(메모리 전용), 캐릭터 선택 메뉴가 있습니다. 자세한 내용은 [PRD 4.2.2](prd.md#422-macos-추가-메뉴와-메뉴-막대-아이콘)를 보세요.
+
 ## AI 검증과 개인정보
 
 - **기본값은 켜짐**입니다. 변환 결과 중 **의심스러운 것만** AI로 한 번 더 검증합니다. 메뉴에서 끌 수 있습니다.
@@ -96,7 +98,7 @@ ClipBridge
 | 테스트 | xUnit | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
 | Windows 앱 (`ClipBridge.Windows`) | C# · .NET 10 · WinForms (`net10.0-windows`) | Core를 직접 참조. 트레이(`NotifyIcon`), 커서 아이콘 창, P/Invoke로 Win32 호출: 키보드 감지(`WH_KEYBOARD_LL`), 클립보드 감지(`AddClipboardFormatListener`), 지연 렌더링(`WM_RENDERFORMAT`) |
 | macOS 보조 프로그램 (`ClipBridge.Helper`) | C# · .NET 10 콘솔 앱 | Core를 macOS 앱에서 쓰기 위한 다리. macOS 앱이 실행 중 계속 띄워 두고 표준 입출력으로 변환 요청·응답 |
-| macOS 앱 | Swift · SwiftUI `MenuBarExtra` · AppKit | 메뉴 막대, 클립보드 감시(`NSPasteboard`), Cmd+V 감지(이벤트 탭, 손쉬운 사용 권한), 지연 제공(`NSPasteboardItemDataProvider`), 커서 아이콘(비활성 패널). Helper를 앱 번들에 포함 |
+| macOS 앱 | Swift 패키지 · AppKit (`NSStatusItem`) | 메뉴 막대(슬라임 애니메이션 아이콘), 클립보드 감시(`NSPasteboard`), Cmd+V 감지(이벤트 탭, 손쉬운 사용 권한), 지연 제공(`NSPasteboardItemDataProvider`), 커서 아이콘(비활성 패널). 옵션은 `UserDefaults`에 저장. Helper를 앱 번들에 포함 |
 | AI 검증 | Claude API (Messages API, `HttpClient`) | Core 안에서 호출. 모델 예: Claude Haiku 5.5. API 키는 환경 변수 `ANTHROPIC_API_KEY`에서 읽음 |
 | 배포 | `dotnet publish` self-contained 단일 실행 파일 | .NET 설치 없이 실행. Windows 앱, macOS용 Helper 모두 |
 
@@ -166,7 +168,7 @@ Cmd+V ─▶ ⑥ 대상 앱 인식 ─▶ 미리 받은 결과를 클립보드�
 |---|---|
 | 변환기·Helper (macOS) | .NET 10 SDK, VS Code + C# Dev Kit 또는 JetBrains Rider |
 | Windows 앱 (Windows) | .NET 10 SDK, Visual Studio 또는 Rider |
-| macOS 앱 (macOS) | Xcode, .NET 10 SDK (Helper 빌드용) |
+| macOS 앱 (macOS) | Xcode 또는 Command Line Tools, .NET 10 SDK (Helper 빌드용). 실행 방법은 [macOS 앱 README](macos/ClipBridgeMenuBar/README.md) |
 
 - 클립보드에 들어가는 데이터는 OS마다 다릅니다. Windows PC와 Mac에서 각각 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 두 OS 샘플로 모두 테스트합니다.
 - 한글·Word·Notion 실제 붙여넣기 검증은 해당 OS에서 직접 해야 합니다.
