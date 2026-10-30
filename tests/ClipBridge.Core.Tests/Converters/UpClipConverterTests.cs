@@ -167,11 +167,11 @@ public class UpClipConverterTests
             data.Add("excel", TargetApp.Other, mode, "PASS");
             data.Add("markdown", TargetApp.Hangul, mode, "C5");
             data.Add("markdown", TargetApp.Notion, mode, "C6");
-            data.Add("markdown", TargetApp.Word, mode, "PASS");   // C8 #12 전
+            data.Add("markdown", TargetApp.Word, mode, "C8");
             data.Add("markdown", TargetApp.Other, mode, "PASS");
             data.Add("web", TargetApp.Hangul, mode, "C3");
             data.Add("web", TargetApp.Notion, mode, "C4");
-            data.Add("web", TargetApp.Word, mode, "PASS");        // C7 #10 전
+            data.Add("web", TargetApp.Word, mode, "C7");
             data.Add("plain", TargetApp.Hangul, mode, "TX");
             data.Add("plain", TargetApp.Notion, mode, "TX");
             data.Add("plain", TargetApp.Word, mode, "TX");
@@ -300,5 +300,46 @@ public class UpClipConverterTests
 
         Assert.Equal(SourceKind.Web, prepared.Source);
         Assert.Equal("C3", prepared.Get(TargetApp.Hangul, ConversionOptions.Default).ConverterId);
+    }
+
+    // ---- C7·C8 ----
+
+    [Fact]
+    public void WebTable_ToWord_HasNoRepeatedHeaderOrBlankMarkers()
+    {
+        var result = WebToWordConverter.Convert(Fixture.Load("web/mac-chrome-table"));
+
+        Assert.Equal("C7", result.ConverterId);
+        // <thead>가 있으면 Word가 "제목 행 반복"으로 받아 페이지마다 머리글이 다시 나온다
+        Assert.DoesNotContain("<thead", result.Html);
+        Assert.DoesNotContain("<th", result.Html);
+        Assert.Contains("<table border=\"1\"", result.Html);
+        Assert.DoesNotContain("빈칸", result.Html);
+        Assert.DoesNotContain("빈칸", result.PlainText);
+    }
+
+    [Fact]
+    public void WebBlog_ToWord_KeepsLinksWithoutWebTags()
+    {
+        var result = WebToWordConverter.Convert(Fixture.Load("web/mac-chrome-blog"));
+
+        Assert.Equal("C7", result.ConverterId);
+        Assert.Contains("<a href=\"https://developer.mozilla.org/", result.Html);
+        Assert.DoesNotMatch("<(h[1-6]|ul|ol|li|pre)[ >]", result.Html!);
+    }
+
+    [Fact]
+    public void Markdown_ToWord_UsesFontSizeOrPlainText()
+    {
+        var format = MarkdownToWordConverter.Convert(Markdown, MarkdownMode.Format);
+        var strip = MarkdownToWordConverter.Convert(Markdown, MarkdownMode.Strip);
+
+        Assert.Equal("C8", format.ConverterId);
+        Assert.Contains("font-size:16pt", format.Html);   // ## → 16pt (Word 제목 스타일 미사용)
+        Assert.DoesNotMatch("<h[1-6][ >]", format.Html!);
+        Assert.Equal("C8", strip.ConverterId);
+        Assert.DoesNotContain("font-size", strip.Html);
+        Assert.DoesNotContain("<b>", strip.Html);
+        Assert.Equal("주요 결과\n중요한 내용\n항목", strip.PlainText);
     }
 }

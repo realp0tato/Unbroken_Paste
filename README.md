@@ -31,26 +31,28 @@
 
 ## 변환기
 
-| 출처 ＼ 대상 | 한글 | Notion | Word | 그 외 |
-|---|---|---|---|---|
-| **Excel** (표·글) | **C1** | **C2** | 통과 ※ | 통과 |
-| **인터넷** (글·표) | **C3** | **C4** | **C7** | 통과 |
-| **Markdown 글** | **C5** | **C6** | **C8** | 통과 |
-| **일반 텍스트** | **TX** 줄간격 정리 | **TX** | **TX** | 통과 |
-| 기타 (이미지·파일 등) | 통과 | 통과 | 통과 | 통과 |
+| 출처 ＼ 대상 | 한글 | Notion | Word | Excel (P1) | 그 외 |
+|---|---|---|---|---|---|
+| **Excel** (표·글) | **C1** | **C2** | 통과 ※1 | 통과 | 통과 |
+| **인터넷** (글·표) | **C3** | **C4** | **C7** | **C9** ※2 | 통과 |
+| **Markdown 글** | **C5** | **C6** | **C8** | 통과 | 통과 |
+| **일반 텍스트** | **TX** 줄간격 정리 | **TX** | **TX** | 통과 | 통과 |
+| 기타 (이미지·파일 등) | 통과 | 통과 | 통과 | 통과 | 통과 |
 
-※ Excel → Word는 같은 Office 제품이라 Word의 기본 붙여넣기가 더 안정적이므로 변환하지 않습니다.
+※1 Excel → Word는 같은 Office 제품이라 Word의 기본 붙여넣기가 더 안정적이므로 변환하지 않습니다.
+※2 Excel은 웹 표를 스스로 잘 받으므로, 인터넷 → Excel만 찌꺼기를 지우고 나머지 출처는 Excel 기본 붙여넣기에 맡깁니다.
 
 | ID | 변환기 | 하는 일 | 상태 |
 |---|---|---|---|
-| C1 | Excel → 한글 | 표: 셀 값·굵게·정렬·테두리·열 너비만 남긴 표 / 글: 셀마다 한 문단 | 구현 |
-| C2 | Excel → Notion | 표: Notion 단순 표(첫 행 머리글) / 글: 셀마다 한 줄 | 구현 |
-| C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표 | 구현 |
+| C1 | Excel → 한글 | 표: 셀 값·굵게·정렬·테두리·열 너비만 남긴 표 / 글: 셀마다 한 문단. 셀 값이 `빈칸`(위키백과에서 옮겨 온 표시)이면 빈 칸으로 | 구현 |
+| C2 | Excel → Notion | 표: Notion 단순 표(첫 행 머리글) / 글: 셀마다 한 줄. `빈칸` 셀은 C1과 같이 비움 | 구현 |
+| C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표. 위키백과 `빈칸` 표시·각주·편집 링크 제거 | 구현 |
 | C4 | 인터넷 → Notion | C3 + 링크·코드 블록 유지 | 구현 |
-| C7 | 인터넷 → Word | C3 + 링크 유지, 제목을 Word 제목 스타일로 | 개발 전 ([#10](https://github.com/realp0tato/donga_hackathon/issues/10)), 지금은 통과 |
+| C7 | 인터넷 → Word | C3 + 링크 유지. 제목은 글자 크기·굵기(제목 스타일 미사용), 표는 머리글 반복 없이 | 구현 |
 | C5·C6 | Markdown → 한글·Notion | 기본 **서식 적용**: Notion은 제목·굵게·목록·표 그대로, 한글은 `#`→큰 굵은 글자·`**`→굵게(제목 스타일 미사용) / 옵션: **기호 제거** | 구현 |
-| C8 | Markdown → Word | C5와 같은 방식 | 개발 전 ([#12](https://github.com/realp0tato/donga_hackathon/issues/12)), 지금은 통과 |
+| C8 | Markdown → Word | C5와 같은 방식 | 구현 |
 | TX | 일반 텍스트 → 한글·Notion·Word | 글자는 그대로 두고 줄간격만 정리. 탭으로 나눈 직사각형 글(TSV)은 표로 | 구현 |
+| C9 | 인터넷 → Excel (P1) | 표를 다시 쓰지 않고 원본 HTML에서 `빈칸` 표시·각주·숨김 요소·스크립트만 지움. 지울 것이 없으면 통과 | 구현 |
 | 공통 | 줄간격 보정 | 연속 빈 줄·빈 문단·이중 문단 간격 정리, Windows는 줄바꿈 CRLF (모든 변환기에 적용) | 구현 |
 
 변환 규칙 상세: [PRD 6절](prd.md#6-변환기-및-변환-규칙)
@@ -108,7 +110,7 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 
 | 구성 | 기술 | 비고 |
 |---|---|---|
-| 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C8·줄간격 보정·AI 검증. **OS API 사용 금지** → 두 OS에서 공유, macOS에서 개발·테스트 가능 |
+| 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C9·줄간격 보정·AI 검증. **OS API 사용 금지** → 두 OS에서 공유, macOS에서 개발·테스트 가능 |
 | HTML 파싱·정리 | [AngleSharp](https://github.com/AngleSharp/AngleSharp) | 웹·Excel HTML 파싱. 웹 글은 허용한 구조(제목·굵게·목록·표·링크·코드)만 Markdown으로 옮긴 뒤 다시 그려 사이트 서식을 버림 |
 | Markdown | [Markdig](https://github.com/xoofx/markdig) | 서식 적용·기호 제거 모두 Markdig 구문 트리로 처리. 한국어 조사 앞 강조는 `UseCjkFriendlyEmphasis` |
 | 테스트 | xUnit v3 (Microsoft.Testing.Platform) | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
@@ -160,7 +162,7 @@ CONTRIBUTING.md
 
 | | 위치 | 하는 일 | 담당 |
 |---|---|---|---|
-| ① | `src/ClipBridge.Core/` | 변환 로직 전부: 출처 판별, 변환기 C1–C8, 줄간격 보정, AI 검증. **OS API를 쓰지 않으므로 두 OS가 공유하고 macOS에서 개발·테스트할 수 있다** | 장세찬, 박재현 |
+| ① | `src/ClipBridge.Core/` | 변환 로직 전부: 출처 판별, 변환기 C1–C9, 줄간격 보정, AI 검증. **OS API를 쓰지 않으므로 두 OS가 공유하고 macOS에서 개발·테스트할 수 있다** | 장세찬, 박재현 |
 | ② | `src/ClipBridge.Windows/` | Windows 앱 껍데기: 트레이, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ①을 직접 호출 | 이창민 |
 | ③ | `src/ClipBridge.Helper/` | macOS 앱이 ①을 쓸 수 있게 해 주는 보조 프로그램. 표준 입출력으로 요청을 받아 ①을 호출하고 결과를 돌려준다 | 장세찬 |
 | ④ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
@@ -260,8 +262,9 @@ open "build/Unbroken Paste.app"
 | 구분 | 상태 |
 |---|---|
 | 출처 판별·변환기 자동 선택·줄간격 보정 | 구현 |
-| 변환기 C1–C6, TX | 구현 |
-| 변환기 C7(인터넷 → Word)·C8(Markdown → Word) | 개발 전, 지금은 통과 |
+| 변환기 C1–C8, TX | 구현 |
+| Excel 붙여넣기 대상·C9 인터넷 → Excel (P1, [#25](https://github.com/realp0tato/donga_hackathon/issues/25)) | 구현. 메모장 등 다른 대상은 아직 통과 |
+| 붙여넣기 대상 인식 | 한글·Word·Notion·Excel 앱, 브라우저의 Notion 웹(주소로 인식)·한컴독스(macOS는 탭 제목 `… 한컴오피스 Web … 한글`로도 인식) |
 | AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
 | Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
 | macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
@@ -277,7 +280,7 @@ open "build/Unbroken Paste.app"
 
 | 이름 | 담당 영역 |
 |---|---|
-| 박재현 | 변환 로직 (C#, Core): 인터넷·Markdown·Notion 변환기, 출처 판별, 변환기 자동 선택, 줄간격 보정, AI 검증 |
-| 장세찬 | 변환 로직 (C#, Core): Excel·Word 변환기, 표 공통 모델, macOS용 Helper |
+| 박재현 | 변환 로직 (C#, Core): 인터넷·Markdown·Notion·Word 변환기(C3–C8), 출처 판별, 변환기 자동 선택, 줄간격 보정(TX), AI 검증 |
+| 장세찬 | 변환 로직 (C#, Core): Excel 변환기(C1·C2), 표 공통 모델, macOS용 Helper |
 | 이창민 | Windows 앱 껍데기 (C#): 트레이, 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증·샘플 수집 |
 | 윤승희 | macOS 앱 껍데기 (Swift): 메뉴 막대, 클립보드·붙여넣기 연동, 커서 아이콘, Helper 연동, macOS 검증·샘플 수집 |
