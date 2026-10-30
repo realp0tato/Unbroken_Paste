@@ -87,7 +87,7 @@ internal sealed class TrayApp : ApplicationContext
 
         _aiOnItem.Click += (_, _) => SetOptions(_options with { AiVerification = true });
         _aiOffItem.Click += (_, _) => SetOptions(_options with { AiVerification = false });
-        var ai = new ToolStripMenuItem("AI 검증 (외부 API 사용)");
+        var ai = new ToolStripMenuItem("AI 검증");
         // 켜져 있을 때 무엇이 밖으로 나가는지 알린다 (PRD 6.6)
         ai.DropDownItems.AddRange([
             _aiOnItem, _aiOffItem, new ToolStripSeparator(),

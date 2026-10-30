@@ -23,10 +23,6 @@ final class SlimeAnimator {
         self.frameCount = frameCount
     }
 
-    func celebrate(now: TimeInterval) {
-        react(seconds: 2 * Self.busyCycle, now: now)
-    }
-
     func react(seconds: TimeInterval, now: TimeInterval) {
         fastUntil = max(fastUntil, now + seconds)
     }

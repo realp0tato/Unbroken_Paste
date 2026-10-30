@@ -2,7 +2,7 @@
 
 Swift (macOS 13 이상). 메뉴 막대에서 UP 슬라임이 통통 튀고, 아이콘을 누르면 메뉴가 열려요. (#23)
 
-공통 메뉴와 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대), 추가 메뉴(상태 변경·클립보드·캐릭터)는 PRD 4.2.2를 따른다. 프로그램 이름은 **Unbroken Paste**, 그 밖의 화면 표시는 **UP**이다. 이 폴더의 코드 이름(폴더·패키지·모듈·번들 ID)은 `UnbrokenPaste`이고, 맥 앱이 쓰는 C# 프로젝트(`src/ClipBridge.*`)는 팀이 정한 시점에 따로 바꾼다.
+공통 메뉴와 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대), 추가 메뉴(클립보드·캐릭터·정보)는 PRD 4.2.2를 따른다. 프로그램 이름은 **Unbroken Paste**, 그 밖의 화면 표시는 **UP**이다. 이 폴더의 코드 이름(폴더·패키지·모듈·번들 ID)은 `UnbrokenPaste`이고, 맥 앱이 쓰는 C# 프로젝트(`src/ClipBridge.*`)는 팀이 정한 시점에 따로 바꾼다.
 
 ## 실행
 
@@ -13,7 +13,7 @@ cd macos/UnbrokenPaste
 swift run
 ```
 
-`.app`으로 만들기 (알림까지 동작, 더블클릭 실행):
+`.app`으로 만들기 (더블클릭 실행, 정보 창에 앱 아이콘 표시):
 
 ```bash
 ./scripts/build-app.sh
@@ -48,12 +48,12 @@ swift test
 UP · 대기 중
 ──────────
 Markdown 처리 ▸            ✓ 서식 적용 (기본) / 기호 제거
-AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API 전송 안내
+AI 검증 ▸                  ✓ 켜기 (기본) / 끄기 / 외부 API 전송 안내
 ──────────
-상태 변경 ▸   ✓ 대기 / 분석 중 / 맞춤 완료 효과 보기
 클립보드 ▸    최근 복사 10개 (누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
 캐릭터 ▸      ✓ 기본 슬라임 / 고양이 슬라임 / 녹는 슬라임 / 구름 슬라임 / 토끼 슬라임
 ──────────
+Unbroken Paste 정보   ← 앱 이름·버전·만든 사람·저작권
 UP 종료  ⌘Q
 ```
 
@@ -125,6 +125,7 @@ UP 종료  ⌘Q
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |
+| `About.swift` | `Unbroken Paste 정보` 창: 만든 사람(UP 팀 4명과 역할)·저작권·저장소 주소 |
 | `Settings.swift` | 옵션 저장 |
 | `Characters.swift` | `Resources/characters.json`과 캐릭터 프레임 로드 |
 | `tools/make_frames.py` | 캐릭터 이미지에서 메뉴 막대 애니메이션 프레임 생성 (통통 튀기·떠서 물방울 떨어뜨리기, 개발용 Python 스크립트) |

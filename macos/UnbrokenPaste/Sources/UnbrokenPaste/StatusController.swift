@@ -2,7 +2,6 @@ import AppKit
 import UnbrokenPasteClipboard
 import UnbrokenPasteContracts
 import os
-import UserNotifications
 
 @MainActor
 final class StatusController: NSObject {
@@ -35,7 +34,6 @@ final class StatusController: NSObject {
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
-    private var modeItems: [SlimeMode: NSMenuItem] = [:]
     private var characterItems: [String: NSMenuItem] = [:]
 
     override init() {
@@ -61,7 +59,7 @@ final class StatusController: NSObject {
         }
         statusItem.menu = buildMenu()
         refreshOptions()
-        refreshMode()
+        refreshHeader()
         refreshCharacters()
         refreshClipboard()
 
@@ -105,23 +103,14 @@ final class StatusController: NSObject {
         markdownItems[.format] = addItem("서식 적용 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.format.rawValue)
         markdownItems[.strip] = addItem("기호 제거", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.strip.rawValue)
 
-        let ai = addSubmenu("AI 검증 (외부 API 사용)", to: menu)
+        let ai = addSubmenu("AI 검증", to: menu)
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
         aiItems[false] = addItem("끄기", to: ai, action: #selector(pickAI(_:)), object: false)
         ai.addItem(.separator())
         addItem("켜져 있으면 복사 내용 일부가 외부 AI API로 전송돼요", to: ai, action: nil)
         menu.addItem(.separator())
 
-        // Slime and clipboard extras
-        let state = addSubmenu("상태 변경", to: menu)
-        modeItems[.idle] = addItem("대기", to: state, action: #selector(pickMode(_:)), object: SlimeMode.idle.rawValue)
-        modeItems[.busy] = addItem("분석 중", to: state, action: #selector(pickMode(_:)), object: SlimeMode.busy.rawValue)
-        let cpu = addItem("CPU 연동", to: state, action: #selector(pickMode(_:)), object: SlimeMode.cpu.rawValue)
-        cpu.isHidden = true  // kept for later; not shown in the menu for now
-        modeItems[.cpu] = cpu
-        state.addItem(.separator())
-        addItem("맞춤 완료 효과 보기", to: state, action: #selector(celebrate))
-
+        // Clipboard and character extras (PRD 4.2.2)
         let clipboard = NSMenuItem(title: "클립보드", action: nil, keyEquivalent: "")
         clipboard.submenu = clipboardMenu
         menu.addItem(clipboard)
@@ -133,6 +122,7 @@ final class StatusController: NSObject {
         }
         menu.addItem(.separator())
 
+        addItem("Unbroken Paste 정보", to: menu, action: #selector(showAbout))
         addItem("UP 종료", to: menu, action: #selector(quit), key: "q")
         return menu
     }
@@ -159,9 +149,8 @@ final class StatusController: NSObject {
         for (value, item) in aiItems { item.state = value == settings.aiVerification ? .on : .off }
     }
 
-    private func refreshMode() {
+    private func refreshHeader() {
         headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
-        for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
     }
 
     private func refreshHelper() {
@@ -220,15 +209,8 @@ final class StatusController: NSObject {
         helper.setOptions(settings.conversionOptions)
     }
 
-    @objc private func pickMode(_ sender: NSMenuItem) {
-        guard let raw = sender.representedObject as? String, let mode = SlimeMode(rawValue: raw) else { return }
-        animator.mode = mode
-        refreshMode()
-    }
-
-    @objc private func celebrate() {
-        animator.celebrate(now: ProcessInfo.processInfo.systemUptime)
-        notify("변환 결과를 붙였어요 (시뮬레이션)")
+    @objc private func showAbout() {
+        About.show()
     }
 
     @objc private func pickCharacter(_ sender: NSMenuItem) {
@@ -322,17 +304,5 @@ final class StatusController: NSObject {
         let ms = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
         Self.log.info("paste \(action, privacy: .public) converter=\(result.converterId, privacy: .public) target=\(paste.target.rawValue, privacy: .public) \(ms, privacy: .public)ms")
         return converted
-    }
-
-    private func notify(_ body: String) {
-        // Notifications need an app bundle; `swift run` has none, so skip there.
-        guard Bundle.main.bundleIdentifier != nil else { return }
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, _ in
-            guard granted else { return }
-            let content = UNMutableNotificationContent()
-            content.title = "UP"
-            content.body = body
-            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
-        }
     }
 }
