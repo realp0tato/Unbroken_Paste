@@ -80,3 +80,66 @@ public class ExcelFixtureTests
         Assert.Equal(Texts(table), Texts(Tsv("mac-formula-table")));
     }
 }
+
+// Windows Excel 샘플 (#28): CF_HTML(HTML Format)과 CF_UNICODETEXT(UTF-16LE)
+public class WindowsExcelFixtureTests
+{
+    private static byte[] Read(string sample, string file) =>
+        File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "fixtures", "excel", sample, file));
+
+    private static TableModel Html(string sample) =>
+        ExcelHtmlTableParser.Parse(CfHtml.Unwrap(Read(sample, "HTML Format.bin"))!.Value.Html)!;
+
+    private static TableModel Tsv(string sample) =>
+        TsvParser.Parse(System.Text.Encoding.Unicode.GetString(Read(sample, "CF_UNICODETEXT.txt")).TrimEnd('\0'))!;
+
+    private static string[][] Texts(TableModel table) =>
+        table.Rows.Select(row => row.Select(cell => cell.Text).ToArray()).ToArray();
+
+    [Theory]
+    [InlineData("win-basic-table", 5, 3)]
+    [InlineData("win-formula-table", 6, 5)]
+    [InlineData("win-merged-cells", 5, 4)]
+    [InlineData("win-single-column", 6, 1)]
+    public void HtmlAndTsv_HaveSameShape(string sample, int rows, int columns)
+    {
+        var html = Html(sample);
+        var tsv = Tsv(sample);
+
+        Assert.Equal((rows, columns), (html.RowCount, html.ColumnCount));
+        Assert.Equal((rows, columns), (tsv.RowCount, tsv.ColumnCount));
+    }
+
+    [Fact]
+    public void WinFormulaTable_UsesDisplayedValues()
+    {
+        var table = Html("win-formula-table");
+
+        Assert.Equal(["노트북", "1,250,000", "3", "3750000", "64.7%"], Texts(table)[1]);
+        Assert.All(table.Rows[0], cell => Assert.True(cell.Bold));
+        Assert.Equal(CellAlign.Right, table.Rows[1][1].Align);
+        Assert.Equal([70, 87, 70, 70, 70], table.ColumnWidths);
+    }
+
+    [Fact]
+    public void WinMergedCells()
+    {
+        var table = Html("win-merged-cells");
+
+        Assert.True(table.HasMergedCells);
+        Assert.Equal((4, 1, CellAlign.Center), (table.Rows[0][0].ColSpan, table.Rows[0][0].RowSpan, table.Rows[0][0].Align));
+        Assert.Equal("2026년 상반기 실적", table.Rows[0][0].Text);
+        Assert.Equal(2, table.Rows[2][0].RowSpan);
+        Assert.Equal(Texts(table.Unmerge()), Texts(Tsv("win-merged-cells")));
+    }
+
+    [Fact]
+    public void WinSingleColumn_IsText()
+    {
+        var table = Html("win-single-column");
+
+        Assert.False(table.IsTable);
+        Assert.Equal("2. 하반기 목표 설정\n담당: 영업팀", table.Rows[2][0].Text);
+        Assert.Equal(Texts(table), Texts(Tsv("win-single-column")));
+    }
+}

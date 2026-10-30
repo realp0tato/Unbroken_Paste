@@ -78,3 +78,44 @@ public class ExcelToNotionConverterTests
         Assert.True(ExcelToNotionConverter.Convert(snapshot).IsPassthrough);
     }
 }
+
+public class WindowsExcelConverterTests
+{
+    private static ClipboardSnapshot Windows(string sample)
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "fixtures", "excel", sample);
+        return new ClipboardSnapshot(new Dictionary<string, byte[]>
+        {
+            [ClipFormats.WinHtml] = File.ReadAllBytes(Path.Combine(dir, "HTML Format.bin")),
+            [ClipFormats.WinUnicodeText] = File.ReadAllBytes(Path.Combine(dir, "CF_UNICODETEXT.txt")),
+        }, "EXCEL.EXE", 1);
+    }
+
+    [Fact]
+    public void C1_WinMergedCells_KeepsMergesAndCenter()
+    {
+        var html = ExcelToHangulConverter.Convert(Windows("win-merged-cells")).Html!;
+
+        Assert.Contains("<td colspan=\"4\" style=\"border:1px solid #000;padding:1.41pt 5.1pt;width:210pt\"><p style=\"margin:0;text-align:center\"><b>2026년 상반기 실적</b></p></td>", html);
+        Assert.Contains("rowspan=\"2\"", html);
+    }
+
+    [Fact]
+    public void C2_WinMergedCells_Unmerges()
+    {
+        var html = ExcelToNotionConverter.Convert(Windows("win-merged-cells")).Html!;
+
+        Assert.StartsWith("<table><thead><tr><th><b>2026년 상반기 실적</b></th><th></th><th></th><th></th></tr></thead>", html);
+        Assert.DoesNotContain("span", html);
+    }
+
+    [Fact]
+    public void C2_WinSingleColumn_IsOneBlockPerCell()
+    {
+        var result = ExcelToNotionConverter.Convert(Windows("win-single-column"));
+
+        Assert.Equal(
+            "<p>회의 안건</p><p>1. 상반기 실적 검토</p><p>2. 하반기 목표 설정<br>담당: 영업팀</p><p>3. 기타 논의 사항</p><p>다음 회의 11월 둘째 주</p>",
+            result.Html);
+    }
+}
