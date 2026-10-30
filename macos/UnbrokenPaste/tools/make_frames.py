@@ -11,6 +11,9 @@ HERE = Path(__file__).parent
 ART = HERE / "art"
 RESOURCES = HERE.parent / "Resources"
 PREVIEWS = HERE.parent / "build" / "previews"
+# 16x22pt menu bar image drawn at @2x: as wide as the slime body, so the menu bar adds only its usual spacing.
+# Only the faint shadow edge and half a point of the flattest landing frame fall outside.
+FRAME_SIZE = (32, 44)
 SS = 4  # supersampling factor
 FRAME_COUNT = 48
 GROUND = 0.28  # share of the cycle spent on the ground
@@ -107,8 +110,7 @@ def build(character_id):
     filled, white = extract(ART / character_id / "character.png")
     out = RESOURCES / "Characters" / character_id
     out.mkdir(parents=True, exist_ok=True)
-    # 36x22pt menu bar image drawn at @2x.
-    frames = [render(filled, white, *bounce(i / FRAME_COUNT), (72, 44), 26, 13) for i in range(FRAME_COUNT)]
+    frames = [render(filled, white, *bounce(i / FRAME_COUNT), FRAME_SIZE, 26, 13) for i in range(FRAME_COUNT)]
     for i, frame in enumerate(frames):
         frame.save(out / f"frame_{i:02d}@2x.png")
     make_badge(ART / character_id / "character.png").save(out / "badge.png")
@@ -121,12 +123,13 @@ def preview(frames, path):
     """Light and dark menu bar side by side, 4x zoom."""
     scale, pages = 4, []
     for frame in frames:
-        page = Image.new("RGB", (72 * scale * 2 + 30, 44 * scale + 20), (255, 255, 255))
-        alpha = frame.getchannel("A").resize((72 * scale, 44 * scale), Image.NEAREST)
+        w, h = frame.size
+        page = Image.new("RGB", (w * scale * 2 + 30, h * scale + 20), (255, 255, 255))
+        alpha = frame.getchannel("A").resize((w * scale, h * scale), Image.NEAREST)
         for i, (bg, fg) in enumerate((((236, 236, 236), (0, 0, 0)), ((40, 40, 44), (255, 255, 255)))):
             tile = Image.new("RGB", alpha.size, bg)
             tile.paste(fg, (0, 0), alpha)
-            page.paste(tile, (10 + i * (72 * scale + 10), 10))
+            page.paste(tile, (10 + i * (w * scale + 10), 10))
         pages.append(page)
     pages[0].save(path, save_all=True, append_images=pages[1:], duration=30, loop=0)
 
