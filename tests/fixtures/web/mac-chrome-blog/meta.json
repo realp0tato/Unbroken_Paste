@@ -1,0 +1,13 @@
+{
+  "description" : "블로그형 글: MDN 'Clipboard API' 소제목·목록·코드 예시 구간 (https://developer.mozilla.org/ko/docs/Web/API/Clipboard_API)",
+  "formats" : [
+    "public.html",
+    "public.utf8-plain-text",
+    "org.chromium.internal.source-rfh-token",
+    "org.chromium.source-url"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.6.2",
+  "sourceApp" : "com.google.Chrome",
+  "sourceAppVersion" : "156.0.8078.76"
+}
