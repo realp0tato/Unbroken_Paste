@@ -5,7 +5,7 @@ Writes Resources/Characters/<id>/frame_XX@2x.png and a preview GIF to build/prev
 import json
 import math
 from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 HERE = Path(__file__).parent
 ART = HERE / "art"
@@ -156,67 +156,92 @@ def render_drip(filled, white, t, size, base_h, tips):
     return canvas.resize(size, Image.LANCZOS)
 
 
-def render_dance(filled, white, t, size, base_h):
-    """Slime turned about 45 degrees with one round little arm in front of its chest, doing a chest-bounce
-    dance. It stands still on the ground (no hop): on every beat the chest pops out and settles, and the
-    arm pumps up and down twice per cycle. Beats follow the reference dance: a quick pop about every
-    0.19 s (8 per 1.5 s cycle, 4 per arm stroke). The turn is drawn by narrowing the body and sliding the
-    eyes toward the side it faces; the frame is mirrored so it faces right with the arm on the left.
-    An arm in front of the body gets a thin cut-out edge so it still reads in one colour."""
+def render_stickman(t, size):
+    """Original stick figure doing a chest-bounce dance, drawn from lines and circles (no source picture).
+    Points to keep from the reference dance: the body turned about 45 degrees (shoulders and feet
+    staggered, face turned right), one arm only moving (its hand slides down across the chest and back up
+    once per cycle while the other arm hangs), the chest popping forward on the beat (4 per 1.5 s cycle),
+    and the head tilted a little to the side, nodding with the pops.
+    Coordinates are in @2x pixels on a 44 px tall canvas; the active arm gets a thin cut-out edge where it
+    crosses the body so it still reads in one colour."""
     cw, ch = size[0] * SS, size[1] * SS
-    aspect = filled.width / filled.height
-    eyes = ImageChops.subtract(filled, white)
-    eye_box = eyes.point(lambda v: 255 if v > 128 else 0).getbbox() or (0, 0, eyes.width, int(eyes.height * 0.7))
-    lift_eyes = 0.08  # turned head: eyes slide toward the facing side and up a little, freeing the chest
-    eye_bottom = eye_box[3] / eyes.height - lift_eyes
+    u = lambda v: v * SS
+    beat = (t * 4) % 1.0
+    pop = math.exp(-6 * beat) * (1 - beat)  # quick hit on the beat, then settles
+    sweep = (1 - math.cos(2 * math.pi * t)) / 2  # 0 = hand up by the far shoulder, 1 = down at the belly
+    cx = size[0] / 2
 
-    beat = (t * 8) % 1.0
-    pop = math.exp(-5 * beat) * (1 - beat)  # sharp hit on the beat, then settles
-    stroke = math.cos(2 * math.pi * t * 2)  # arm height: +1 up, -1 down, two strokes per cycle
-    turn = 0.84  # width seen at about 45 degrees
-    bh = base_h * (1 + 0.015 * pop) * SS
-    bw = base_h * aspect * turn * SS
-    ground = ch - 1 * SS
-    left, top = (cw - bw) / 2 - 0.8 * SS, ground - bh  # feet stay on the ground
+    hip = (cx - 0.5, 29.5)
+    neck = (cx + 0.6 + 0.5 * pop, 16.5 + 0.2 * pop)  # chest leans forward on the beat
+    chest = (cx + 1.4 + 1.8 * pop, 20.5 - 0.3 * pop)
+    head = (cx + 0.2 + 0.4 * pop, 9.8 + 0.5 * pop)  # tipped toward the back shoulder, nods with the pop
+    tilt = math.radians(20 + 5 * pop)  # head tilted to the side
+
     body = Image.new("L", (cw, ch), 0)
-    body.paste(255, (round(left), round(top)), filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS))
 
-    # Chest: a soft round swell on the arm side that pops out on each beat.
-    chest = top + bh * (eye_bottom + (1 - eye_bottom) * 0.42)
-    cx, cr = left + bw * 0.76, bh * (0.17 + 0.07 * pop)
-    draw = ImageDraw.Draw(body)
-    draw.ellipse((cx - cr * 1.05 + 0.9 * pop * SS, chest - cr * 0.9, cx + cr * 1.05 + 0.9 * pop * SS, chest + cr * 0.9), fill=255)
+    def line(target, a, b, w):
+        dd = ImageDraw.Draw(target)
+        dd.line([(u(a[0]), u(a[1])), (u(b[0]), u(b[1]))], fill=255, width=round(u(w)))
+        for x, y in (a, b):
+            dd.ellipse((u(x - w / 2), u(y - w / 2), u(x + w / 2), u(y + w / 2)), fill=255)
 
-    face = eyes.resize((max(1, round(bw * 0.86)), max(1, round(bh))), Image.LANCZOS)
-    holes = Image.new("L", (cw, ch), 0)
-    holes.paste(face, (round(left + bw * 0.07 - bw * 0.10), round(top - bh * lift_eyes)))
-    body = ImageChops.subtract(body, holes)
+    def disc(target, c, r):
+        ImageDraw.Draw(target).ellipse((u(c[0] - r), u(c[1] - r), u(c[0] + r), u(c[1] + r)), fill=255)
 
-    # Round little arm riding on the chest: shoulder moves out with the pop, hand pumps up and down.
-    arm_w, hand_r, gap = 3.2 * SS, 2.6 * SS, 1.0 * SS
-    shoulder = (left + bw * 0.88 + 0.9 * pop * SS, chest - 0.03 * bh)
-    hand = (left + bw * 0.68 + 0.5 * pop * SS, chest + 0.02 * bh - 0.06 * bh * stroke)
+    # Legs: turned stance, front foot ahead, knees soft.
+    line(body, hip, (cx + 2.2, 36.5), 2.6)
+    line(body, (cx + 2.2, 36.5), (cx + 3.4, 42.5), 2.6)
+    line(body, hip, (cx - 2.6, 36.0), 2.6)
+    line(body, (cx - 2.6, 36.0), (cx - 3.8, 42.5), 2.6)
+    # Torso and a round chest that pops forward.
+    line(body, hip, neck, 3.6)
+    disc(body, chest, 3.3 + 0.9 * pop)
+    # Back arm hangs (far shoulder, slightly behind).
+    back_shoulder = (neck[0] - 2.4, neck[1] + 1.4)
+    line(body, back_shoulder, (cx - 5.6, 23.6), 2.2)
+    line(body, (cx - 5.6, 23.6), (cx - 6.4, 28.6 + 0.3 * pop), 2.2)
+    # Head with two eyes cut out, turned right and tilted.
+    line(body, neck, head, 2.4)  # short neck so the tilt shows
+    disc(body, head, 5.4)
+    eyes = Image.new("L", (cw, ch), 0)
+    for dx in (-0.2, 2.6):
+        ex = head[0] + 0.9 + dx * math.cos(tilt)
+        ey = head[1] + 0.6 + dx * math.sin(tilt)
+        ImageDraw.Draw(eyes).ellipse((u(ex - 0.7), u(ey - 1.2), u(ex + 0.7), u(ey + 1.2)), fill=255)
+    body = ImageChops.subtract(body, eyes)
 
-    def arm(target, grow):
-        d = ImageDraw.Draw(target)
-        w = arm_w + 2 * grow
-        d.line([shoulder, hand], fill=255, width=round(w))
-        for x, y, r in ((*shoulder, w / 2), (*hand, hand_r + grow)):
-            d.ellipse((x - r, y - r, x + r, y + r), fill=255)
-
+    # Active arm: front shoulder, elbow out to the side, hand sliding down across the chest and back.
+    shoulder = (neck[0] + 2.2, neck[1] + 1.2)
+    hand = (cx + 4.2 - 5.4 * sweep, 18.2 + 7.6 * sweep + 0.4 * pop)
+    elbow = (cx + 7.4 - 0.8 * sweep, 21.0 + 3.2 * sweep)
+    arm = Image.new("L", (cw, ch), 0)
     edge = Image.new("L", (cw, ch), 0)
-    arm(edge, gap)
-    limb = Image.new("L", (cw, ch), 0)
-    arm(limb, 0)
-    alpha = ImageChops.lighter(ImageChops.subtract(body, edge), limb)
+    for target, grow in ((edge, 1.0), (arm, 0.0)):
+        line(target, shoulder, elbow, 2.2 + 2 * grow)
+        line(target, elbow, hand, 2.2 + 2 * grow)
+        disc(target, hand, 1.5 + grow)
+    alpha = ImageChops.lighter(ImageChops.subtract(body, edge), arm)
 
     shadow = Image.new("L", (cw, ch), 0)
-    sw = base_h * aspect * turn * SS
-    ImageDraw.Draw(shadow).ellipse((cw / 2 - sw / 2, ground - 1.0 * SS, cw / 2 + sw / 2, ground + 0.5 * SS), fill=50)
-    alpha = ImageOps.mirror(ImageChops.lighter(alpha, shadow))
+    ImageDraw.Draw(shadow).ellipse((u(cx - 6), u(42.2), u(cx + 6), u(43.6)), fill=50)
+    alpha = ImageChops.lighter(alpha, shadow)
     canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     canvas.putalpha(alpha)
     return canvas.resize(size, Image.LANCZOS)
+
+
+def drawn_badge(frame, size=96):
+    """Copy badge for a drawn character: its frame in white on the navy circle the other badges use."""
+    big = frame.getchannel("A").resize((frame.width * 8, frame.height * 8), Image.LANCZOS)
+    side = size * 4
+    badge = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    mask = Image.new("L", (side, side), 0)
+    ImageDraw.Draw(mask).ellipse((2, 2, side - 3, side - 3), fill=255)
+    badge.paste((39, 42, 74, 255), (0, 0), mask)
+    scale = side * 0.78 / big.height
+    figure = big.resize((round(big.width * scale), round(big.height * scale)), Image.LANCZOS)
+    badge.paste((243, 244, 248, 255), ((side - figure.width) // 2, round(side * 0.1)), figure)
+    return badge.resize((size, size), Image.LANCZOS)
 
 
 def make_badge(source, size=96):
@@ -238,32 +263,31 @@ def frame_width(filled, base_h):
     return w + w % 2
 
 
-def art_of(entry):
-    """Source picture: `art` names another character's folder when a character reuses its drawing."""
-    return ART / entry.get("art", entry["id"]) / "character.png"
-
-
 def build(entry):
     """`height` (px @2x, default 26) and `lift` (bounce height, default 13) tune each character's size;
-    `motion` picks the animation: "bounce" (default), "drip" or "dance"; `width` (px @2x) overrides the
-    frame width when arms reach past the body."""
+    `motion` picks the animation: "bounce" (default), "drip", or "stickman" (a drawn figure that needs no
+    picture); `width` (px @2x) sets the frame width for a drawn character."""
     character_id = entry["id"]
-    filled, white = extract(art_of(entry))
     out = RESOURCES / "Characters" / character_id
     out.mkdir(parents=True, exist_ok=True)
-    base_h, max_lift = entry.get("height", 26), entry.get("lift", 13)
-    size = (entry.get("width") or frame_width(filled, base_h), FRAME_HEIGHT)
-    if entry.get("motion") == "dance":
-        frames = [render_dance(filled, white, i / FRAME_COUNT, size, base_h) for i in range(FRAME_COUNT)]
-    elif entry.get("motion") == "drip":
-        frames = [render_drip(filled, white, i / FRAME_COUNT, size, base_h, drip_tips(filled)) for i in range(FRAME_COUNT)]
+    if entry.get("motion") == "stickman":
+        size = (entry.get("width", 30), FRAME_HEIGHT)
+        frames = [render_stickman(i / FRAME_COUNT, size) for i in range(FRAME_COUNT)]
+        badge = drawn_badge(frames[0])
     else:
-        frames = [render(filled, white, *bounce(i / FRAME_COUNT), size, base_h, max_lift) for i in range(FRAME_COUNT)]
+        filled, white = extract(ART / character_id / "character.png")
+        base_h, max_lift = entry.get("height", 26), entry.get("lift", 13)
+        size = (frame_width(filled, base_h), FRAME_HEIGHT)
+        if entry.get("motion") == "drip":
+            frames = [render_drip(filled, white, i / FRAME_COUNT, size, base_h, drip_tips(filled)) for i in range(FRAME_COUNT)]
+        else:
+            frames = [render(filled, white, *bounce(i / FRAME_COUNT), size, base_h, max_lift) for i in range(FRAME_COUNT)]
+        badge = make_badge(ART / character_id / "character.png")
     for old in out.glob("frame_*@2x.png"):
         old.unlink()
     for i, frame in enumerate(frames):
         frame.save(out / f"frame_{i:02d}@2x.png")
-    make_badge(art_of(entry)).save(out / "badge.png")
+    badge.save(out / "badge.png")
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     preview(frames, PREVIEWS / f"{character_id}.gif")
     return len(frames)
@@ -286,5 +310,5 @@ def preview(frames, path):
 
 if __name__ == "__main__":
     for entry in json.loads((RESOURCES / "characters.json").read_text(encoding="utf-8")):
-        if art_of(entry).exists():
+        if entry.get("motion") == "stickman" or (ART / entry["id"] / "character.png").exists():
             print(f"{entry['name']}: {build(entry)} frames → {RESOURCES / 'Characters' / entry['id']}")
