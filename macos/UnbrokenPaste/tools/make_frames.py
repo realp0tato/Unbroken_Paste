@@ -175,7 +175,8 @@ def render_stickman(t, size):
     hip = (cx - 0.5, 29.5)
     # Unseen chest joint: kicks up and toward the figure's back (the right of the frame once mirrored);
     # the upper torso, shoulders and head ride up with it, so the torso bends at the chest.
-    chest = (cx + 0.2 - 2.4 * pop, 22.5 - 3.0 * pop)
+    # Rest position: halfway between the old bend point (y 22.5) and just under the head (y 15.2).
+    chest = (cx + 0.4 - 2.4 * pop, 18.9 - 2.6 * pop)
     neck = (cx + 0.6 - 0.6 * pop, 16.5 - 2.2 * pop)
     head = (cx + 0.2 - 0.4 * pop, 9.8 - 1.8 * pop)  # tipped toward the back shoulder, lifts with the chest
     tilt = math.radians(18 + 8 * pop)  # head tilted to the side
