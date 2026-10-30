@@ -7,6 +7,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>ClipBridge.Windows</RootNamespace>
+    <!-- 커서 아이콘(#5)이 포인터가 있는 모니터의 DPI를 따르도록 -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
 
   <ItemGroup>
