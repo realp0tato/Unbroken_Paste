@@ -49,7 +49,8 @@ public sealed class UpClipConverter : IClipConverter
             (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot, mode),   // C4
             (SourceKind.Web, TargetApp.Word) => WebToWordConverter.Convert(snapshot, mode),   // C7
             (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX
-            (SourceKind.Web, TargetApp.Excel) => WebToExcelConverter.Convert(snapshot),   // C9 (P1, #25). 그 밖의 → Excel은 Excel 기본 붙여넣기
+            // C9 (P1, #25): Excel → Excel은 수식·서식을 지키도록 Excel 기본 붙여넣기, 그 밖의 출처는 각주·"빈칸" 칸만 정리
+            (not SourceKind.Excel, TargetApp.Excel) => WebToExcelConverter.Convert(snapshot),
             _ => ConversionResult.Passthrough,
         };
 
