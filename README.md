@@ -107,7 +107,7 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 ## 저장소 구조
 
 ```text
-ClipBridge.slnx            # 솔루션: C# 프로젝트 4개를 묶는 목록
+ClipBridge.slnx            # 솔루션: C# 프로젝트 5개를 묶는 목록
 global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
 Directory.Build.props      # 모든 C# 프로젝트 공통 설정
 .gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
@@ -118,6 +118,8 @@ src/
 tests/
   ClipBridge.Core.Tests/   # ④ 변환기 단위 테스트
   fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
+tools/
+  ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구
 macos/
   ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
 prd.md
@@ -128,7 +130,7 @@ CONTRIBUTING.md
 ### 기본 개념
 
 - **프로젝트:** 코드 묶음 하나. 폴더 안의 `.csproj` 파일이 그 프로젝트의 종류와 설정을 정한다.
-- **솔루션:** 여러 프로젝트를 한 번에 열고 빌드하기 위한 목록. `dotnet build ClipBridge.slnx` 한 번으로 ①②③④가 모두 빌드된다.
+- **솔루션:** 여러 프로젝트를 한 번에 열고 빌드하기 위한 목록. `dotnet build ClipBridge.slnx` 한 번으로 ①②③④와 샘플 저장 도구가 모두 빌드된다.
 - **라이브러리:** 혼자 실행되지 않고, 다른 프로그램이 가져다 쓰는 기능 모음.
 - **참조:** 한 프로젝트가 다른 프로젝트의 코드를 가져다 쓰는 것. ②③④가 ①을 참조한다.
 - **앱 껍데기:** 사용자가 실제로 실행하는 프로그램. 메뉴·클립보드·키 감지·아이콘처럼 OS와 맞닿는 부분을 맡고, 변환은 ①에 맡긴다.

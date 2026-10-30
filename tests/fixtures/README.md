@@ -15,5 +15,61 @@ Windows PC와 Mac에서 복사 직후 클립보드에 들어 있는 **모든 포
 
 - 샘플 하나당 폴더 하나: `<출처>/<OS>-<샘플 이름>/` (OS는 `win` 또는 `mac`, 예: `excel/win-basic-table/`, `excel/mac-basic-table/`)
 - 포맷마다 파일 하나, 파일 이름은 클립보드 포맷 이름 (예: Windows `HTML Format.bin`, `CF_UNICODETEXT.txt`, `XML Spreadsheet.bin` / macOS `public.html.bin`, `public.utf8-plain-text.txt`)
-- `meta.json`에 OS·출처 앱·버전·복사한 내용 설명을 기록
+  - 파일 내용은 클립보드 바이트 **그대로**다. 인코딩을 바꾸지 않는다 (`CF_UNICODETEXT.txt`는 UTF-16LE, 끝에 `\0`)
+  - 파일 이름에 쓸 수 없는 문자(`/`, `:` 등)는 `_`로 바꾸고, 원래 이름은 `meta.json`에 남긴다
+- `meta.json`에 OS·출처 앱·버전·복사한 내용 설명을 기록 (아래 형식)
 - 개인정보가 들어간 내용은 올리지 않는다
+
+## meta.json
+
+```json
+{
+  "os": "windows",
+  "osVersion": "Microsoft Windows 10.0.22631",
+  "sourceApp": "EXCEL.EXE",
+  "sourceAppVersion": "16.0.17928.20114",
+  "description": "3열 5행 표, 머리글 굵게",
+  "capturedAt": "2026-10-30T09:00:00+00:00",
+  "sequenceNumber": 1234,
+  "formats": [
+    { "id": 49373, "name": "HTML Format", "file": "HTML Format.bin", "size": 2048 },
+    { "id": 13, "name": "CF_UNICODETEXT", "file": "CF_UNICODETEXT.txt", "size": 120 },
+    { "id": 2, "name": "CF_BITMAP", "skipped": "GDI 핸들 포맷" }
+  ]
+}
+```
+
+| 필드 | 내용 |
+|---|---|
+| `os` | `windows` 또는 `macos` |
+| `sourceApp` | 복사한 앱. Windows는 프로세스 이름, macOS는 번들 ID (`ClipboardSnapshot.SourceApp`과 같은 값) |
+| `sourceAppVersion` | 복사한 앱의 버전 |
+| `sequenceNumber` | Windows `GetClipboardSequenceNumber`, macOS `changeCount` |
+| `formats` | 클립보드에 있던 순서 그대로. `name`은 `ClipFormats`와 같은 포맷 이름, `file`이 없으면 저장하지 않은 포맷이고 이유는 `skipped`에 적는다 |
+
+Windows 등록 포맷의 `id`는 실행할 때마다 달라지므로 참고용이다. 포맷은 `name`으로 찾는다.
+
+## Windows에서 수집하기 (#28)
+
+`tools/ClipBridge.FixtureDump`가 클립보드를 읽어 위 형식으로 저장한다. 저장소 루트에서 실행한다.
+
+1. 원본 앱(Excel, 브라우저 등)에서 내용을 선택하고 복사한다. Excel은 복사 테두리가 깜박이는 상태로 둔다.
+2. 터미널에서 실행한다.
+   ```bash
+   dotnet run --project tools/ClipBridge.FixtureDump -- excel basic-table "3열 5행 표, 머리글 굵게"
+   ```
+3. `tests/fixtures/excel/win-basic-table/`에 저장된 파일과 화면에 나온 포맷 목록을 확인한다.
+
+- 같은 이름이 이미 있으면 멈춘다. 다시 저장하려면 `--force`를 붙인다.
+- 포맷 하나가 1MB를 넘으면 저장하지 않고 `meta.json`에만 적는다 (이미지 포맷 등). 바꾸려면 `--max-kb 4096`처럼 지정한다.
+- 비트맵·메타파일처럼 바이트로 읽을 수 없는 포맷은 `skipped`로 기록된다.
+
+## 테스트에서 쓰기
+
+```csharp
+using ClipBridge.Core.Tests.Fixtures;
+
+var snapshot = Fixture.Load("excel/win-basic-table");   // ClipboardSnapshot
+```
+
+`dotnet test`를 실행하면 올라온 모든 샘플의 `meta.json`과 파일이 맞는지도 함께 확인한다.
