@@ -11,7 +11,8 @@ internal sealed class TrayApp : ApplicationContext
     private readonly NotifyIcon _tray;
     private readonly SlimeAnimation? _animation;
     private readonly ClipboardMonitor _clipboard = new();
-    private readonly PasteWatcher _paste = new();
+    private readonly BrowserAddresses _addresses = new();
+    private readonly PasteWatcher _paste;
     private readonly ClipboardWriter _writer = new();
     private readonly CursorOverlay _overlay = new();
     private readonly AppSettings _settings = new(AppSettings.DefaultPath);
@@ -27,6 +28,7 @@ internal sealed class TrayApp : ApplicationContext
     public TrayApp()
     {
         _options = _settings.Load();
+        _paste = new PasteWatcher(_addresses);
         _copies = new CopyTracker(new UpClipConverter(), () => _options, log: message => DevLog.Info("convert", message));
         BuildMenu();
         _tray = new NotifyIcon { Icon = _icon, Text = "UP", ContextMenuStrip = _menu, Visible = true };
@@ -46,6 +48,7 @@ internal sealed class TrayApp : ApplicationContext
         _animation?.Stop();
         _tray.Visible = false;
         _paste.Dispose();
+        _addresses.Dispose();
         _writer.SettleBeforeExit();
         _writer.Dispose();
         _clipboard.Dispose();
@@ -62,6 +65,7 @@ internal sealed class TrayApp : ApplicationContext
         {
             _animation?.Dispose();
             _paste.Dispose();
+            _addresses.Dispose();
             _writer.Dispose();
             _clipboard.Dispose();
             _copies.Dispose();
@@ -142,7 +146,9 @@ internal sealed class TrayApp : ApplicationContext
 
         var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         var outcome = plan.Action == PasteAction.Leave ? "leave" : written is null ? "skipped(clipboard busy)" : plan.Action.ToString();
-        DevLog.Info("paste", $"paste key={paste.Key} target={paste.Target} app={paste.Process ?? "unknown"} " +
+        // 브라우저면 판별 근거도 남긴다. 도메인만 남기고 전체 주소·제목은 남기지 않는다
+        var browser = paste.Via is null ? "" : $" url={paste.Host ?? "-"} via={paste.Via}";
+        DevLog.Info("paste", $"paste key={paste.Key} target={paste.Target} app={paste.Process ?? "unknown"}{browser} " +
             $"converter={result.ConverterId} plan={outcome} elapsed={elapsed:0.0}ms");
 
         // 테두리는 이 대상용 변환 결과가 실제로 클립보드에 있을 때만 강조색 (같은 대상에 두 번째로 붙일 때 포함).

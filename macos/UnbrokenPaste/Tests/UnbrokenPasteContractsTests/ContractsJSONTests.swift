@@ -81,7 +81,7 @@ final class ContractsJSONTests: XCTestCase {
     }
 
     func testEnumNamesMatchCore() {
-        XCTAssertEqual(TargetApp.allCases.map(\.rawValue), ["Hangul", "Notion", "Word", "Other"])
+        XCTAssertEqual(TargetApp.allCases.map(\.rawValue), ["Hangul", "Notion", "Word", "Excel", "Other"])
         XCTAssertEqual(MarkdownMode.allCases.map(\.rawValue), ["Strip", "Format"])
         XCTAssertEqual(SourceKind.plainText.rawValue, "PlainText")
         XCTAssertEqual(ContentKind.table.rawValue, "Table")

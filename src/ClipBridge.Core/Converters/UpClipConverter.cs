@@ -5,7 +5,7 @@ namespace ClipBridge.Core;
 // 모든 결과는 마지막에 줄간격 보정(PRD 6.4)의 공통 단계를 거친다
 public sealed class UpClipConverter : IClipConverter
 {
-    private static readonly TargetApp[] Targets = [TargetApp.Hangul, TargetApp.Notion, TargetApp.Word];
+    private static readonly TargetApp[] Targets = [TargetApp.Hangul, TargetApp.Notion, TargetApp.Word, TargetApp.Excel];
 
     public PreparedConversions Prepare(ClipboardSnapshot snapshot, ConversionOptions options, CancellationToken ct)
     {
@@ -47,6 +47,7 @@ public sealed class UpClipConverter : IClipConverter
             (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot, mode),   // C3
             (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot, mode),   // C4
             (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX
+            (SourceKind.Web, TargetApp.Excel) => WebToExcelConverter.Convert(snapshot),   // C9 (P1, #25). 그 밖의 → Excel은 Excel 기본 붙여넣기
             // 아직 없음: C7 인터넷 → Word(#10), C8 Markdown → Word(#12)
             _ => ConversionResult.Passthrough,
         };

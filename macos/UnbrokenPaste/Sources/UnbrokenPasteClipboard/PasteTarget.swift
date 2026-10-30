@@ -6,6 +6,7 @@ public enum TargetResolver {
     /// Exact bundle IDs. Hancom HWP is matched by `isHancomHwp` because its ID differs by version.
     public static let bundleTargets: [String: TargetApp] = [
         "com.microsoft.Word": .word,
+        "com.microsoft.Excel": .excel,  // P1 target expansion (#25)
         "notion.id": .notion,
         "net.golbin.hop": .hangul,  // HOP, open-source HWP editor for macOS
     ]
@@ -46,6 +47,8 @@ public enum TargetResolver {
         guard let title else { return .other }
         if title.range(of: "Notion", options: .caseInsensitive) != nil { return .notion }
         if title.contains("한컴독스") || title.range(of: "Hancom Docs", options: .caseInsensitive) != nil { return .hangul }
+        // Web HWP editor tab: "보고서.hwpx - 한컴오피스 Web v2 한글" (Safari often hides the address from Accessibility)
+        if title.contains("한컴오피스"), title.hasSuffix("한글") { return .hangul }
         return .other
     }
 
