@@ -1,7 +1,8 @@
 namespace ClipBridge.Core;
 
 // 실제 변환기: 출처를 판별하고 [출처 → 대상] 매트릭스(PRD 6.2, #14)대로 모든 대상·모드의 결과를 미리 만든다.
-// 아직 없는 변환기 칸은 통과로 둔다 (FR-16). 변환기 하나가 실패해도 그 칸만 통과한다
+// 아직 없는 변환기 칸은 통과로 둔다 (FR-16). 변환기 하나가 실패해도 그 칸만 통과한다.
+// 모든 결과는 마지막에 줄간격 보정(PRD 6.4)의 공통 단계를 거친다
 public sealed class UpClipConverter : IClipConverter
 {
     private static readonly TargetApp[] Targets = [TargetApp.Hangul, TargetApp.Notion, TargetApp.Word];
@@ -10,6 +11,7 @@ public sealed class UpClipConverter : IClipConverter
     {
         ct.ThrowIfCancellationRequested();
         var (source, content) = SourceDetector.Detect(snapshot);
+        var windows = LineSpacing.IsWindows(snapshot);
 
         var results = new Dictionary<PreparedConversions.Key, ConversionResult>();
         foreach (var target in Targets)
@@ -19,7 +21,7 @@ public sealed class UpClipConverter : IClipConverter
             ConversionResult result;
             try
             {
-                result = Convert(snapshot, source, target, mode);
+                result = LineSpacing.Finish(Convert(snapshot, source, target, mode), windows);
             }
             catch (Exception) when (!ct.IsCancellationRequested)
             {
@@ -44,7 +46,8 @@ public sealed class UpClipConverter : IClipConverter
             (SourceKind.Markdown, TargetApp.Notion) => Markdown(snapshot, text => MarkdownToNotionConverter.Convert(text, mode)),   // C6
             (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot),   // C3
             (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot),   // C4
-            // 아직 없음: C7 인터넷 → Word(#10), C8 Markdown → Word(#12), TX 일반 텍스트(#6)
+            (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX
+            // 아직 없음: C7 인터넷 → Word(#10), C8 Markdown → Word(#12)
             _ => ConversionResult.Passthrough,
         };
 
