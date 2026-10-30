@@ -13,9 +13,9 @@ internal sealed class TrayApp : ApplicationContext
     private readonly ClipboardMonitor _clipboard = new();
     private readonly PasteWatcher _paste = new();
     private readonly ClipboardWriter _writer = new();
-    // TODO(#14): 실제 변환기, TODO(#22): 메뉴에서 바꾼 옵션
+    // TODO(#22): 메뉴에서 바꾼 옵션
     private readonly CopyTracker _copies = new(
-        new StubClipConverter(), () => ConversionOptions.Default, log: message => DevLog.Info("convert", message));
+        new UpClipConverter(), () => ConversionOptions.Default, log: message => DevLog.Info("convert", message));
 
     public TrayApp()
     {

@@ -22,6 +22,10 @@ public class PasteTargetsTests
     [InlineData("msedge.exe", "notion - 개인 - Microsoft Edge", TargetApp.Notion)]
     [InlineData("whale.exe", "보고서.hwp - 한컴독스 - Whale", TargetApp.Hangul)]
     [InlineData("firefox.exe", "report.hwp - Hancom Docs — Mozilla Firefox", TargetApp.Hangul)]
+    [InlineData("brave.exe", "보고서.hwp - 한컴독스 - Brave", TargetApp.Hangul)]
+    [InlineData("Arc.exe", "기획안 | Notion", TargetApp.Notion)]
+    [InlineData("opera.exe", "Hancom Docs - Opera", TargetApp.Hangul)]
+    [InlineData("vivaldi.exe", "한컴독스 - Vivaldi", TargetApp.Hangul)]
     [InlineData("chrome.exe", "네이버 - Chrome", TargetApp.Other)]
     [InlineData("chrome.exe", null, TargetApp.Other)]
     // 브라우저가 아니면 제목에 Notion이 있어도 통과
