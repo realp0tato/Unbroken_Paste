@@ -157,57 +157,55 @@ def render_drip(filled, white, t, size, base_h, tips):
 
 
 def render_dance(filled, white, t, size, base_h):
-    """Slime with two little arms doing a hand-sweep dance: one forearm slides across the chest and back
-    while the other rests on the hip, then the arms swap. The body bobs on every beat and sways.
-    An arm in front of the body is drawn with a thin cut-out edge so it still reads in one colour."""
+    """Slime turned about 45 degrees with one round little arm (its right, on the right of the frame).
+    The arm pumps up and down in front of the chest twice per cycle, and the chest bounces with it:
+    the body swells slightly and hops on each down-stroke. The turn is drawn by narrowing the body and
+    sliding the eyes toward the side it faces. An arm in front of the body gets a thin cut-out edge
+    so it still reads in one colour."""
     cw, ch = size[0] * SS, size[1] * SS
     aspect = filled.width / filled.height
-    beat = abs(math.sin(2 * math.pi * t * 2))  # two beats per sweep, four per cycle
-    sy = 1 - 0.06 * (1 - beat)
-    bh, bw = base_h * sy * SS, base_h * aspect / math.sqrt(sy) * SS
-    sway = 1.2 * math.sin(2 * math.pi * t) * SS
+    eyes = ImageChops.subtract(filled, white)
+    eye_box = eyes.point(lambda v: 255 if v > 128 else 0).getbbox() or (0, 0, eyes.width, int(eyes.height * 0.7))
+    eye_bottom = eye_box[3] / eyes.height
+
+    stroke = math.sin(2 * math.pi * t * 2)  # arm height: +1 up, -1 down
+    pump = (1 - stroke) / 2  # chest bounce peaks on the down-stroke
+    turn = 0.84  # width seen at about 45 degrees
+    bh = base_h * (1 + 0.04 * pump) * SS
+    bw = base_h * aspect * turn * (1 + 0.05 * pump) * SS
     ground = ch - 1 * SS
-    bottom = ground - 1.5 * beat * SS
-    left, top = (cw - bw) / 2 + sway, bottom - bh
-    body_f = filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS)
-    body_w = white.resize(body_f.size, Image.LANCZOS)
+    bottom = ground - 1.2 * pump * SS
+    left, top = (cw - bw) / 2 - 0.8 * SS, bottom - bh
     body = Image.new("L", (cw, ch), 0)
-    body.paste(body_w, (round(left), round(top)), body_f)
+    body.paste(255, (round(left), round(top)), filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS))
+    face = eyes.resize((max(1, round(bw * 0.86)), max(1, round(bh))), Image.LANCZOS)
+    holes = Image.new("L", (cw, ch), 0)
+    lift_eyes = 0.08  # turned head: eyes slide toward the facing side and up a little, freeing the chest
+    holes.paste(face, (round(left + bw * 0.07 - bw * 0.10), round(top - bh * lift_eyes)))
+    body = ImageChops.subtract(body, holes)
 
-    arm_w, hand_r, gap = 2.0 * SS, 1.6 * SS, 1.2 * SS
-    chest = top + 0.86 * bh  # belly height, below the eyes
-    arms = Image.new("L", (cw, ch), 0)
-    draw = ImageDraw.Draw(arms)
+    # Round little arm: a short thick capsule from the right shoulder, ending in a round hand in front
+    # of the chest. The chest sits between the eyes and the bottom, so the arm never covers the eyes.
+    arm_w, hand_r, gap = 3.2 * SS, 2.6 * SS, 1.0 * SS
+    eye_bottom -= lift_eyes
+    chest = top + bh * (eye_bottom + (1 - eye_bottom) * 0.55)
+    shoulder = (left + bw * 0.86, chest - 0.03 * bh)
+    hand = (left + bw * 0.60, chest + 0.065 * bh * -stroke)
 
-    def limb(points, hand):
-        draw.line(points, fill=255, width=round(arm_w), joint="curve")
-        for x, y in points[:-1]:
-            draw.ellipse((x - arm_w / 2, y - arm_w / 2, x + arm_w / 2, y + arm_w / 2), fill=255)
-        hx, hy = hand
-        draw.ellipse((hx - hand_r, hy - hand_r, hx + hand_r, hy + hand_r), fill=255)
+    def arm(draw, grow):
+        w = arm_w + 2 * grow
+        draw.line([shoulder, hand], fill=255, width=round(w))
+        for x, y, r in ((*shoulder, w / 2), (*hand, hand_r + grow)):
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=255)
 
-    active = 0 if t < 0.5 else 1  # 0 = right arm sweeps, 1 = left arm sweeps
-    u = (t % 0.5) / 0.5
-    sweep = math.sin(math.pi * u) ** 1.3  # 0 = out at its own side, 1 = across the chest
-    for side in (0, 1):
-        sign = 1 if side == 0 else -1  # +1 = right edge of the body
-        shoulder = (left + bw / 2 + sign * bw * 0.44, chest - 0.05 * bh)
-        if side == active:
-            reach_out = left + bw / 2 + sign * (bw / 2 + 4.0 * SS)
-            reach_in = left + bw / 2 - sign * bw * 0.30
-            hx = reach_out + (reach_in - reach_out) * sweep
-            hy = chest + (0.6 * math.sin(2 * math.pi * u * 2)) * SS
-            elbow = (left + bw / 2 + sign * (bw / 2 + 3.2 * SS * (1 - 0.5 * sweep)), chest + 1.0 * SS)
-            limb([shoulder, elbow, (hx, hy)], (hx, hy))
-        else:  # hand on the hip, elbow pointing out
-            elbow = (left + bw / 2 + sign * (bw / 2 + 3.0 * SS), chest + 1.8 * SS)
-            hip = (left + bw / 2 + sign * bw * 0.46, bottom - 0.04 * bh)
-            limb([shoulder, elbow, hip], hip)
+    edge = Image.new("L", (cw, ch), 0)
+    arm(ImageDraw.Draw(edge), gap)
+    limb = Image.new("L", (cw, ch), 0)
+    arm(ImageDraw.Draw(limb), 0)
+    alpha = ImageChops.lighter(ImageChops.subtract(body, edge), limb)
 
-    edge = arms.filter(ImageFilter.MaxFilter(2 * round(gap / 2) + 1))
-    alpha = ImageChops.lighter(ImageChops.subtract(body, edge), arms)
     shadow = Image.new("L", (cw, ch), 0)
-    sw = base_h * aspect * SS * 0.9
+    sw = base_h * aspect * turn * SS * (1.0 - 0.15 * pump)
     ImageDraw.Draw(shadow).ellipse((cw / 2 - sw / 2, ground - 1.0 * SS, cw / 2 + sw / 2, ground + 0.5 * SS), fill=50)
     alpha = ImageChops.lighter(alpha, shadow)
     canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
