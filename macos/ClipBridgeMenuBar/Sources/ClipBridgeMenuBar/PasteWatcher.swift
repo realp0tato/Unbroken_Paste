@@ -101,8 +101,8 @@ final class PasteWatcher: NSObject {
             ) else { return }
             let app = NSWorkspace.shared.frontmostApplication
             let bundleID = app?.bundleIdentifier
-            let title = TargetResolver.needsWindowTitle(bundleID: bundleID) ? app.flatMap { focusedWindowTitle(pid: $0.processIdentifier) } : nil
-            let target = TargetResolver.resolve(bundleID: bundleID, appName: app?.localizedName, windowTitle: title)
+            let window = TargetResolver.needsWindowTitle(bundleID: bundleID) ? app.map { focusedWindow(pid: $0.processIdentifier) } : nil
+            let target = TargetResolver.resolve(bundleID: bundleID, appName: app?.localizedName, windowTitle: window?.title, windowURL: window?.url)
             Self.log.info("paste target=\(target.rawValue, privacy: .public) app=\(bundleID ?? "unknown", privacy: .public)")
             onPaste?(Paste(target: target, bundleID: bundleID, appName: app?.localizedName))
         default:
@@ -110,16 +110,27 @@ final class PasteWatcher: NSObject {
         }
     }
 
-    /// Focused window title via Accessibility, with a short timeout so a hung app cannot stall the key.
-    private func focusedWindowTitle(pid: pid_t) -> String? {
+    /// Focused window title and page address via Accessibility, with a short timeout so a hung app cannot stall the key.
+    /// Browsers that expose the address (Safari) report it as the window's AXDocument.
+    private func focusedWindow(pid: pid_t) -> (title: String?, url: String?) {
         let app = AXUIElementCreateApplication(pid)
         AXUIElementSetMessagingTimeout(app, 0.05)
-        var window: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(app, kAXFocusedWindowAttribute as CFString, &window) == .success,
-              let window, CFGetTypeID(window) == AXUIElementGetTypeID() else { return nil }
-        var title: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(window as! AXUIElement, kAXTitleAttribute as CFString, &title) == .success else { return nil }
-        return title as? String
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(app, kAXFocusedWindowAttribute as CFString, &value) == .success,
+              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return (nil, nil) }
+        let window = value as! AXUIElement
+        AXUIElementSetMessagingTimeout(window, 0.05)
+        return (Self.attribute(window, kAXTitleAttribute) as? String, Self.urlString(Self.attribute(window, kAXDocumentAttribute)))
+    }
+
+    private static func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
+        var value: CFTypeRef?
+        return AXUIElementCopyAttributeValue(element, name as CFString, &value) == .success ? value : nil
+    }
+
+    private static func urlString(_ value: CFTypeRef?) -> String? {
+        if let string = value as? String { return string }
+        return (value as? URL)?.absoluteString
     }
 }
 

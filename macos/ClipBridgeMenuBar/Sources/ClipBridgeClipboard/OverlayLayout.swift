@@ -24,6 +24,8 @@ public enum OverlayBadge: Equatable {
     /// Icon of the app with this bundle ID; `letter` is the fallback when no icon is found.
     /// `passthrough` marks a plain paste (no conversion), shown with a different border.
     case app(bundleID: String, letter: String, passthrough: Bool)
+    /// A letter badge, for a web target that has no app icon of its own (Hancom Docs web HWP → "한").
+    case letter(String, passthrough: Bool)
     /// The target app could not be identified.
     case unknown
 
@@ -38,6 +40,9 @@ public enum OverlayBadge: Equatable {
             return .app(bundleID: service.bundleID, letter: service.letter, passthrough: false)
         }
         guard let bundleID else { return .unknown }
+        if target == .hangul, TargetResolver.browsers.contains(bundleID) {
+            return .letter("한", passthrough: false)  // not the browser's icon
+        }
         return .app(bundleID: bundleID, letter: letter(appName: appName, bundleID: bundleID), passthrough: target == .other)
     }
 

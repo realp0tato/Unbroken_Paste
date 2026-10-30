@@ -68,7 +68,9 @@ UP 종료  ⌘Q
 | Notion 앱 | 번들 ID `notion.id` (맥에서 확인) |
 | 한글 (HOP) | 번들 ID `net.golbin.hop` (맥에서 확인). [HOP](https://github.com/golbin/hop)는 HWP 파일을 여는 오픈소스 편집기 |
 | 한글 (한컴오피스) | 번들 ID가 `com.hancom.`으로 시작하고 `hwp`가 들어 있거나, 앱 이름에 `HWP`·`한글`이 있음 (버전마다 ID가 달라 규칙으로 판별, 맥에서 미확인) |
-| Notion 웹 | 브라우저(Safari, Chrome, Edge, Firefox, Whale, Arc)의 앞쪽 창 제목에 `Notion`이 있음. 확인할 수 없으면 통과 |
+| 한글 (한컴독스 웹) | 브라우저 주소가 `webhwp.*hancomdocs.com`(웹 한글 편집기)이거나, 창 제목에 `한컴독스`·`Hancom Docs`가 있음. 아이콘은 `한` 글자 배지 |
+| Notion 웹 | 브라우저 주소가 `notion.so`·`*.notion.site`이거나, 창 제목에 `Notion`이 있음 |
+| (브라우저 공통) | Safari·Chrome·Edge·Firefox·Whale·Arc. 주소는 브라우저가 손쉬운 사용으로 알려줄 때만(Safari 등) 쓰고, 아니면 창 제목으로 판단. 둘 다 안 되면 통과 |
 | 그 외 | 통과 |
 
 설치된 앱의 번들 ID 확인: `osascript -e 'id of app "Microsoft Word"'` (앱 이름만 바꿔서 실행)

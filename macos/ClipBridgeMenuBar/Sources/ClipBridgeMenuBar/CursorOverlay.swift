@@ -48,6 +48,9 @@ final class CursorOverlay: NSObject {
         case let .app(id, letter, passthrough):
             badgeView.content = icon(for: id).map { .image($0) } ?? .letter(letter)
             badgeView.passthrough = passthrough
+        case let .letter(letter, passthrough):
+            badgeView.content = .letter(letter)
+            badgeView.passthrough = passthrough
         case .unknown:
             badgeView.content = .letter("?")
             badgeView.passthrough = true

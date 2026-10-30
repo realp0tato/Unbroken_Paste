@@ -42,6 +42,11 @@ final class OverlayLayoutTests: XCTestCase {
                        .app(bundleID: "net.golbin.hop", letter: "H", passthrough: false))
     }
 
+    func testHancomDocsInBrowserShowsHangulLetterNotBrowserIcon() {
+        XCTAssertEqual(OverlayBadge.forPaste(target: .hangul, bundleID: "com.apple.Safari", appName: "Safari"),
+                       .letter("한", passthrough: false))
+    }
+
     func testOtherAppsAreMarkedPassthrough() {
         XCTAssertEqual(OverlayBadge.forPaste(target: .other, bundleID: "com.apple.TextEdit", appName: "텍스트 편집기"),
                        .app(bundleID: "com.apple.TextEdit", letter: "텍", passthrough: true))
