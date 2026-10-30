@@ -1,10 +1,11 @@
+using System.Text.RegularExpressions;
 using ClipBridge.Core;
 
 namespace ClipBridge.Windows;
 
 // 붙여넣기 대상 판별 (FR-05, PRD 4.5·6.2). 모르는 앱은 Other이고 통과한다.
 // Windows API를 쓰지 않으므로 ClipBridge.Windows.Tests가 이 파일을 그대로 컴파일해 시험한다
-internal static class PasteTargets
+internal static partial class PasteTargets
 {
     private static readonly Dictionary<string, TargetApp> Apps = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -33,17 +34,25 @@ internal static class PasteTargets
         return IsBrowser(process) ? WebTarget(windowTitle) : TargetApp.Other;
     }
 
-    // macOS TargetResolver.webTarget의 제목 규칙과 같다. 주소는 붙여넣기 순간에 읽기엔 느려서 쓰지 않는다
+    // macOS TargetResolver.webTarget의 제목 규칙에 HWP 파일 이름을 더했다. 주소는 붙여넣기 순간에 읽기엔 느려서 쓰지 않는다.
+    // 한컴독스 웹 편집기(webhwp.hancomdocs.com)의 탭 제목은 "문서 이름.hwpx"뿐이라 파일 이름으로 찾는다.
+    // 문서 이름에 Notion이 들어갈 수 있으므로 Notion보다 먼저 본다
     private static TargetApp WebTarget(string? title)
     {
         if (title is null)
             return TargetApp.Other;
+        if (HwpFileName().IsMatch(title))
+            return TargetApp.Hangul;
         if (title.Contains("Notion", StringComparison.OrdinalIgnoreCase))
             return TargetApp.Notion;
         if (title.Contains("한컴독스") || title.Contains("Hancom Docs", StringComparison.OrdinalIgnoreCase))
             return TargetApp.Hangul;
         return TargetApp.Other;
     }
+
+    // "보고서.hwp", "문서 이름.hwpx - Chrome". ".hwpml"처럼 뒤에 글자가 더 붙은 것은 아니다
+    [GeneratedRegex(@"\.hwpx?(?![\p{L}\p{N}])", RegexOptions.IgnoreCase)]
+    private static partial Regex HwpFileName();
 }
 
 // 키 입력에서 붙여넣기(Ctrl+V, Shift+Insert)를 찾는다 (FR-05)

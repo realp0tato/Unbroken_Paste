@@ -26,6 +26,12 @@ public class PasteTargetsTests
     [InlineData("Arc.exe", "기획안 | Notion", TargetApp.Notion)]
     [InlineData("opera.exe", "Hancom Docs - Opera", TargetApp.Hangul)]
     [InlineData("vivaldi.exe", "한컴독스 - Vivaldi", TargetApp.Hangul)]
+    // 한컴독스 웹 편집기 탭 제목은 문서 이름뿐이다
+    [InlineData("chrome.exe", "문서 이름.hwpx - Chrome", TargetApp.Hangul)]
+    [InlineData("msedge.exe", "보고서.HWP - 개인 - Microsoft Edge", TargetApp.Hangul)]
+    [InlineData("chrome.exe", "Notion 정리.hwpx - Chrome", TargetApp.Hangul)]
+    [InlineData("chrome.exe", "설정.hwpml - Chrome", TargetApp.Other)]
+    [InlineData("notepad.exe", "보고서.hwpx - 메모장", TargetApp.Other)]
     [InlineData("chrome.exe", "네이버 - Chrome", TargetApp.Other)]
     [InlineData("chrome.exe", null, TargetApp.Other)]
     // 브라우저가 아니면 제목에 Notion이 있어도 통과
