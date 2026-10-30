@@ -32,6 +32,8 @@ internal sealed class TrayApp : ApplicationContext
         _tray = new NotifyIcon { Icon = _icon, Text = "UP", ContextMenuStrip = _menu, Visible = true };
         _animation = SlimeAnimation.Start(_tray, SystemInformation.SmallIconSize);
         _clipboard.Copied += OnCopied;
+        // 숨김 복사는 결과를 버리기만 하고 복사 아이콘도 띄우지 않는다 (macOS와 같음)
+        _clipboard.Concealed += _copies.Discard;
         _paste.Pasted += OnPaste;
         _writer.DataTaken += OnDataTaken;
         DevLog.Info("app", $"started markdown={_options.MarkdownMode} ai={_options.AiVerification}");

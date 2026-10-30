@@ -83,6 +83,52 @@ public class CopyTrackerTests
         Assert.Equal(1, tracker.Snapshot?.SequenceNumber);
     }
 
+    // #78: 숨김 복사가 오면 이전 복사의 스냅샷·결과를 버린다 (붙여넣기는 클립보드 그대로)
+    [Fact]
+    public async Task Discard_DropsSnapshotAndResults()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+        await tracker.OnCopied(Copy(1, "A"));
+        var prepared = tracker.Prepared!;
+
+        tracker.Discard(2);
+
+        Assert.Null(tracker.Snapshot);
+        Assert.Null(tracker.Prepared);
+        Assert.True(prepared.Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
+    }
+
+    // 숨김 복사보다 먼저 일어난 복사가 늦게 도착해도 되살아나지 않고, 그 뒤의 새 복사는 평소대로 준비된다
+    [Fact]
+    public async Task AfterDiscard_OlderCopyIsIgnoredAndNewerCopyWorks()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+
+        tracker.Discard(5);
+        await tracker.OnCopied(Copy(4, "A"));
+        Assert.Null(tracker.Snapshot);
+
+        await tracker.OnCopied(Copy(6, "B"));
+        Assert.Equal(StubClipConverter.Marker + "B", HangulText(tracker));
+    }
+
+    // 준비 중에 숨김 복사가 오면 그 결과는 버려진다
+    [Fact]
+    public async Task DiscardWhilePreparing_DropsLateResult()
+    {
+        var converter = new GatedConverter();
+        using var tracker = new CopyTracker(converter, () => ConversionOptions.Default);
+
+        var a = tracker.OnCopied(Copy(1, "A"));
+        converter.WaitStarted(1);
+        tracker.Discard(2);
+        converter.Release(1);
+        await a;
+
+        Assert.Null(tracker.Prepared);
+        Assert.True(converter.Prepared[1].Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
+    }
+
     // 로그에는 번호·변환기 ID만 남고 복사한 본문은 남지 않는다 (macOS 로그와 같은 규칙)
     [Fact]
     public async Task Log_HasConverterIdsButNoCopiedText()
