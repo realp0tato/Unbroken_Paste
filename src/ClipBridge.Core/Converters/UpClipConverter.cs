@@ -46,6 +46,9 @@ public sealed class UpClipConverter : IClipConverter
             (SourceKind.Markdown, TargetApp.Notion) => Markdown(snapshot, text => MarkdownToNotionConverter.Convert(text, mode)),   // C6
             (SourceKind.Markdown, TargetApp.Word) => Markdown(snapshot, text => MarkdownToWordConverter.Convert(text, mode)),   // C8
             (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot, mode),   // C3
+            // Word → 한글: 원본을 그대로 넘기면 한글이 Word가 함께 넣은 그림(EMF)·OLE 개체를 골라
+            // 수정할 수 없는 그림으로 붙인다. Word HTML을 웹처럼 정리해 한글 표·문단으로 (C3과 같은 결과)
+            (SourceKind.Other, TargetApp.Hangul) when SourceDetector.IsWord(snapshot) => WebToHangulConverter.Convert(snapshot, mode),
             (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot, mode),   // C4
             (SourceKind.Web, TargetApp.Word) => WebToWordConverter.Convert(snapshot, mode),   // C7
             (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX

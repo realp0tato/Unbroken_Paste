@@ -111,4 +111,34 @@ public class WebToExcelConverterTests
         Assert.Equal("시\t군\r\n\t17\r\n", result.PlainText);
         Assert.Null(result.Html);
     }
+
+    // Word → 한글: 원본 그대로면 한글이 그림·OLE 개체로 붙이므로 웹처럼 정리한 표로 (C3)
+    [Theory]
+    [InlineData("com.microsoft.Word", null)]
+    [InlineData("WINWORD.EXE", null)]
+    [InlineData(null, "com.microsoft.Word")]
+    public void Word_ToHangul_IsEditableTable(string? sourceApp, string? appBundleId)
+    {
+        var formats = new Dictionary<string, byte[]>
+        {
+            [ClipFormats.MacHtml] = System.Text.Encoding.UTF8.GetBytes(
+                "<html><head><style>p.MsoNormal{mso-style-parent:\"\"}</style></head><body><table class=MsoTableGrid>" +
+                "<tr><td><p class=MsoNormal>시</p></td><td><p class=MsoNormal>군</p></td></tr>" +
+                "<tr><td><p class=MsoNormal>5</p></td><td><p class=MsoNormal>17</p></td></tr></table></body></html>"),
+            ["com.adobe.pdf"] = [1],
+        };
+        if (appBundleId is not null)
+            formats["com.microsoft.appbundleid"] = System.Text.Encoding.UTF8.GetBytes(appBundleId);
+        var word = new ClipboardSnapshot(formats, sourceApp, 1);
+
+        using var prepared = new UpClipConverter().Prepare(word, ConversionOptions.Default, CancellationToken.None);
+        var result = prepared.Get(TargetApp.Hangul, ConversionOptions.Default);
+
+        Assert.Equal("C3", result.ConverterId);
+        Assert.Contains("<table border=\"1\"", result.Html);
+        Assert.DoesNotContain("mso", result.Html);
+        // 다른 앱에서 온 기타 출처는 지금처럼 통과
+        Assert.True(new UpClipConverter().Prepare(word with { SourceApp = "com.apple.Preview", Formats = new Dictionary<string, byte[]>(formats.Where(f => f.Key != "com.microsoft.appbundleid")) },
+            ConversionOptions.Default, CancellationToken.None).Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
+    }
 }
