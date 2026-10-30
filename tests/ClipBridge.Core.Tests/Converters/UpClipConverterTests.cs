@@ -135,8 +135,8 @@ public class UpClipConverterTests
             data.Add("markdown", TargetApp.Notion, mode, "C6");
             data.Add("markdown", TargetApp.Word, mode, "PASS");   // C8 #12 전
             data.Add("markdown", TargetApp.Other, mode, "PASS");
-            data.Add("web", TargetApp.Hangul, mode, "PASS");      // C3 #16 전
-            data.Add("web", TargetApp.Notion, mode, "PASS");      // C4 #17 전
+            data.Add("web", TargetApp.Hangul, mode, "C3");
+            data.Add("web", TargetApp.Notion, mode, "C4");
             data.Add("web", TargetApp.Word, mode, "PASS");        // C7 #10 전
             data.Add("plain", TargetApp.Hangul, mode, "PASS");    // TX #6 전
             data.Add("other", TargetApp.Notion, mode, "PASS");
@@ -192,5 +192,46 @@ public class UpClipConverterTests
         cts.Cancel();
 
         Assert.Throws<OperationCanceledException>(() => new UpClipConverter().Prepare(MacText(Markdown), ConversionOptions.Default, cts.Token));
+    }
+
+    // ---- C3·C4 ----
+
+    [Theory]
+    [InlineData("web/mac-safari-blog")]
+    [InlineData("web/mac-chrome-table")]
+    public void WebFixtures_ToHangul_UseDocHtml(string fixture)
+    {
+        var result = WebToHangulConverter.Convert(Fixture.Load(fixture));
+
+        Assert.Equal("C3", result.ConverterId);
+        Assert.DoesNotMatch("<(h[1-6]|ul|ol|li|pre|a)[ >]", result.Html!);
+        Assert.Contains("<table border=\"1\"", result.Html);
+        Assert.DoesNotContain("빈칸", result.Html);
+    }
+
+    [Fact]
+    public void WebFixture_ToNotion_KeepsHeadingsCodeAndLinks()
+    {
+        var result = WebToNotionConverter.Convert(Fixture.Load("web/mac-chrome-blog"));
+
+        Assert.Equal("C4", result.ConverterId);
+        Assert.Contains("<h2>클립보드 접근</h2>", result.Html);
+        Assert.Contains("<pre><code>navigator.clipboard", result.Html);
+        Assert.Contains("<a href=\"https://developer.mozilla.org/", result.Html);
+        Assert.DoesNotContain("jsCopy", result.Html);
+    }
+
+    [Fact]
+    public void ClaudeDragCopy_IsWeb_AndGetsC3()
+    {
+        // 복사 버튼이 아니라 드래그로 복사하면 Markdown 기호가 없는 글자 + 화면 HTML이 온다 (#16 댓글)
+        var snapshot = Snapshot("com.anthropic.claudefordesktop",
+            (ClipFormats.MacHtml, "<h2 aria-level=\"4\">제목</h2><ul><li>항목</li></ul>"),
+            (ClipFormats.MacUtf8Text, "제목\n\n항목"),
+            (SourceDetector.MacChromiumSourceUrl, "https://claude.ai/chat/x"));
+        using var prepared = new UpClipConverter().Prepare(snapshot, ConversionOptions.Default, CancellationToken.None);
+
+        Assert.Equal(SourceKind.Web, prepared.Source);
+        Assert.Equal("C3", prepared.Get(TargetApp.Hangul, ConversionOptions.Default).ConverterId);
     }
 }

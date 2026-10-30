@@ -1,0 +1,13 @@
+{
+  "description" : "글+표 섞임: 위키백과 '대한민국의 행정 구역' 표 위 문단부터 표 끝까지 (https://ko.wikipedia.org/wiki/대한민국의_행정_구역)",
+  "formats" : [
+    "public.html",
+    "public.utf8-plain-text",
+    "org.chromium.internal.source-rfh-token",
+    "org.chromium.source-url"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.6.2",
+  "sourceApp" : "com.google.Chrome",
+  "sourceAppVersion" : "156.0.8078.76"
+}
