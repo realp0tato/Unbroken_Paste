@@ -18,7 +18,7 @@ final class HelperProtocolTests: XCTestCase {
         let json = try sorted(.prepare(id: 1, snapshot: snapshot, options: .default))
 
         // README example: "a<b" as Base64 is "YTxi"
-        XCTAssertEqual(json, #"{"id":1,"options":{"aiVerification":true,"markdownMode":"Strip"},"snapshot":{"formats":{"public.utf8-plain-text":"YTxi"},"sequenceNumber":1},"type":"prepare"}"#)
+        XCTAssertEqual(json, #"{"id":1,"options":{"aiVerification":true,"markdownMode":"Format"},"snapshot":{"formats":{"public.utf8-plain-text":"YTxi"},"sequenceNumber":1},"type":"prepare"}"#)
     }
 
     func testSetOptionsAndShutdownOmitUnusedFields() throws {
