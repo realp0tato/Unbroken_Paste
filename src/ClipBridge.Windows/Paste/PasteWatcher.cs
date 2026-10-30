@@ -1,12 +1,12 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Text;
 using ClipBridge.Core;
 
 namespace ClipBridge.Windows;
 
-// ProcessPath는 붙여넣는 앱의 실행 파일 경로 (커서 아이콘, #5)
-internal sealed record Paste(string Key, TargetApp Target, string? Process, string? ProcessPath);
+// ProcessPath는 붙여넣는 앱의 실행 파일 경로 (커서 아이콘, #5).
+// 브라우저일 때 Host는 미리 읽어 둔 주소의 도메인, Via는 판별 근거(uia: 주소, title: 창 제목) (#79)
+internal sealed record Paste(string Key, TargetApp Target, string? Process, string? ProcessPath, string? Host = null, string? Via = null);
 
 // 붙여넣기 키(Ctrl+V, Shift+Insert)를 감지하고 대상 앱을 판별한다 (FR-05).
 // 저수준 키보드 훅은 키를 막거나 다시 보내지 않고 그대로 넘긴다. 훅은 이 객체를 만든 UI 스레드에서 돈다.
@@ -26,13 +26,15 @@ internal sealed class PasteWatcher : NativeWindow, IDisposable
 
     private readonly HookProc _callback;  // 네이티브 코드가 들고 있으므로 필드로 붙잡아 둔다
     private readonly PasteKeyDetector _keys = new();
+    private readonly BrowserAddresses _addresses;
     private readonly System.Windows.Forms.Timer _watchdog = new() { Interval = 2000 };
     private nint _hook;
     private long _lastHookTick;
     private long _lastKeyTick;
 
-    public PasteWatcher()
+    public PasteWatcher(BrowserAddresses addresses)
     {
+        _addresses = addresses;
         _callback = OnHook;
         // 메시지 전용 창: Raw Input을 받는 용도
         CreateHandle(new CreateParams { Parent = HWND_MESSAGE });
@@ -115,20 +117,20 @@ internal sealed class PasteWatcher : NativeWindow, IDisposable
         return NativeMethods.CallNextHookEx(_hook, code, wParam, lParam);
     }
 
-    private static Paste Resolve(string key)
+    private Paste Resolve(string key)
     {
         var window = NativeMethods.GetForegroundWindow();
         var path = WindowProcess.ImagePath(window);
         var process = Path.GetFileName(path);
-        // 창 제목에는 문서 이름이 들어 있으므로 브라우저일 때만 읽고 로그에도 남기지 않는다
-        var title = PasteTargets.IsBrowser(process) ? WindowTitle(window) : null;
-        return new Paste(key, PasteTargets.Resolve(process, title), process, path);
-    }
+        if (!PasteTargets.IsBrowser(process))
+            return new Paste(key, PasteTargets.Resolve(process, null), process, path);
 
-    private static string? WindowTitle(nint window)
-    {
-        var buffer = new StringBuilder(512);
-        return NativeMethods.GetWindowText(window, buffer, buffer.Capacity) > 0 ? buffer.ToString() : null;
+        // 창 제목에는 문서 이름이 들어 있으므로 브라우저일 때만 읽고 로그에도 남기지 않는다.
+        // 주소는 미리 읽어 둔 것만 쓴다 (#79). 없으면 제목으로 판단한다
+        var title = WindowProcess.Title(window);
+        string? host = null;
+        var via = title is not null && _addresses.TryGetHost(window, title, out host) && host is not null ? "uia" : "title";
+        return new Paste(key, PasteTargets.Resolve(process, title, host), process, path, host, via);
     }
 
     private static bool IsDown(int vk) => (NativeMethods.GetAsyncKeyState(vk) & 0x8000) != 0;
@@ -170,9 +172,6 @@ internal sealed class PasteWatcher : NativeWindow, IDisposable
 
         [DllImport("user32.dll")]
         public static extern nint GetForegroundWindow();
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern int GetWindowText(nint window, StringBuilder text, int maxCount);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool RegisterRawInputDevices(RawInputDevice[] devices, uint count, uint size);

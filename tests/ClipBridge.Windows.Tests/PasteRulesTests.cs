@@ -32,6 +32,31 @@ public class PasteTargetsTests
     public void Browsers(string? process, string? title, TargetApp expected) =>
         Assert.Equal(expected, PasteTargets.Resolve(process, title));
 
+    // #79: 미리 읽어 둔 주소가 있으면 제목보다 먼저 본다 (macOS webTarget과 같음)
+    [Theory]
+    [InlineData("chrome.exe", "회의록 - Chrome", "www.notion.so", TargetApp.Notion)]
+    [InlineData("msedge.exe", "기획안 - Microsoft Edge", "notion.so", TargetApp.Notion)]
+    [InlineData("whale.exe", "팀 위키 - Whale", "team.notion.site", TargetApp.Notion)]
+    [InlineData("chrome.exe", "Notion 사용법 - 네이버 블로그 - Chrome", "blog.naver.com", TargetApp.Notion)]  // 주소가 Notion이 아니면 제목 규칙
+    [InlineData("chrome.exe", "검색 - Chrome", "www.google.com", TargetApp.Other)]
+    [InlineData("chrome.exe", "가짜 - Chrome", "notion.so.example.com", TargetApp.Other)]
+    [InlineData("notepad.exe", "메모", "www.notion.so", TargetApp.Other)]  // 브라우저가 아니면 주소를 보지 않는다
+    public void BrowserAddress(string process, string title, string host, TargetApp expected) =>
+        Assert.Equal(expected, PasteTargets.Resolve(process, title, host));
+
+    // 주소창 값 → 도메인. 브라우저는 https://를 빼고 보여 주기도 한다
+    [Theory]
+    [InlineData("https://www.notion.so/team/abc?pvs=4", "www.notion.so")]
+    [InlineData("notion.so/회의록-123", "notion.so")]
+    [InlineData("WWW.Notion.SO/x", "www.notion.so")]
+    [InlineData("  team.notion.site/wiki  ", "team.notion.site")]
+    [InlineData("노션 사용법", null)]   // 검색어 입력 중
+    [InlineData("notion", null)]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    public void HostOfAddressBar(string? address, string? expected) =>
+        Assert.Equal(expected, PasteTargets.HostOf(address));
+
     [Theory]
     [InlineData("chrome.exe", true)]
     [InlineData("MSEDGE.EXE", true)]

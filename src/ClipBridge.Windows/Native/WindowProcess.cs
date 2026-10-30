@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ClipBridge.Windows;
 
-// 창을 만든 프로세스의 실행 파일 경로. 복사한 앱(클립보드 소유 창)과 붙여넣는 앱(앞 창) 판별에 쓴다
+// 창을 만든 프로세스의 실행 파일 경로와 창 제목. 복사한 앱(클립보드 소유 창)과 붙여넣는 앱(앞 창) 판별에 쓴다
 internal static class WindowProcess
 {
     private const uint ProcessQueryLimitedInformation = 0x1000;
@@ -29,6 +29,16 @@ internal static class WindowProcess
             CloseHandle(process);
         }
     }
+
+    // 창 제목. 문서 이름이 들어 있을 수 있으므로 로그에 남기지 않는다
+    public static string? Title(nint window)
+    {
+        var buffer = new StringBuilder(512);
+        return GetWindowText(window, buffer, buffer.Capacity) > 0 ? buffer.ToString() : null;
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetWindowText(nint window, StringBuilder text, int maxCount);
 
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(nint window, out uint processId);

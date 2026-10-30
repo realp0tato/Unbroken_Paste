@@ -25,6 +25,11 @@
     <EmbeddedResource Include="Resources\Slime\*.png" LogicalName="ClipBridge.Windows.Slime.%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- 브라우저 주소창을 읽는 UI Automation(System.Windows.Automation)이 WPF 쪽 어셈블리에 있다 (#79) -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ClipBridge.Core\ClipBridge.Core.csproj" />
   </ItemGroup>
