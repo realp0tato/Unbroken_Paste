@@ -122,8 +122,10 @@ dotnet run --project tools/ClipBridge.FixtureDump -- restore excel/win-basic-tab
 | 5-4 | 이미지·탐색기 파일을 복사해 붙이기 | 평소처럼 붙음 | | | | |
 | 5-5 | **Shift+Insert**로 붙이기 (한글·Notion) | 로그 `key=Shift+Insert`, Ctrl+V와 같은 결과 | | | | |
 | 5-6 | 편집 메뉴·오른쪽 클릭 메뉴로 **복사** | 로그에 `[copy]` 줄이 나오고, 그 뒤 Ctrl+V는 변환됨 | | | | |
-| 5-7 | 편집 메뉴·오른쪽 클릭 메뉴·리본으로 **붙여넣기** | 오류 없이 붙음 (변환은 안 돼도 정상, #26) | | | | |
-| 5-8 | Ctrl+Shift+V (서식 없이 붙여넣기) | UP이 끼어들지 않음 (로그에 `[paste]` 줄 없음) | | | | |
+| 5-7 | 한글·Word·Notion에서 편집 메뉴·리본·오른쪽 클릭으로 **붙여넣기** (#26) | Ctrl+V와 같은 변환 결과. 창을 바꾸면 로그 `focus target=… plan=WriteResult`, 붙일 때 `data taken … by=Hwp.exe` 등 | | | | |
+| 5-7b | 위 뒤에 메모장으로 가서 메뉴로 붙여넣기 | 원래 내용이 붙음 (로그 `focus target=Other … plan=RestoreOriginal`) | | | | |
+| 5-7c | 창을 여러 번 바꾼 뒤 Win+V (클립보드 기록) | 원래 복사한 항목만 있고 UP이 쓴 변환 결과는 쌓이지 않음 | | | | |
+| 5-8 | Ctrl+Shift+V (서식 없이 붙여넣기) | 로그에 `[paste] paste` 줄 없음. 한글·Word·Notion에서는 앞 창 미리 쓰기(#26)로 변환 결과의 글자가 서식 없이 붙음 (원본 글자와 같음) | | | | |
 | 5-9 | 비밀번호 관리자(1Password·Bitwarden 등)에서 비밀번호 복사 후 붙이기 | 로그에 `ignored concealed copy` 줄, 원래 내용이 붙음 | | | | |
 | 5-10 | Notion 웹(Chrome·Edge·Whale)에 붙이기 | 로그 `target=Notion url=www.notion.so via=uia` | | | | |
 | 5-11 | 클립보드가 잠긴 상태·변환 실패 (예: 아주 큰 표를 복사하자마자 붙이기) | 원본 손실·입력 누락·중복 삽입 없음 | | | | |
