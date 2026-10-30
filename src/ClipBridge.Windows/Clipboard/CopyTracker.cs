@@ -13,6 +13,8 @@ internal sealed class CopyTracker(
     private readonly TimeSpan _expiry = expiry ?? TimeSpan.FromSeconds(120);
     private readonly Lock _lock = new();
     private ClipboardSnapshot? _snapshot;
+    // _snapshot의 모든 포맷 (원본 되돌리기용, #80). 아직 읽는 중이면 null
+    private IReadOnlyDictionary<string, byte[]>? _original;
     private PreparedConversions? _prepared;
     private CancellationTokenSource? _preparing;
     // 지금까지 본 가장 최근 복사의 번호 (숨김 복사 포함)
@@ -23,6 +25,24 @@ internal sealed class CopyTracker(
     public ClipboardSnapshot? Snapshot
     {
         get { lock (_lock) return _snapshot; }
+    }
+
+    // 원본을 되돌릴 때 쓸 포맷. 모든 포맷을 아직 읽지 못했거나 snapshot이 지금 복사가 아니면 snapshot의 포맷 (#80)
+    public IReadOnlyDictionary<string, byte[]> OriginalOf(ClipboardSnapshot snapshot)
+    {
+        lock (_lock)
+            return ReferenceEquals(snapshot, _snapshot) && _original is not null ? _original : snapshot.Formats;
+    }
+
+    // ClipboardMonitor가 Copied 뒤에 읽은 모든 포맷. 그사이 새 복사가 왔으면 버린다.
+    // 메모리에만 두고 다음 복사 때 버린다 (NFR-07)
+    public void SetOriginal(long sequenceNumber, IReadOnlyDictionary<string, byte[]> formats)
+    {
+        lock (_lock)
+        {
+            if (_snapshot?.SequenceNumber == sequenceNumber)
+                _original = formats;
+        }
     }
 
     // 붙여넣기 때 쓸 결과. 아직 준비 중이거나 만료됐으면 null이고, 그때는 원본으로 동작한다 (FR-16)
@@ -49,6 +69,7 @@ internal sealed class CopyTracker(
             ReleasePrepared();
             _preparing?.Cancel();
             _snapshot = snapshot;
+            _original = null;
             _preparing = preparing = new CancellationTokenSource();
         }
         return Task.Run(() => Prepare(snapshot, preparing.Token));
@@ -68,6 +89,7 @@ internal sealed class CopyTracker(
             _preparing = null;
             ReleasePrepared();
             _snapshot = null;
+            _original = null;
         }
         log?.Invoke($"discarded seq={sequenceNumber}");
     }
@@ -79,6 +101,7 @@ internal sealed class CopyTracker(
             _preparing?.Cancel();
             ReleasePrepared();
             _snapshot = null;
+            _original = null;
         }
     }
 

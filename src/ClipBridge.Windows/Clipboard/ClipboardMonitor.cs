@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ClipBridge.Core;
 
@@ -33,6 +34,9 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
 
     // 숨김 표시가 된 복사(비밀번호 관리자 등, #78). 내용은 읽지 않고 시퀀스 번호만 알린다. 백그라운드 스레드
     public event Action<long>? Concealed;
+
+    // Copied 뒤에, 원본을 되돌릴 때 쓸 모든 포맷을 원래 순서대로 읽어 알린다 (#80). 백그라운드 스레드
+    public event Action<long, IReadOnlyDictionary<string, byte[]>>? OriginalRead;
 
     // UP이 클립보드에 기록한 뒤 호출한다 (#3). 이 번호의 변경은 새 복사로 취급하지 않는다
     public void RememberOwnWrite(long sequenceNumber)
@@ -112,6 +116,24 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
         var snapshot = clipboard!.ToSnapshot();
         DevLog.Info("copy", $"copy seq={snapshot.SequenceNumber} app={snapshot.SourceApp ?? "unknown"} formats={string.Join(",", snapshot.Formats.Keys)}");
         Copied?.Invoke(snapshot);
+
+        // 변환 준비를 먼저 시작한 뒤에 나머지 포맷을 읽는다. 원본 앱(Excel 등)이 이때 OLE 개체·이미지를 만든다
+        ReadOriginal(snapshot);
+    }
+
+    private void ReadOriginal(ClipboardSnapshot snapshot)
+    {
+        var started = Stopwatch.GetTimestamp();
+        var converted = snapshot.Formats.Keys.ToHashSet();
+        var clipboard = ClipboardReader.Read(
+            maxBytesPerFormat: OriginalFormats.MaxBytesPerFormat, include: name => OriginalFormats.ShouldRead(name, converted));
+        if (!IsCurrent(clipboard, snapshot.SequenceNumber))
+            return;
+
+        var original = OriginalFormats.Merge(clipboard!.Formats.Select(f => (f.Name, f.Data)), snapshot.Formats, out var skipped);
+        DevLog.Info("copy", $"original seq={snapshot.SequenceNumber} formats={original.Count} bytes={original.Values.Sum(d => (long)d.Length)} " +
+            $"skipped={(skipped.Count == 0 ? "-" : string.Join(",", skipped))} elapsed={Stopwatch.GetElapsedTime(started).TotalMilliseconds:0.0}ms");
+        OriginalRead?.Invoke(snapshot.SequenceNumber, original);
     }
 
     // 읽는 사이에 다시 복사됐으면 그 복사의 알림이 따로 오므로 버린다

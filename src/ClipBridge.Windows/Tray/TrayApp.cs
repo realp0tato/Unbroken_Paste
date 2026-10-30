@@ -36,6 +36,7 @@ internal sealed class TrayApp : ApplicationContext
         _clipboard.Copied += OnCopied;
         // 숨김 복사는 결과를 버리기만 하고 복사 아이콘도 띄우지 않는다 (macOS와 같음)
         _clipboard.Concealed += _copies.Discard;
+        _clipboard.OriginalRead += _copies.SetOriginal;
         _paste.Pasted += OnPaste;
         _writer.DataTaken += OnDataTaken;
         DevLog.Info("app", $"started markdown={_options.MarkdownMode} ai={_options.AiVerification}");
@@ -140,7 +141,8 @@ internal sealed class TrayApp : ApplicationContext
 
         var plan = PastePlan.Decide(
             snapshot?.SequenceNumber, ClipboardReader.SequenceNumber(), _writer.OwnsClipboard, _writer.LastWrite, result, paste.Target);
-        var written = _writer.Apply(plan, snapshot, paste.Target);
+        var original = snapshot is null ? PastePlan.Leave.Payload : _copies.OriginalOf(snapshot);
+        var written = _writer.Apply(plan, snapshot, original, paste.Target);
         if (written is { } sequenceNumber)
             _clipboard.RememberOwnWrite(sequenceNumber);
 

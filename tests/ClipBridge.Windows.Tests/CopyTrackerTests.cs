@@ -129,6 +129,27 @@ public class CopyTrackerTests
         Assert.True(converter.Prepared[1].Get(TargetApp.Hangul, ConversionOptions.Default).IsPassthrough);
     }
 
+    // #80: 모든 포맷을 읽은 뒤에는 원본 되돌리기에 그것을 쓰고, 읽기 전이면 스냅샷 포맷을 쓴다
+    [Fact]
+    public async Task OriginalOf_UsesFullFormatsOnlyForCurrentCopy()
+    {
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default);
+        var first = Copy(1, "A");
+        await tracker.OnCopied(first);
+        Assert.Same(first.Formats, tracker.OriginalOf(first));
+
+        var full = new Dictionary<string, byte[]> { ["Biff12"] = [1], [ClipFormats.WinUnicodeText] = first.Formats[ClipFormats.WinUnicodeText] };
+        tracker.SetOriginal(1, full);
+        Assert.Same(full, tracker.OriginalOf(first));
+
+        // 다음 복사가 오면 이전 원본은 버린다. 늦게 온 이전 복사의 원본도 받지 않는다
+        var second = Copy(2, "B");
+        await tracker.OnCopied(second);
+        tracker.SetOriginal(1, full);
+        Assert.Same(second.Formats, tracker.OriginalOf(second));
+        Assert.Same(first.Formats, tracker.OriginalOf(first));
+    }
+
     // 로그에는 번호·변환기 ID만 남고 복사한 본문은 남지 않는다 (macOS 로그와 같은 규칙)
     [Fact]
     public async Task Log_HasConverterIdsButNoCopiedText()
