@@ -13,6 +13,7 @@ final class PasteWatcher: NSObject {
     struct Paste {
         let target: TargetApp
         let bundleID: String?
+        let appName: String?
     }
 
     static let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
@@ -103,7 +104,7 @@ final class PasteWatcher: NSObject {
             let title = TargetResolver.needsWindowTitle(bundleID: bundleID) ? app.flatMap { focusedWindowTitle(pid: $0.processIdentifier) } : nil
             let target = TargetResolver.resolve(bundleID: bundleID, appName: app?.localizedName, windowTitle: title)
             Self.log.info("paste target=\(target.rawValue, privacy: .public) app=\(bundleID ?? "unknown", privacy: .public)")
-            onPaste?(Paste(target: target, bundleID: bundleID))
+            onPaste?(Paste(target: target, bundleID: bundleID, appName: app?.localizedName))
         default:
             break
         }

@@ -55,6 +55,10 @@ UP 종료  ⌘Q
 - **손쉬운 사용 권한:** 처음 실행할 때 한 번 요청해요. 허용하기 전에는 메뉴 맨 위에 `⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기`가 보이고, 붙여넣기는 변환 없이 평소대로 돼요. 설정에서 허용하면 2초 안에 자동으로 켜지고 항목이 사라져요.
   - `./scripts/build-app.sh`로 다시 빌드하면 서명이 바뀌어서 권한이 풀릴 수 있어요. 그러면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 UP를 지우고(−) 다시 허용하세요.
   - `swift run`으로 실행하면 권한은 UP가 아니라 실행한 터미널 앱에 붙어요.
+- **포인터 옆 동그라미 아이콘 (#38):** 복사하면 UP 슬라임이 0.8초, 붙여넣으면 대상 앱 아이콘이 1초 동안 포인터 오른쪽 아래(지름 30pt)에 보이고 0.15초에 걸쳐 사라져요. 포인터를 따라다니고, 화면 가장자리에서는 반대쪽으로 뒤집혀요.
+  - Notion 웹은 브라우저 대신 Notion 아이콘, 변환 대상(한글·Notion·Word)은 강조색 테두리, 그 외 앱(통과)은 얇은 회색 테두리예요. 아이콘이 없으면 앱 이름 첫 글자, 앱을 모르면 `?`를 보여줘요.
+  - 포커스를 가져가지 않고 클릭이 통과하는 패널이라 입력·IME를 방해하지 않아요. 모든 Space와 전체 화면 앱 위에도 떠요.
+  - 대상 앱이 데이터를 가져가는 순간 바로 사라지게 하는 건 클립보드 기록(#35)에서 `CursorOverlay.dataTaken()`으로 연결해요.
 
 ### 대상 앱 매핑 (PRD 4.5)
 
@@ -81,6 +85,8 @@ UP 종료  ⌘Q
 | `Sources/ClipBridgeClipboard/PasteboardSource.swift` | `NSPasteboard` 접근 인터페이스. 테스트에서는 가짜 클립보드로 바꿔 끼움 |
 | `Sources/ClipBridgeClipboard/PasteTarget.swift` | 대상 앱 판별(`TargetResolver`)과 Cmd+V 판정(`PasteKey`) (#34) |
 | `Sources/ClipBridgeMenuBar/PasteWatcher.swift` | 이벤트 탭, 손쉬운 사용 권한 요청·재확인, 브라우저 창 제목 읽기 (#34) |
+| `Sources/ClipBridgeMenuBar/CursorOverlay.swift` | 포인터 옆 동그라미 아이콘 패널 (#38) |
+| `Sources/ClipBridgeClipboard/OverlayLayout.swift` | 아이콘 위치 계산(가장자리 뒤집기)과 보여줄 배지 결정 (#38) |
 | `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |

@@ -23,6 +23,7 @@ final class StatusController: NSObject {
     private var timer: Timer?
 
     private let pasteWatcher = PasteWatcher()
+    private let overlay = CursorOverlay()
 
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
@@ -63,7 +64,14 @@ final class StatusController: NSObject {
         RunLoop.main.add(timer, forMode: .common)  // keep animating while the menu is open
         self.timer = timer
 
+        overlay.upImage = frames.first
         pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
+        pasteWatcher.onPaste = { [weak self] paste in
+            // Runs inside the event tap: draw the badge after the key is on its way (NFR-11).
+            DispatchQueue.main.async {
+                self?.overlay.showPaste(target: paste.target, bundleID: paste.bundleID, appName: paste.appName)
+            }
+        }
         pasteWatcher.start()
         refreshPermission()
     }
@@ -201,6 +209,7 @@ final class StatusController: NSObject {
         let newFrames = entry.frames()
         guard !newFrames.isEmpty else { return }
         frames = newFrames
+        overlay.upImage = newFrames.first
         animator.frameCount = newFrames.count
         shownFrame = -1
         currentCharacter = id
@@ -246,6 +255,7 @@ final class StatusController: NSObject {
             nextPoll = now + Self.pollInterval
             switch monitor.poll() {
             case .copied?:
+                overlay.showCopy()
                 if settings.reactOnCopy {
                     animator.react(seconds: Self.copyReaction, now: now)
                 }
