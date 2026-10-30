@@ -12,7 +12,10 @@ internal static class ExcelClipboard
 
     // Excel HTML이 있으면 서식까지 읽고, 없으면 TSV로 값만 읽는다.
     // HTML이 있는데 표로 읽을 수 없으면(불규칙·중첩·크기 초과) TSV로 바꾸지 않고 통과한다 (PRD 6.3.10)
-    public static TableModel? ReadTable(ClipboardSnapshot snapshot)
+    public static TableModel? ReadTable(ClipboardSnapshot snapshot) =>
+        Parse(snapshot) is { } table ? ClearBlankPlaceholders(table) : null;
+
+    private static TableModel? Parse(ClipboardSnapshot snapshot)
     {
         if (snapshot.Formats.TryGetValue(ClipFormats.MacHtml, out var macHtml))
             return macHtml.Length > MaxHtmlBytes ? null : ExcelHtmlTableParser.Parse(Encoding.UTF8.GetString(macHtml));
@@ -25,6 +28,23 @@ internal static class ExcelClipboard
         var text = ClipText.GetPlainText(snapshot);
         return text is null || text.Length > MaxTextLength ? null : TsvParser.Parse(text);
     }
+
+    // 위키백과 등에서 복사한 표를 Excel에 붙이면 빈 칸 표시 글자("빈칸")가 셀 값으로 남는다.
+    // 웹 정리(#9)가 지우는 것과 맞춰, 값이 정확히 "빈칸"인 셀만 비운다
+    public const string BlankPlaceholder = "빈칸";
+
+    private static TableModel ClearBlankPlaceholders(TableModel table)
+    {
+        if (!table.Rows.Any(row => row.Any(IsBlankPlaceholder)))
+            return table;
+
+        var rows = table.Rows
+            .Select(row => (IReadOnlyList<TableCell>)row.Select(cell => IsBlankPlaceholder(cell) ? cell with { Text = "" } : cell).ToList())
+            .ToList();
+        return TableModel.Create(rows, table.ColumnWidths)!;
+    }
+
+    private static bool IsBlankPlaceholder(TableCell cell) => cell.Text.Trim() == BlankPlaceholder;
 
     // 글(단일 열): 셀마다 한 문단. 빈 셀은 문단을 만들지 않는다 (C1·C2)
     public static string TextHtml(TableModel table) =>
