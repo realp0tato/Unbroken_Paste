@@ -16,12 +16,15 @@ public class PasteTargetsTests
     public void DesktopApps(string? process, string? title, TargetApp expected) =>
         Assert.Equal(expected, PasteTargets.Resolve(process, title));
 
-    // 브라우저는 창 제목으로 Notion 웹·한컴독스 웹 한글을 찾고, 모르면 통과 (macOS 제목 규칙과 같음)
+    // 브라우저는 창 제목으로 Notion 웹을 찾고, 모르면 통과 (macOS 제목 규칙과 같음).
+    // 한컴독스 웹 한글은 macOS만 지원하므로 Windows에서는 통과
     [Theory]
     [InlineData("chrome.exe", "회의록 | Notion - Chrome", TargetApp.Notion)]
     [InlineData("msedge.exe", "notion - 개인 - Microsoft Edge", TargetApp.Notion)]
-    [InlineData("whale.exe", "보고서.hwp - 한컴독스 - Whale", TargetApp.Hangul)]
-    [InlineData("firefox.exe", "report.hwp - Hancom Docs — Mozilla Firefox", TargetApp.Hangul)]
+    [InlineData("Arc.exe", "기획안 | Notion", TargetApp.Notion)]
+    [InlineData("brave.exe", "Notion – 홈 - Brave", TargetApp.Notion)]
+    [InlineData("whale.exe", "보고서.hwp - 한컴독스 - Whale", TargetApp.Other)]
+    [InlineData("chrome.exe", "문서 이름.hwpx - Chrome", TargetApp.Other)]
     [InlineData("chrome.exe", "네이버 - Chrome", TargetApp.Other)]
     [InlineData("chrome.exe", null, TargetApp.Other)]
     // 브라우저가 아니면 제목에 Notion이 있어도 통과

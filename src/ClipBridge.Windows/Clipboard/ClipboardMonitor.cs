@@ -59,8 +59,8 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
         var sequenceNumber = ClipboardReader.SequenceNumber();
         lock (_lock)
         {
-            // FR-02: UP 자신이 기록한 변경은 무시한다
-            if (_ownWrites.Remove(sequenceNumber) || NativeMethods.GetClipboardOwner() == Handle)
+            // FR-02: UP 자신이 기록한 변경은 무시한다. 기록은 ClipboardWriter 창이 하므로 소유 프로세스로 본다
+            if (_ownWrites.Remove(sequenceNumber) || IsOwnedByThisProcess())
             {
                 DevLog.Info("copy", $"ignored own write seq={sequenceNumber}");
                 return;
@@ -70,6 +70,12 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
         // 원본 앱이 지연 렌더링으로 데이터를 만드는 동안 이 스레드(키보드 훅이 도는 UI 스레드)를 막지 않도록
         // 클립보드는 백그라운드에서 읽는다
         Task.Run(() => ReadSnapshot(sequenceNumber));
+    }
+
+    private static bool IsOwnedByThisProcess()
+    {
+        var owner = NativeMethods.GetClipboardOwner();
+        return owner != 0 && NativeMethods.GetWindowThreadProcessId(owner, out var processId) != 0 && processId == Environment.ProcessId;
     }
 
     private void ReadSnapshot(long sequenceNumber)
@@ -99,5 +105,8 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
 
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
+
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(nint window, out uint processId);
     }
 }

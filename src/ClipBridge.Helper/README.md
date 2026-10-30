@@ -29,7 +29,7 @@ macOS 앱이 Core를 쓰기 위한 보조 프로그램입니다. 앱이 실행 �
 {"type":"prepare","id":1,"snapshot":{"formats":{"public.html":"PGh0bWw+...","public.utf8-plain-text":"7J2066aE..."},"sourceApp":"com.microsoft.Excel","sequenceNumber":101},"options":{"markdownMode":"Strip","aiVerification":true}}
 ```
 
-- `formats`에는 변환에 쓰는 타입만 넣는 것을 권장합니다: `public.html`, `public.utf8-plain-text`, `public.rtf`, Excel 고유 타입. Excel은 PDF·이미지까지 18개 타입을 넣기 때문에 전부 보내면 메시지가 수백 KB가 됩니다 ([샘플](../../tests/fixtures/excel/)).
+- `formats`에는 변환에 쓰는 타입만 넣는 것을 권장합니다: `public.html`, `public.utf8-plain-text`, `public.rtf`, `org.chromium.source-url`(Chrome 계열·Claude 데스크톱이 넣는 페이지 주소, 웹·AI 답변 판별에 사용), Excel 고유 타입. Excel은 PDF·이미지까지 18개 타입을 넣기 때문에 전부 보내면 메시지가 수백 KB가 됩니다 ([샘플](../../tests/fixtures/excel/)).
 - `sourceApp`은 복사 시점의 앞쪽 앱 번들 ID입니다.
 - `sequenceNumber`는 `NSPasteboard.changeCount`입니다.
 

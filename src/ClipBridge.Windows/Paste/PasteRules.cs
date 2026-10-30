@@ -13,10 +13,12 @@ internal static class PasteTargets
         ["WINWORD.EXE"] = TargetApp.Word,
     };
 
-    // 웹 대상(Notion 웹, 한컴독스 웹 한글)을 창 제목으로 찾는 브라우저 (PRD 6.1과 같은 목록)
+    // Notion 웹을 창 제목으로 찾는 브라우저. 어느 브라우저로 열어도 같게 인식하도록
+    // PRD 6.1의 4종에 macOS 목록의 Arc와 Windows에서 많이 쓰는 Chromium 계열 브라우저를 더했다
     private static readonly HashSet<string> Browsers = new(StringComparer.OrdinalIgnoreCase)
     {
         "chrome.exe", "msedge.exe", "firefox.exe", "whale.exe",
+        "arc.exe", "brave.exe", "opera.exe", "vivaldi.exe",
     };
 
     // 창 제목은 브라우저일 때만 필요하다
@@ -31,17 +33,10 @@ internal static class PasteTargets
         return IsBrowser(process) ? WebTarget(windowTitle) : TargetApp.Other;
     }
 
-    // macOS TargetResolver.webTarget의 제목 규칙과 같다. 주소는 붙여넣기 순간에 읽기엔 느려서 쓰지 않는다
-    private static TargetApp WebTarget(string? title)
-    {
-        if (title is null)
-            return TargetApp.Other;
-        if (title.Contains("Notion", StringComparison.OrdinalIgnoreCase))
-            return TargetApp.Notion;
-        if (title.Contains("한컴독스") || title.Contains("Hancom Docs", StringComparison.OrdinalIgnoreCase))
-            return TargetApp.Hangul;
-        return TargetApp.Other;
-    }
+    // macOS TargetResolver.webTarget의 Notion 제목 규칙과 같다. 주소는 붙여넣기 순간에 읽기엔 느려서 쓰지 않는다.
+    // 한컴독스 웹 한글은 macOS만 지원한다 (Windows는 데스크톱 한글 Hwp.exe로 충분)
+    private static TargetApp WebTarget(string? title) =>
+        title is not null && title.Contains("Notion", StringComparison.OrdinalIgnoreCase) ? TargetApp.Notion : TargetApp.Other;
 }
 
 // 키 입력에서 붙여넣기(Ctrl+V, Shift+Insert)를 찾는다 (FR-05)

@@ -35,7 +35,7 @@ swift test
 ```text
 UP · 대기 중
 ──────────
-Markdown 처리 ▸            ✓ 기호 제거 (기본) / 서식 적용
+Markdown 처리 ▸            ✓ 서식 적용 (기본) / 기호 제거
 AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API 전송 안내
 ──────────
 상태 변경 ▸   ✓ 대기 / 분석 중 / 맞춤 완료 효과 보기
@@ -47,7 +47,7 @@ UP 종료  ⌘Q
 
 - **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.unbrokenpaste.menubar.plist`, `swift run`일 때는 `UnbrokenPaste.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
 - **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.unbrokenpaste.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
-- **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Strip`/`Format`, AI 검증 기본 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
+- **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Format`/`Strip`, 기본 서식 적용·AI 검증 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
 - **복사 감지 (#33):** 0.3초마다 `changeCount`를 확인해요. 복사하면 모든 포맷을 `ClipboardSnapshot`으로 메모리에 1건만 보관하고, 그때 앞에 있던 앱의 번들 ID와 `changeCount`를 함께 기록해요. 앱이 직접 쓴 변경(`recordOwnWrite`)은 새 복사로 치지 않아요.
 - **붙여넣기 감지 (#34):** 키보드 이벤트 탭으로 Cmd+V를 감지하고, 앞쪽 앱으로 대상(한글·Notion·Word·기타)을 판별해요. 키는 그대로 통과시키고 버리거나 다시 보내지 않아요. 시스템이 탭을 꺼도 바로 다시 켜요. 판별 결과는 시스템 로그로 확인해요.
 
@@ -60,7 +60,7 @@ UP 종료  ⌘Q
   - 앱 이름이 `ClipBridge.app`에서 `Unbroken Paste.app`으로, 번들 ID가 `app.clipbridge.menubar`에서 `app.unbrokenpaste.menubar`로 바뀌었어요(#47). 예전에 허용한 `ClipBridge` 항목은 지우고 `Unbroken Paste`를 새로 허용하세요. 실행 중인 앱을 터미널에서 끄려면 `pkill -x UP; pkill -f UnbrokenPaste.Helper`(실행 파일 이름은 `UP`).
   - 예전 번들 ID로 저장된 메뉴 옵션은 처음 실행할 때 한 번 옮겨 와요(`Settings.migrateLegacyDefaults`).
   - 이름 규칙: 프로그램 이름(앱 파일·Finder·앱 정보)은 풀네임 **Unbroken Paste**, 메뉴·툴팁·알림 등 그 밖의 화면 표시는 **UP**이에요.
-- **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
+- **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`, Chrome 계열 페이지 주소 `org.chromium.source-url`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
   - 가장 최근 복사와 순서 번호가 같은 결과만 써요. 결과가 없거나 오래됐거나 오류면 통과예요.
   - Helper가 꺼지면 1초 뒤 다시 실행하고(실패가 이어지면 최대 30초까지 늘림), 10초 동안 답이 없으면 강제로 끄고 다시 실행해요. 다시 실행되면 현재 복사를 다시 보내요.
   - `UP 종료` 시 `shutdown`을 보내고 Helper도 함께 끝나요. 앱이 비정상 종료돼도 Helper는 입력이 끊겨 스스로 끝나요.

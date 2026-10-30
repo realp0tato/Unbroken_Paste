@@ -51,8 +51,8 @@ final class ContractsJSONTests: XCTestCase {
     }
 
     func testDefaultOptionsMatchCore() {
-        // C#: ConversionOptions.Default = new(MarkdownMode.Strip, AiVerification: true)
-        XCTAssertEqual(ConversionOptions.default, ConversionOptions(markdownMode: .strip, aiVerification: true))
+        // C#: ConversionOptions.Default = new(MarkdownMode.Format, AiVerification: true) (PRD v1.11, #56)
+        XCTAssertEqual(ConversionOptions.default, ConversionOptions(markdownMode: .format, aiVerification: true))
     }
 
     func testResultFromCSharpJSONWithEscapes() throws {
