@@ -31,15 +31,16 @@ struct SlimeCharacter: Decodable {
         comingSoon != true && FileManager.default.fileExists(atPath: folder.path)
     }
 
-    /// 16x22pt template frames, as wide as the slime body: the system tints them for light and dark menu bars.
+    /// 22pt-tall template frames drawn at @2x; width differs per character (16pt for the basic slime).
+    /// The system tints them for light and dark menu bars.
     func frames() -> [NSImage] {
         let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
         return files
             .filter { $0.lastPathComponent.hasPrefix("frame_") && $0.pathExtension == "png" }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .compactMap { url in
-                guard let image = NSImage(contentsOf: url) else { return nil }
-                image.size = NSSize(width: 16, height: 22)
+                guard let image = NSImage(contentsOf: url), let rep = image.representations.first else { return nil }
+                image.size = NSSize(width: CGFloat(rep.pixelsWide) / 2, height: CGFloat(rep.pixelsHigh) / 2)
                 image.isTemplate = true
                 return image
             }

@@ -11,9 +11,11 @@ HERE = Path(__file__).parent
 ART = HERE / "art"
 RESOURCES = HERE.parent / "Resources"
 PREVIEWS = HERE.parent / "build" / "previews"
-# 16x22pt menu bar image drawn at @2x: as wide as the slime body, so the menu bar adds only its usual spacing.
-# Only the faint shadow edge and half a point of the flattest landing frame fall outside.
-FRAME_SIZE = (32, 44)
+# Menu bar image drawn at @2x, 22pt tall. Width follows each character: its resting body plus 18%,
+# so the menu bar adds only its usual spacing (the basic slime gets 16pt). Only the faint shadow edge
+# and the flattest landing frames reach past it.
+FRAME_HEIGHT = 44
+WIDTH_MARGIN = 1.18
 SS = 4  # supersampling factor
 FRAME_COUNT = 48
 GROUND = 0.28  # share of the cycle spent on the ground
@@ -92,6 +94,68 @@ def render(filled, white, lift, sx, sy, size, base_h, max_lift):
     return canvas.resize(size, Image.LANCZOS)
 
 
+def drip_tips(filled):
+    """Where the hanging drips end, as (x, y) shares of the character box: columns reaching clearly
+    below the body's usual bottom edge, grouped into runs."""
+    mask = filled.point(lambda v: 255 if v > 128 else 0)
+    w, h = mask.size
+    px = mask.load()
+    bottoms = []
+    for x in range(w):
+        ys = [y for y in range(h - 1, -1, -1) if px[x, y]][:1]
+        bottoms.append(ys[0] if ys else None)
+    known = sorted(b for b in bottoms if b is not None)
+    body_bottom = known[len(known) // 2]
+    tips, run = [], []
+    for x, b in enumerate(bottoms + [None]):
+        if b is not None and b > body_bottom + 0.04 * h:
+            run.append((x, b))
+        elif run:
+            tips.append((sum(x for x, _ in run) / len(run) / w, max(b for _, b in run) / h))
+            run = []
+    return tips
+
+
+def render_drip(filled, white, t, size, base_h, tips):
+    """Floating character that bobs in the air while drops form at its drips and fall to the ground."""
+    cw, ch = size[0] * SS, size[1] * SS
+    aspect = filled.width / filled.height
+    breathe = 1 + 0.03 * math.sin(2 * math.pi * t * 2)
+    bh, bw = base_h * breathe * SS, base_h * aspect / math.sqrt(breathe) * SS
+    top = (2.5 + 1.5 * (1 - math.cos(2 * math.pi * t)) / 2) * SS  # gentle bob, 1.5px
+    left = (cw - bw) / 2
+    ground = ch - 1 * SS
+    body_f = filled.resize((max(1, round(bw)), max(1, round(bh))), Image.LANCZOS)
+    body_w = white.resize(body_f.size, Image.LANCZOS)
+
+    alpha = Image.new("L", (cw, ch), 0)
+    draw = ImageDraw.Draw(alpha)
+    sw = base_h * aspect * SS * 0.55  # faint shadow on the ground, where the drops land
+    draw.ellipse((cw / 2 - sw / 2, ground - 1.0 * SS, cw / 2 + sw / 2, ground + 0.5 * SS), fill=40)
+    alpha.paste(body_w, (round(left), round(top)), body_f)
+
+    r_max = 1.7 * SS
+    for i, (tx, ty) in enumerate(tips):
+        u = (t + i / max(1, len(tips)) + 0.15 * i) % 1.0
+        x = left + tx * bw
+        tip = top + ty * bh
+        if u < 0.45:  # drop swells at the tip
+            r = r_max * (u / 0.45) ** 0.7
+            y = tip + r * 0.6
+        elif u < 0.8:  # falls, speeding up
+            s = (u - 0.45) / 0.35
+            r = r_max
+            y = tip + r * 0.6 + (ground - r - tip - r * 0.6) * s * s
+        else:
+            continue
+        stretch = 1.0 + (0.35 if 0.45 <= u < 0.8 else 0.0)
+        draw.ellipse((x - r, y - r * stretch, x + r, y + r), fill=255)
+
+    canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+    canvas.putalpha(alpha)
+    return canvas.resize(size, Image.LANCZOS)
+
+
 def make_badge(source, size=96):
     """Full-colour round copy badge: the dark circle cropped square, outside made transparent."""
     im = Image.open(source).convert("RGBA")
@@ -106,11 +170,26 @@ def make_badge(source, size=96):
     return crop.resize((size, size), Image.LANCZOS)
 
 
-def build(character_id):
+def frame_width(filled, base_h):
+    w = math.ceil(base_h * filled.width / filled.height * WIDTH_MARGIN)
+    return w + w % 2
+
+
+def build(entry):
+    """`height` (px @2x, default 26) and `lift` (bounce height, default 13) tune each character's size;
+    `motion` picks the animation: "bounce" (default) or "drip"."""
+    character_id = entry["id"]
     filled, white = extract(ART / character_id / "character.png")
     out = RESOURCES / "Characters" / character_id
     out.mkdir(parents=True, exist_ok=True)
-    frames = [render(filled, white, *bounce(i / FRAME_COUNT), FRAME_SIZE, 26, 13) for i in range(FRAME_COUNT)]
+    base_h, max_lift = entry.get("height", 26), entry.get("lift", 13)
+    size = (frame_width(filled, base_h), FRAME_HEIGHT)
+    if entry.get("motion") == "drip":
+        frames = [render_drip(filled, white, i / FRAME_COUNT, size, base_h, drip_tips(filled)) for i in range(FRAME_COUNT)]
+    else:
+        frames = [render(filled, white, *bounce(i / FRAME_COUNT), size, base_h, max_lift) for i in range(FRAME_COUNT)]
+    for old in out.glob("frame_*@2x.png"):
+        old.unlink()
     for i, frame in enumerate(frames):
         frame.save(out / f"frame_{i:02d}@2x.png")
     make_badge(ART / character_id / "character.png").save(out / "badge.png")
@@ -137,4 +216,4 @@ def preview(frames, path):
 if __name__ == "__main__":
     for entry in json.loads((RESOURCES / "characters.json").read_text(encoding="utf-8")):
         if (ART / entry["id"] / "character.png").exists():
-            print(f"{entry['name']}: {build(entry['id'])} frames → {RESOURCES / 'Characters' / entry['id']}")
+            print(f"{entry['name']}: {build(entry)} frames → {RESOURCES / 'Characters' / entry['id']}")
