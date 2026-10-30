@@ -18,9 +18,9 @@
       ─▶ 원본을 메모리에 보관, 출처(Excel·인터넷·Markdown 글·일반 텍스트) 판별
       ─▶ 대상별 변환 결과를 미리 준비
 
-Ctrl+V ─▶ 붙이는 앱 인식 ─▶ [출처 → 대상] 변환기 선택
-       ─▶ 변환 결과를 클립보드에 기록 ─▶ 그 내용이 붙여넣기됨
-       ─▶ 포인터 옆에 대상 앱 아이콘, 붙여넣기 시점에 사라짐
+붙여넣기 ─▶ 붙이는 앱 인식 ─▶ [출처 → 대상] 변환기 선택
+         ─▶ 변환 결과를 클립보드에 기록 ─▶ 그 내용이 붙여넣기됨
+         ─▶ 포인터 옆에 대상 앱 아이콘, 붙여넣기 시점에 사라짐
 ```
 
 - 변환 버튼·모드 선택 없이 **복사·붙여넣기만** 하면 됩니다.
@@ -78,42 +78,46 @@ ClipBridge
 | 항목 | 내용 |
 |---|---|
 | Windows | Windows 10/11 x64, 일반 사용자 권한 (트레이 앱) |
-| macOS | 메뉴 막대 앱 (메뉴 외 동작은 추후 결정) |
-| 붙여넣기 키 | Ctrl+V, Shift+Insert |
+| macOS | macOS 13 이상 (메뉴 막대 앱). 처음 실행할 때 **손쉬운 사용** 권한 허용 필요 (Cmd+V 감지용) |
+| 붙여넣기 키 | Windows: Ctrl+V, Shift+Insert / macOS: Cmd+V |
 | 지원하지 않음 | 관리자 권한 앱·보안 데스크톱·원격 세션, 이미지·수식·차트 재구성, Linux |
+
+두 OS 모두 같은 기능을 제공하며, 같은 입력이면 같은 변환 결과가 나옵니다.
 
 ## 기술 스택
 
-변환 로직은 **C# 하나로** 만들어 공유하고, 화면에 붙는 부분만 OS별 언어로 만듭니다.
+변환 로직은 **C# 하나로** 만들어 두 OS가 공유하고, OS와 맞닿는 앱 껍데기만 OS별 언어로 만듭니다.
 
 | 구성 | 기술 | 비고 |
 |---|---|---|
-| 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C8·줄간격 보정·AI 검증. **Windows API 사용 금지** → macOS에서도 개발·테스트 가능 |
+| 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C8·줄간격 보정·AI 검증. **OS API 사용 금지** → 두 OS에서 공유, macOS에서 개발·테스트 가능 |
 | HTML 파싱·정리 | [AngleSharp](https://github.com/AngleSharp/AngleSharp), [HtmlSanitizer](https://github.com/mganss/HtmlSanitizer) | 웹·Excel HTML 파싱, 허용 목록 방식 정리 |
 | Markdown | [Markdig](https://github.com/xoofx/markdig) | 서식 적용 모드의 파싱 |
 | 테스트 | xUnit | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
-| Windows 앱 (`ClipBridge.Windows`) | C# · .NET 10 · WinForms (`net10.0-windows`) | 트레이(`NotifyIcon`), 커서 아이콘 창, P/Invoke로 Win32 호출: 키보드 감지(`WH_KEYBOARD_LL`), 클립보드 감지(`AddClipboardFormatListener`), 지연 렌더링(`WM_RENDERFORMAT`) |
-| macOS 메뉴 막대 앱 | Swift · SwiftUI `MenuBarExtra` | 메뉴(Markdown 처리·AI 검증·종료). macOS 13 이상 |
-| AI 검증 | Claude API (Messages API, `HttpClient`) | 모델 예: Claude Haiku 5.5. API 키는 환경 변수 `ANTHROPIC_API_KEY`에서 읽음 |
-| 배포 | `dotnet publish` self-contained 단일 실행 파일 | Windows에 .NET 설치 없이 실행 |
+| Windows 앱 (`ClipBridge.Windows`) | C# · .NET 10 · WinForms (`net10.0-windows`) | Core를 직접 참조. 트레이(`NotifyIcon`), 커서 아이콘 창, P/Invoke로 Win32 호출: 키보드 감지(`WH_KEYBOARD_LL`), 클립보드 감지(`AddClipboardFormatListener`), 지연 렌더링(`WM_RENDERFORMAT`) |
+| macOS 보조 프로그램 (`ClipBridge.Helper`) | C# · .NET 10 콘솔 앱 | Core를 macOS 앱에서 쓰기 위한 다리. macOS 앱이 실행 중 계속 띄워 두고 표준 입출력으로 변환 요청·응답 |
+| macOS 앱 | Swift · SwiftUI `MenuBarExtra` · AppKit | 메뉴 막대, 클립보드 감시(`NSPasteboard`), Cmd+V 감지(이벤트 탭, 손쉬운 사용 권한), 지연 제공(`NSPasteboardItemDataProvider`), 커서 아이콘(비활성 패널). Helper를 앱 번들에 포함 |
+| AI 검증 | Claude API (Messages API, `HttpClient`) | Core 안에서 호출. 모델 예: Claude Haiku 5.5. API 키는 환경 변수 `ANTHROPIC_API_KEY`에서 읽음 |
+| 배포 | `dotnet publish` self-contained 단일 실행 파일 | .NET 설치 없이 실행. Windows 앱, macOS용 Helper 모두 |
 
-**서버는 없습니다.** 모든 변환은 사용자 PC에서 이루어지고, AI 검증을 켰을 때만 앱이 AI API를 직접 호출합니다.
+**서버는 없습니다.** 모든 변환은 사용자 PC에서 이루어지고, AI 검증이 켜져 있을 때만 앱이 AI API를 직접 호출합니다.
 
 ## 저장소 구조
 
 ```text
-ClipBridge.slnx            # 솔루션: C# 프로젝트 3개를 묶는 목록
+ClipBridge.slnx            # 솔루션: C# 프로젝트 4개를 묶는 목록
 global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
 Directory.Build.props      # 모든 C# 프로젝트 공통 설정
 .gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
 src/
   ClipBridge.Core/         # ① 변환기 라이브러리 (OS 무관)
-  ClipBridge.Windows/      # ② Windows 트레이 앱 (Core 참조)
+  ClipBridge.Windows/      # ② Windows 앱 (Core 직접 참조)
+  ClipBridge.Helper/       # ③ macOS용 보조 프로그램 (Core를 감싼 콘솔 앱)
 tests/
-  ClipBridge.Core.Tests/   # ③ 변환기 단위 테스트
-  fixtures/                # ④ Windows에서 수집한 클립보드 원본 샘플
+  ClipBridge.Core.Tests/   # ④ 변환기 단위 테스트
+  fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
 macos/
-  ClipBridgeMenuBar/       # ⑤ macOS 메뉴 막대 앱 (Swift, 솔루션에 포함 안 됨)
+  ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, Xcode 프로젝트, 솔루션에 포함 안 됨)
 prd.md
 README.md
 CONTRIBUTING.md
@@ -122,47 +126,55 @@ CONTRIBUTING.md
 ### 기본 개념
 
 - **프로젝트:** 코드 묶음 하나. 폴더 안의 `.csproj` 파일이 그 프로젝트의 종류와 설정을 정한다.
-- **솔루션:** 여러 프로젝트를 한 번에 열고 빌드하기 위한 목록. `dotnet build ClipBridge.slnx` 한 번으로 ①②③이 모두 빌드된다.
+- **솔루션:** 여러 프로젝트를 한 번에 열고 빌드하기 위한 목록. `dotnet build ClipBridge.slnx` 한 번으로 ①②③④가 모두 빌드된다.
 - **라이브러리:** 혼자 실행되지 않고, 다른 프로그램이 가져다 쓰는 기능 모음.
-- **참조:** 한 프로젝트가 다른 프로젝트의 코드를 가져다 쓰는 것. ②와 ③이 ①을 참조한다.
+- **참조:** 한 프로젝트가 다른 프로젝트의 코드를 가져다 쓰는 것. ②③④가 ①을 참조한다.
+- **앱 껍데기:** 사용자가 실제로 실행하는 프로그램. 메뉴·클립보드·키 감지·아이콘처럼 OS와 맞닿는 부분을 맡고, 변환은 ①에 맡긴다.
 
 ### 각 부분의 역할
 
 | | 위치 | 하는 일 | 담당 |
 |---|---|---|---|
-| ① | `src/ClipBridge.Core/` | 변환 로직 전부: 출처 판별, 변환기 C1–C8, 줄간격 보정, AI 검증. **Windows API를 쓰지 않으므로 macOS에서 개발·테스트할 수 있다** | 장세찬, 박재현 |
-| ② | `src/ClipBridge.Windows/` | 실제 실행되는 프로그램: 트레이 아이콘, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. 붙여넣기를 감지하면 ①을 호출해 결과를 받는다 | 이창민 |
-| ③ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
-| ④ | `tests/fixtures/` | Excel·웹에서 복사했을 때 클립보드에 실제로 들어가는 데이터를 파일로 저장. ③의 입력으로 쓴다 ([규칙](tests/fixtures/README.md)) | 이창민 수집 |
-| ⑤ | `macos/ClipBridgeMenuBar/` | macOS 메뉴 막대 앱. Swift라서 C# 솔루션과 별도로 Xcode에서 연다 | 윤승희 |
+| ① | `src/ClipBridge.Core/` | 변환 로직 전부: 출처 판별, 변환기 C1–C8, 줄간격 보정, AI 검증. **OS API를 쓰지 않으므로 두 OS가 공유하고 macOS에서 개발·테스트할 수 있다** | 장세찬, 박재현 |
+| ② | `src/ClipBridge.Windows/` | Windows 앱 껍데기: 트레이, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ①을 직접 호출 | 이창민 |
+| ③ | `src/ClipBridge.Helper/` | macOS 앱이 ①을 쓸 수 있게 해 주는 보조 프로그램. 표준 입출력으로 요청을 받아 ①을 호출하고 결과를 돌려준다 | 장세찬 |
+| ④ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
+| ⑤ | `tests/fixtures/` | Excel·웹에서 복사했을 때 클립보드에 실제로 들어가는 데이터를 파일로 저장. ④의 입력으로 쓴다 ([규칙](tests/fixtures/README.md)) | 이창민(Windows), 윤승희(macOS) |
+| ⑥ | `macos/ClipBridgeMenuBar/` | macOS 앱 껍데기: 메뉴 막대, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ③을 통해 ①을 호출. Swift라서 Xcode에서 연다 | 윤승희 |
 
 ### 흐름
 
 ```text
+[Windows]
 Ctrl+V ─▶ ② Windows 앱이 감지 ─▶ ① Core에 "이 원본을 이 앱용으로" 요청
        ◀─ ① 변환 결과 반환 ◀─────┘
        ─▶ ② 클립보드에 기록 ─▶ 대상 앱에 붙여넣기
 
-③ 테스트는 ④ 샘플을 ①에 넣어 결과가 맞는지 확인 (Windows 없이 macOS에서 실행)
+[macOS]
+Cmd+C ─▶ ⑥ macOS 앱이 감지 ─▶ ③ Helper ─▶ ① Core: 대상별 결과를 미리 준비
+Cmd+V ─▶ ⑥ 대상 앱 인식 ─▶ 미리 받은 결과를 클립보드에 기록 ─▶ 붙여넣기
+
+[테스트]
+④ 테스트가 ⑤ 샘플을 ①에 넣어 결과가 맞는지 확인 (macOS에서 실행)
 ```
 
-①과 ② 사이에서 주고받는 타입과 호출 방식은 `src/ClipBridge.Core/Contracts/`에 둔다 ([#29](https://github.com/realp0tato/donga_hackathon/issues/29)에서 확정).
+①과 앱 껍데기(②, ③을 거친 ⑥) 사이에서 주고받는 타입과 호출 방식은 `src/ClipBridge.Core/Contracts/`에 둔다 ([#29](https://github.com/realp0tato/donga_hackathon/issues/29)에서 확정). ③의 요청·응답 형식도 같은 타입을 따른다.
 
 ## 개발 환경
 
 | 담당 | 필요한 도구 |
 |---|---|
-| 변환기 (macOS) | .NET 10 SDK, VS Code + C# Dev Kit 또는 JetBrains Rider |
+| 변환기·Helper (macOS) | .NET 10 SDK, VS Code + C# Dev Kit 또는 JetBrains Rider |
 | Windows 앱 (Windows) | .NET 10 SDK, Visual Studio 또는 Rider |
-| macOS 메뉴 막대 앱 | Xcode |
+| macOS 앱 (macOS) | Xcode, .NET 10 SDK (Helper 빌드용) |
 
-- Excel·브라우저가 클립보드에 넣는 HTML은 Windows에서만 정확히 얻을 수 있습니다. Windows PC에서 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 이 샘플로 테스트합니다.
-- 한글·Word 실제 붙여넣기 검증은 Windows PC에서만 할 수 있습니다.
+- 클립보드에 들어가는 데이터는 OS마다 다릅니다. Windows PC와 Mac에서 각각 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 두 OS 샘플로 모두 테스트합니다.
+- 한글·Word·Notion 실제 붙여넣기 검증은 해당 OS에서 직접 해야 합니다.
 
 ## 빌드와 테스트
 
 ```bash
-dotnet build ClipBridge.slnx   # macOS에서도 Windows 앱까지 빌드됨 (실행은 Windows에서만)
+dotnet build ClipBridge.slnx   # macOS에서도 Windows 앱까지 빌드됨 (Windows 앱 실행은 Windows에서만)
 dotnet test                    # 변환기 단위 테스트
 ```
 
@@ -183,7 +195,7 @@ dotnet test                    # 변환기 단위 테스트
 
 | 이름 | 담당 영역 |
 |---|---|
-| 이창민 | Windows 앱 (C#): 트레이, 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증, 클립보드 샘플 수집 |
-| 윤승희 | macOS 메뉴 막대 앱 (Swift) |
-| 박재현 | 변환기 라이브러리 (C#): 인터넷·Markdown·Notion 변환기, 출처 판별, 줄간격 보정, AI 검증 |
-| 장세찬 | 변환기 라이브러리 (C#): Excel·Word 변환기, 표 공통 모델 |
+| 박재현 | 변환 로직 (C#, Core): 인터넷·Markdown·Notion 변환기, 출처 판별, 변환기 자동 선택, 줄간격 보정, AI 검증 |
+| 장세찬 | 변환 로직 (C#, Core): Excel·Word 변환기, 표 공통 모델, macOS용 Helper |
+| 이창민 | Windows 앱 껍데기 (C#): 트레이, 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증·샘플 수집 |
+| 윤승희 | macOS 앱 껍데기 (Swift): 메뉴 막대, 클립보드·붙여넣기 연동, 커서 아이콘, Helper 연동, macOS 검증·샘플 수집 |

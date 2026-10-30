@@ -3,6 +3,7 @@
 
 /src/ClipBridge.Core/             @sechanjang @proteinJ
 /tests/                           @sechanjang @proteinJ
-/src/ClipBridge.Core/Contracts/   @2-changmin @sechanjang
-/src/ClipBridge.Windows/          @sechanjang @proteinJ
-/macos/                           @realp0tato @2-changmin @sechanjang @proteinJ
+/src/ClipBridge.Core/Contracts/   @2-changmin @realp0tato @sechanjang
+/src/ClipBridge.Helper/           @sechanjang @proteinJ @realp0tato
+/src/ClipBridge.Windows/          @realp0tato @sechanjang @proteinJ
+/macos/                           @2-changmin @sechanjang @proteinJ

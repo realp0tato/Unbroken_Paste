@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- macOS 앱이 Core를 쓰기 위한 보조 프로그램. 표준 입출력으로 요청·응답 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ClipBridge.Helper</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClipBridge.Core\ClipBridge.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -33,9 +33,10 @@
 | 변경 위치 | 리뷰어 |
 |---|---|
 | `src/ClipBridge.Core/`, `tests/` | 장세찬 ↔ 박재현 (서로 리뷰) |
-| `src/ClipBridge.Core/Contracts/` (인터페이스, #29) | 이창민 **과** 장세찬 둘 다 승인 |
-| `src/ClipBridge.Windows/` | 장세찬 또는 박재현 |
-| `macos/` | 아무나 1명 |
+| `src/ClipBridge.Core/Contracts/` (인터페이스, #29) | 이창민·윤승희·장세찬 **모두** 승인 (두 앱 껍데기가 같은 계약을 씀) |
+| `src/ClipBridge.Helper/` | 장세찬 ↔ 박재현, 프로토콜 변경 시 윤승희도 승인 |
+| `src/ClipBridge.Windows/` | 윤승희 또는 장세찬·박재현 중 1명 |
+| `macos/` | 이창민 또는 장세찬·박재현 중 1명 |
 | `prd.md`, `README.md`, 이 문서 | 아무나 1명 |
 
 - 리뷰 요청을 받으면 **1시간 안에** 확인하는 것을 목표로 한다. 급하면 팀 메신저로 알린다.
