@@ -57,7 +57,7 @@ UP 종료  ⌘Q
 - **손쉬운 사용 권한:** 처음 실행할 때 한 번 요청해요. 허용하기 전에는 메뉴 맨 위에 `⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기`가 보이고, 붙여넣기는 변환 없이 평소대로 돼요. 설정에서 허용하면 2초 안에 자동으로 켜지고 항목이 사라져요.
   - `./scripts/build-app.sh`로 다시 빌드하면 서명이 바뀌어서 권한이 풀릴 수 있어요. 그러면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 UP를 지우고(−) 다시 허용하세요.
   - `swift run`으로 실행하면 권한은 UP가 아니라 실행한 터미널 앱에 붙어요.
-- **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
+- **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`, Chrome 계열 페이지 주소 `org.chromium.source-url`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
   - 가장 최근 복사와 순서 번호가 같은 결과만 써요. 결과가 없거나 오래됐거나 오류면 통과예요.
   - Helper가 꺼지면 1초 뒤 다시 실행하고(실패가 이어지면 최대 30초까지 늘림), 10초 동안 답이 없으면 강제로 끄고 다시 실행해요. 다시 실행되면 현재 복사를 다시 보내요.
   - `UP 종료` 시 `shutdown`을 보내고 Helper도 함께 끝나요. 앱이 비정상 종료돼도 Helper는 입력이 끊겨 스스로 끝나요.

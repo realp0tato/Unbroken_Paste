@@ -6,9 +6,13 @@ import Foundation
 public enum HelperProtocol {
     public static let version = 1
 
+    /// Page address that Chrome-family browsers and Electron apps (Claude desktop) put next to the HTML.
+    /// Core uses it to tell web pages and AI answers apart (SourceDetector, WebClipboard.MacChromiumSourceUrl).
+    public static let macChromiumSourceUrl = "org.chromium.source-url"
+
     /// Formats worth sending to the Helper. Core reads only these; Excel adds PDF, images and OLE data
     /// that would make each message hundreds of KB (Helper README). The full snapshot stays in the app.
-    public static let formatsForCore: Set<String> = [ClipFormats.macHtml, ClipFormats.macUtf8Text, ClipFormats.macRtf]
+    public static let formatsForCore: Set<String> = [ClipFormats.macHtml, ClipFormats.macUtf8Text, ClipFormats.macRtf, macChromiumSourceUrl]
 
     public static func snapshotForCore(_ snapshot: ClipboardSnapshot) -> ClipboardSnapshot {
         var trimmed = snapshot
