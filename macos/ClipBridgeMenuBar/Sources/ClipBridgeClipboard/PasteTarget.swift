@@ -10,7 +10,7 @@ public enum TargetResolver {
         "net.golbin.hop": .hangul,  // HOP, open-source HWP editor for macOS
     ]
 
-    /// Browsers where Notion web is recognised from the focused window title (PRD 6.2).
+    /// Browsers where web targets (Notion, Hancom Docs web HWP) are recognised from the focused window (PRD 6.2).
     public static let browsers: Set<String> = [
         "com.apple.Safari",
         "com.google.Chrome",
@@ -20,19 +20,32 @@ public enum TargetResolver {
         "company.thebrowser.Browser",  // Arc
     ]
 
-    /// Only browsers need the window title, which costs an Accessibility call.
+    /// Only browsers need the window title and URL, which cost an Accessibility call.
     public static func needsWindowTitle(bundleID: String?) -> Bool {
         guard let bundleID else { return false }
         return browsers.contains(bundleID)
     }
 
-    public static func resolve(bundleID: String?, appName: String?, windowTitle: String?) -> TargetApp {
+    /// `windowURL` is the page address when the browser exposes it (Safari does), checked before the title.
+    public static func resolve(bundleID: String?, appName: String?, windowTitle: String?, windowURL: String? = nil) -> TargetApp {
         guard let bundleID else { return .other }
         if let target = bundleTargets[bundleID] { return target }
         if isHancomHwp(bundleID: bundleID, appName: appName) { return .hangul }
-        if browsers.contains(bundleID), let windowTitle, windowTitle.range(of: "Notion", options: .caseInsensitive) != nil {
-            return .notion
+        if browsers.contains(bundleID) {
+            return webTarget(url: windowURL, title: windowTitle)
         }
+        return .other
+    }
+
+    /// Notion web and Hancom Docs' web HWP editor (webhwp.hancomdocs.com) inside a browser.
+    static func webTarget(url: String?, title: String?) -> TargetApp {
+        if let host = url.flatMap({ URL(string: $0)?.host?.lowercased() }) {
+            if host == "notion.so" || host.hasSuffix(".notion.so") || host.hasSuffix(".notion.site") { return .notion }
+            if host.hasPrefix("webhwp.") && host.hasSuffix("hancomdocs.com") { return .hangul }
+        }
+        guard let title else { return .other }
+        if title.range(of: "Notion", options: .caseInsensitive) != nil { return .notion }
+        if title.contains("한컴독스") || title.range(of: "Hancom Docs", options: .caseInsensitive) != nil { return .hangul }
         return .other
     }
 

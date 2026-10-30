@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Net;
 using System.Text;
 
 namespace ClipBridge.Core;
@@ -15,8 +14,8 @@ public static class ExcelToHangulConverter
 
     public static ConversionResult Convert(TableModel table) =>
         table.IsTable
-            ? new ConversionResult(Id, false, TableHtml(table), TablePlainText(table), ExcelClipboard.Signals(table))
-            : new ConversionResult(Id, false, TextHtml(table), TextPlainText(table), ExcelClipboard.Signals(table));
+            ? new ConversionResult(Id, false, TableHtml(table), ExcelClipboard.TablePlainText(table), ExcelClipboard.Signals(table))
+            : new ConversionResult(Id, false, ExcelClipboard.TextHtml(table), ExcelClipboard.TextPlainText(table), ExcelClipboard.Signals(table));
 
     // 한글 기본 본문 폭: A4(210mm) - 좌우 여백 30mm×2 = 150mm
     public const double MaxTableWidthPt = 150 / 25.4 * 72;
@@ -58,37 +57,11 @@ public static class ExcelToHangulConverter
                 html.Append("\"><p style=\"margin:0");
                 if (cell.Align != CellAlign.None)
                     html.Append(";text-align:").Append(cell.Align.ToString().ToLowerInvariant());
-                html.Append("\">").Append(InlineHtml(cell)).Append("</p></td>");
+                html.Append("\">").Append(ExcelClipboard.InlineHtml(cell)).Append("</p></td>");
             }
             html.Append("</tr>");
         }
         return html.Append("</table>").ToString();
-    }
-
-    // 셀마다 한 문단. 빈 셀은 문단을 만들지 않는다
-    private static string TextHtml(TableModel table) =>
-        string.Concat(Cells(table).Where(cell => cell.Text.Length > 0).Select(cell => $"<p>{InlineHtml(cell)}</p>"));
-
-    // 일반 텍스트 표: 칸은 탭, 행은 줄바꿈. 셀 안 줄바꿈은 표 모양이 깨지지 않게 공백으로
-    private static string TablePlainText(TableModel table) =>
-        string.Join('\n', table.Rows.Select(row => string.Join('\t', row.Select(cell => cell.Text.Replace('\n', ' ')))));
-
-    private static string TextPlainText(TableModel table) =>
-        string.Join('\n', Cells(table).Where(cell => cell.Text.Length > 0).Select(cell => cell.Text));
-
-    private static IEnumerable<TableCell> Cells(TableModel table) => table.Rows.SelectMany(row => row);
-
-    // 셀 안 줄바꿈은 <br>, 굵게·기울임은 태그로
-    private static string InlineHtml(TableCell cell)
-    {
-        var text = string.Join("<br>", cell.Text.Split('\n').Select(WebUtility.HtmlEncode));
-        if (text.Length == 0)
-            return text;
-        if (cell.Italic)
-            text = $"<i>{text}</i>";
-        if (cell.Bold)
-            text = $"<b>{text}</b>";
-        return text;
     }
 
     // Excel 열 너비(px, 96dpi) → pt. 본문 폭을 넘으면 비율을 유지한 채 줄인다
