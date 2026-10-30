@@ -10,7 +10,8 @@ public static class WebToHangulConverter
 {
     public const string Id = "C3";
 
-    // mode는 화면에 글자로 남은 **…**만 다룬다 (WebHtmlCleaner.ToMarkdown)
+    // Markdown 처리 옵션을 따른다. 서식 적용: 제목·굵게·목록·표를 한글용 HTML로.
+    // 기호 제거: 서식 없이 평문으로 (C5 기호 제거와 같은 결과 — 서식 없는 문단 HTML + 일반 텍스트)
     public static ConversionResult Convert(ClipboardSnapshot snapshot, MarkdownMode mode = MarkdownMode.Format) =>
         WebClipboard.IsTooLarge(snapshot) || WebClipboard.ReadHtml(snapshot, out _) is not { } html
             ? ConversionResult.Passthrough
@@ -21,8 +22,10 @@ public static class WebToHangulConverter
         var cleaned = WebHtmlCleaner.ToMarkdown(html, keepLinks: false, mode);
         if (cleaned.Markdown.Length == 0)
             return ConversionResult.Passthrough;
-        var document = MarkdownEngine.Parse(cleaned.Markdown, out _);
         var plain = MarkdownEngine.Convert(cleaned.Markdown, MarkdownMode.Strip).PlainText;
-        return new ConversionResult(Id, false, DocHtmlRenderer.Render(document), plain, cleaned.Signals);
+        var output = mode == MarkdownMode.Format
+            ? DocHtmlRenderer.Render(MarkdownEngine.Parse(cleaned.Markdown, out _))
+            : PlainTextConverter.TextHtml(plain);
+        return new ConversionResult(Id, false, output, plain, cleaned.Signals);
     }
 }
