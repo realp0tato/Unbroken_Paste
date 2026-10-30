@@ -4,8 +4,8 @@
   "sourceApp": "EXCEL.EXE",
   "sourceAppVersion": "16.0.20527.20088",
   "description": "5열 6행 표: 곱셈·SUM·비율 수식, 쉼표·백분율·날짜 표시 형식",
-  "capturedAt": "2026-10-30T08:43:41.0140288+00:00",
-  "sequenceNumber": 1029,
+  "capturedAt": "2026-10-30T09:04:52.4593677+00:00",
+  "sequenceNumber": 1354,
   "formats": [
     {
       "id": 49161,
@@ -31,7 +31,7 @@
       "id": 49868,
       "name": "Biff12",
       "file": "Biff12.bin",
-      "size": 7618
+      "size": 7649
     },
     {
       "id": 49856,
@@ -47,43 +47,43 @@
       "id": 4,
       "name": "CF_SYLK",
       "file": "CF_SYLK.bin",
-      "size": 2988
+      "size": 2660
     },
     {
       "id": 5,
       "name": "CF_DIF",
       "file": "CF_DIF.bin",
-      "size": 610
+      "size": 530
     },
     {
       "id": 49867,
       "name": "XML Spreadsheet",
       "file": "XML Spreadsheet.bin",
-      "size": 4914
+      "size": 3328
     },
     {
       "id": 49350,
       "name": "HTML Format",
       "file": "HTML Format.bin",
-      "size": 5812
+      "size": 3955
     },
     {
       "id": 13,
       "name": "CF_UNICODETEXT",
       "file": "CF_UNICODETEXT.txt",
-      "size": 296
+      "size": 312
     },
     {
       "id": 1,
       "name": "CF_TEXT",
       "file": "CF_TEXT.txt",
-      "size": 172
+      "size": 180
     },
     {
       "id": 49811,
       "name": "Csv",
       "file": "Csv.bin",
-      "size": 178
+      "size": 180
     },
     {
       "id": 49887,
@@ -105,7 +105,7 @@
       "id": 49319,
       "name": "Rich Text Format",
       "file": "Rich Text Format.bin",
-      "size": 6090
+      "size": 5676
     },
     {
       "id": 49163,
@@ -168,7 +168,7 @@
       "id": 7,
       "name": "CF_OEMTEXT",
       "file": "CF_OEMTEXT.txt",
-      "size": 172
+      "size": 180
     },
     {
       "id": 8,

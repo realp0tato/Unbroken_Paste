@@ -4,8 +4,8 @@
   "sourceApp": "EXCEL.EXE",
   "sourceAppVersion": "16.0.20527.20088",
   "description": "A열 6개 셀: 셀 안 줄바꿈(A3), 빈 셀(A4) 포함",
-  "capturedAt": "2026-10-30T08:42:25.4682126+00:00",
-  "sequenceNumber": 973,
+  "capturedAt": "2026-10-30T09:15:29.4137467+00:00",
+  "sequenceNumber": 1397,
   "formats": [
     {
       "id": 49161,
@@ -31,7 +31,7 @@
       "id": 49868,
       "name": "Biff12",
       "file": "Biff12.bin",
-      "size": 7405
+      "size": 7469
     },
     {
       "id": 49856,
@@ -47,43 +47,43 @@
       "id": 4,
       "name": "CF_SYLK",
       "file": "CF_SYLK.bin",
-      "size": 2069
+      "size": 2182
     },
     {
       "id": 5,
       "name": "CF_DIF",
       "file": "CF_DIF.bin",
-      "size": 325
+      "size": 302
     },
     {
       "id": 49867,
       "name": "XML Spreadsheet",
       "file": "XML Spreadsheet.bin",
-      "size": 1566
+      "size": 1813
     },
     {
       "id": 49350,
       "name": "HTML Format",
       "file": "HTML Format.bin",
-      "size": 3093
+      "size": 3139
     },
     {
       "id": 13,
       "name": "CF_UNICODETEXT",
       "file": "CF_UNICODETEXT.txt",
-      "size": 186
+      "size": 154
     },
     {
       "id": 1,
       "name": "CF_TEXT",
       "file": "CF_TEXT.txt",
-      "size": 135
+      "size": 114
     },
     {
       "id": 49811,
       "name": "Csv",
       "file": "Csv.bin",
-      "size": 135
+      "size": 114
     },
     {
       "id": 49887,
@@ -105,7 +105,7 @@
       "id": 49319,
       "name": "Rich Text Format",
       "file": "Rich Text Format.bin",
-      "size": 5313
+      "size": 5350
     },
     {
       "id": 49163,
@@ -168,7 +168,7 @@
       "id": 7,
       "name": "CF_OEMTEXT",
       "file": "CF_OEMTEXT.txt",
-      "size": 135
+      "size": 114
     },
     {
       "id": 8,

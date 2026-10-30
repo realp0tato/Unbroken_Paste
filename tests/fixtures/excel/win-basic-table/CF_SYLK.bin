@@ -76,12 +76,32 @@ P;EMalgun Gothic;M200;L9
 P;E¸¼Àº °íµñ;M160
 P;E¸¼Àº °íµñ;M220;SU;L50
 P;E¸¼Àº °íµñ;M220;SU;L26
+P;E¸¼Àº °íµñ;M220;SB;L9
+P;EArial Unicode MS;M200;L9
+P;EArial Unicode MS;M200;L9
 F;P0;DG0G8;M348
-B;Y2477;X1;D0 0 4 0
+B;Y2477;X35;D8 27 12 29
 O;L;D;V0;K47;G100 0.001
-C;Y1;X1;K"license_no,place_id,license_type,status,licensed_on,closed_on,suspended_from,suspended_until"
-C;Y2;K"325000001019960001,"34456db5-ce0d-5b6d-9f24-84efdd47e265","clinic","open","1996-06-20",,,"
-C;Y3;K"325000001019980001,"530cda27-9095-5b02-95d8-2600aa0c4f71","clinic","open","1998-01-09",,,"
-C;Y4;K"325000001019990001,,"clinic","closed","1999-05-10","2010-05-26",,"
-C;Y5;K"325000001019990002,,"clinic","closed","1999-11-01","2025-12-30",,"
+F;W30 30 9
+F;M1740;R2
+F;M1044;R4
+F;M696;R5
+C;Y9;X28;K"ÀÌ¸§"
+C;X29;K"ºÎ¼­"
+C;X30;K"Á¡¼ö"
+F;SDM26;Y10;X28
+C;K"±è¹Î¼ö"
+F;SDM26;X29
+C;K"¿µ¾÷ÆÀ"
+F;SDM26;X30
+C;K85
+C;Y11;X28;K"ÀÌÁöÀº"
+C;X29;K"°³¹ßÆÀ"
+C;X30;K92
+C;Y12;X28;K"¹Ú¼­ÁØ"
+C;X29;K"±âÈ¹ÆÀ"
+C;X30;K78
+C;Y13;X28;K"ÃÖÀ¯³ª"
+C;X29;K"µðÀÚÀÎÆÀ"
+C;X30;K88
 E

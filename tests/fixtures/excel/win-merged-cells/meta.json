@@ -4,8 +4,8 @@
   "sourceApp": "EXCEL.EXE",
   "sourceAppVersion": "16.0.20527.20088",
   "description": "가로 병합(A1:D1)·세로 병합(A3:A4)이 있는 4열 5행 표",
-  "capturedAt": "2026-10-30T08:40:13.4179206+00:00",
-  "sequenceNumber": 901,
+  "capturedAt": "2026-10-30T09:01:10.1064386+00:00",
+  "sequenceNumber": 1311,
   "formats": [
     {
       "id": 49161,
@@ -47,43 +47,43 @@
       "id": 4,
       "name": "CF_SYLK",
       "file": "CF_SYLK.bin",
-      "size": 2390
+      "size": 2502
     },
     {
       "id": 5,
       "name": "CF_DIF",
       "file": "CF_DIF.bin",
-      "size": 509
+      "size": 373
     },
     {
       "id": 49867,
       "name": "XML Spreadsheet",
       "file": "XML Spreadsheet.bin",
-      "size": 3648
+      "size": 3977
     },
     {
       "id": 49350,
       "name": "HTML Format",
       "file": "HTML Format.bin",
-      "size": 4799
+      "size": 4104
     },
     {
       "id": 13,
       "name": "CF_UNICODETEXT",
       "file": "CF_UNICODETEXT.txt",
-      "size": 254
+      "size": 158
     },
     {
       "id": 1,
       "name": "CF_TEXT",
       "file": "CF_TEXT.txt",
-      "size": 155
+      "size": 99
     },
     {
       "id": 49811,
       "name": "Csv",
       "file": "Csv.bin",
-      "size": 155
+      "size": 99
     },
     {
       "id": 49887,
@@ -105,7 +105,7 @@
       "id": 49319,
       "name": "Rich Text Format",
       "file": "Rich Text Format.bin",
-      "size": 5663
+      "size": 7759
     },
     {
       "id": 49163,
@@ -168,7 +168,7 @@
       "id": 7,
       "name": "CF_OEMTEXT",
       "file": "CF_OEMTEXT.txt",
-      "size": 155
+      "size": 99
     },
     {
       "id": 8,

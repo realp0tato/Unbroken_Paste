@@ -1,8 +1,8 @@
 Version:1.0
 StartHTML:0000000198
-EndHTML:0000004799
-StartFragment:0000002350
-EndFragment:0000004747
+EndHTML:0000004104
+StartFragment:0000002446
+EndFragment:0000004052
 SourceURL:file:///C:/Users/user/Desktop/kkodong_data/processed/db/public_place_licenses.csv
 
 <html xmlns:v="urn:schemas-microsoft-com:vml"
@@ -26,9 +26,9 @@ href="file:///C:/Users/user/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml
 	{margin:.75in .7in .75in .7in;
 	mso-header-margin:.3in;
 	mso-footer-margin:.3in;}
-.font0
-	{color:black;
-	font-size:11.0pt;
+.font5
+	{color:windowtext;
+	font-size:8.0pt;
 	font-weight:400;
 	font-style:normal;
 	text-decoration:none;
@@ -66,12 +66,15 @@ td
 .xl65
 	{font-weight:700;
 	text-align:center;
-	white-space:normal;}
+	border:.5pt solid windowtext;}
 .xl66
-	{white-space:normal;}
-.xl67
 	{font-weight:700;
-	white-space:normal;}
+	border:.5pt solid windowtext;}
+.xl67
+	{text-align:center;
+	border:.5pt solid windowtext;}
+.xl68
+	{border:.5pt solid windowtext;}
 ruby
 	{ruby-align:left;}
 rt
@@ -90,57 +93,37 @@ rt
 
 <body link="#467886" vlink="#96607D">
 
-<table border=0 cellpadding=0 cellspacing=0 width=350 style='border-collapse:
- collapse;width:265pt'>
+<table border=0 cellpadding=0 cellspacing=0 width=280 style='border-collapse:
+ collapse;width:212pt'>
 <!--StartFragment-->
- <col width=70 span=5 style='width:53pt'>
+ <col width=70 span=4 style='width:53pt'>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 class=xl65 width=70 style='height:17.4pt;width:53pt'></td>
-  <td class=xl65 width=70 style='width:53pt'>A</td>
-  <td class=xl65 width=70 style='width:53pt'>B</td>
-  <td class=xl65 width=70 style='width:53pt'>C</td>
-  <td class=xl65 width=70 style='width:53pt'>D</td>
- </tr>
- <tr height=116 style='height:87.0pt'>
-  <td height=116 class=xl66 align=right width=70 style='height:87.0pt;
-  width:53pt'>1</td>
-  <td class=xl67 width=70 style='width:53pt'>2026년 상반기 실적<font class="font0">
-  (A1:D1 가로 병합)</font></td>
-  <td class=xl66 width=70 style='width:53pt'></td>
-  <td class=xl66 width=70 style='width:53pt'></td>
-  <td class=xl66 width=70 style='width:53pt'></td>
+  <td colspan=4 height=23 class=xl65 width=280 style='height:17.4pt;width:212pt'>2026년
+  상반기 실적</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 class=xl66 align=right width=70 style='height:17.4pt;
-  width:53pt'>2</td>
-  <td class=xl66 width=70 style='width:53pt'>부서</td>
-  <td class=xl66 width=70 style='width:53pt'>1분기</td>
-  <td class=xl66 width=70 style='width:53pt'>2분기</td>
-  <td class=xl66 width=70 style='width:53pt'>합계</td>
- </tr>
- <tr height=70 style='height:52.2pt'>
-  <td height=70 class=xl66 align=right width=70 style='height:52.2pt;
-  width:53pt'>3</td>
-  <td class=xl66 width=70 style='width:53pt'>영업팀 (A3:A4 세로 병합)</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>120</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>150</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>270</td>
+  <td height=23 class=xl66 style='height:17.4pt;border-top:none'>부서</td>
+  <td class=xl66 style='border-top:none;border-left:none'>1분기</td>
+  <td class=xl66 style='border-top:none;border-left:none'>2분기</td>
+  <td class=xl66 style='border-top:none;border-left:none'>합계</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 class=xl66 align=right width=70 style='height:17.4pt;
-  width:53pt'>4</td>
-  <td class=xl66 width=70 style='width:53pt'></td>
-  <td class=xl66 align=right width=70 style='width:53pt'>80</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>90</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>170</td>
+  <td rowspan=2 height=46 class=xl67 style='height:34.8pt;border-top:none'>영업팀</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>120</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>150</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>270</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 class=xl66 align=right width=70 style='height:17.4pt;
-  width:53pt'>5</td>
-  <td class=xl66 width=70 style='width:53pt'>개발팀</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>200</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>210</td>
-  <td class=xl66 align=right width=70 style='width:53pt'>410</td>
+  <td height=23 class=xl68 align=right style='height:17.4pt;border-top:none;
+  border-left:none'>80</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>90</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>170</td>
+ </tr>
+ <tr height=23 style='height:17.4pt'>
+  <td height=23 class=xl68 style='height:17.4pt;border-top:none'>개발팀</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>200</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>210</td>
+  <td class=xl68 align=right style='border-top:none;border-left:none'>410</td>
  </tr>
 <!--EndFragment-->
 </table>

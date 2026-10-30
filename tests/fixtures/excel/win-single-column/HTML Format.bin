@@ -1,8 +1,8 @@
 Version:1.0
 StartHTML:0000000198
-EndHTML:0000003093
-StartFragment:0000002231
-EndFragment:0000003041
+EndHTML:0000003139
+StartFragment:0000002283
+EndFragment:0000003087
 SourceURL:file:///C:/Users/user/Desktop/kkodong_data/processed/db/public_place_licenses.csv
 
 <html xmlns:v="urn:schemas-microsoft-com:vml"
@@ -65,6 +65,9 @@ td
 	mso-rotate:0;}
 .xl65
 	{white-space:normal;}
+.xl66
+	{text-align:center;
+	white-space:normal;}
 ruby
 	{ruby-align:left;}
 rt
@@ -88,23 +91,24 @@ rt
 <!--StartFragment-->
  <col width=70 style='width:53pt'>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 width=70 style='height:17.4pt;width:53pt'>회의 안건</td>
+  <td height=23 class=xl66 width=70 style='height:17.4pt;width:53pt'>회의 안건</td>
  </tr>
  <tr height=116 style='height:87.0pt'>
   <td height=116 style='height:87.0pt'>1. 상반기 실적 검토</td>
  </tr>
- <tr height=23 style='height:17.4pt'>
-  <td height=23 style='height:17.4pt'>2. 하반기 목표 설정 (Alt+Enter로 줄바꿈) 담당: 영업팀</td>
+ <tr height=93 style='height:69.6pt'>
+  <td height=93 class=xl65 width=70 style='height:69.6pt;width:53pt'>2. 하반기 목표
+  설정<br />
+    담당: 영업팀</td>
  </tr>
  <tr height=70 style='height:52.2pt'>
   <td height=70 style='height:52.2pt'></td>
  </tr>
  <tr height=46 style='height:34.8pt'>
-  <td height=46 class=xl65 width=70 style='height:34.8pt;width:53pt'>3. 기타 논의
-  사항</td>
+  <td height=46 style='height:34.8pt'>3. 기타 논의 사항</td>
  </tr>
  <tr height=23 style='height:17.4pt'>
-  <td height=23 style='height:17.4pt'>다음 회의는 11월 둘째 주</td>
+  <td height=23 style='height:17.4pt'>다음 회의 11월 둘째 주</td>
  </tr>
 <!--EndFragment-->
 </table>
