@@ -38,7 +38,7 @@ public class MarkdownToHangulTests
         var html = Html("| 이름 | 역할 |\n|---|:---:|\n| 재현 | 변환기 |");
 
         Assert.Contains("<table border=\"1\"", html);
-        Assert.Matches(@"<col style=""width:\d+(\.\d)?pt"">", html);
+        Assert.Matches(@"<col width=""\d+"" style=""width:\d+(\.\d)?pt"">", html);
         Assert.Contains("border:1px solid #000", html);
         Assert.Contains("font-weight:bold\">이름</p>", html);
         Assert.Contains("text-align:center\">변환기</p>", html);
@@ -52,6 +52,51 @@ public class MarkdownToHangulTests
 
         var width = double.Parse(Regex.Match(html, @"<table[^>]*width:([\d.]+)pt").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
         Assert.True(width <= 150 / 25.4 * 72 + 0.1, $"표 너비 {width}pt가 본문 폭을 넘음");
+    }
+
+    private static double TableWidthPt(string html, int index = 0) =>
+        double.Parse(Regex.Matches(html, @"<table[^>]*width:([\d.]+)pt")[index].Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+    [Fact]
+    public void SmallTable_IsMinimalWidthWithoutWrapping()
+    {
+        var html = Html("| 출처 | 대상 | 변환기 |\n|---|---|---|\n| 인터넷 | 한글 | C3 |\n| Markdown | Notion | C6 |");
+
+        // 가장 긴 칸(한글 3자, Markdown 8자)이 줄바꿈되지 않는 너비이면서 본문 폭보다 훨씬 좁다
+        Assert.InRange(TableWidthPt(html), 120, 250);
+        Assert.Contains(" nowrap style=", html);
+        Assert.Contains("white-space:nowrap", html);
+        Assert.Matches(@"<table border=""1"" width=""\d+""", html);
+    }
+
+    [Fact]
+    public void WiderCell_GetsWiderColumn()
+    {
+        var html = Html("| 짧음 | 아주 긴 칸 내용입니다 |\n|---|---|\n| a | b |");
+        var widths = Regex.Matches(html, @"<col width=""\d+"" style=""width:([\d.]+)pt"">")
+            .Select(m => double.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)).ToList();
+
+        Assert.True(widths[1] > widths[0] * 2);
+    }
+
+    [Fact]
+    public void TooWideTable_ShrinksAndAllowsWrapping()
+    {
+        var cell = new string('가', 40);
+        var html = Html($"| {cell} | {cell} |\n|---|---|\n| a | b |");
+
+        Assert.DoesNotContain("nowrap", html);
+    }
+
+    [Fact]
+    public void CodeBlock_IsAsWideAsLongestLine()
+    {
+        var shortCode = Html("```\nx = 1\n```");
+        var longCode = Html("```\n" + new string('x', 50) + "\n```");
+
+        Assert.True(TableWidthPt(shortCode) < TableWidthPt(longCode));
+        Assert.True(TableWidthPt(longCode) >= 50 * 6.2);
+        Assert.Contains("white-space:nowrap", longCode);
     }
 
     [Fact]
