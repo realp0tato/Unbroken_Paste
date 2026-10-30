@@ -3,5 +3,6 @@
   {"id": "cat", "name": "고양이 슬라임", "height": 28},
   {"id": "drip", "name": "녹는 슬라임", "motion": "drip", "height": 22},
   {"id": "cloud", "name": "구름 슬라임", "height": 24},
-  {"id": "bunny", "name": "토끼 슬라임", "height": 30, "lift": 11}
+  {"id": "bunny", "name": "토끼 슬라임", "height": 30, "lift": 11},
+  {"id": "dance", "name": "춤추는 스틱맨", "motion": "stickman", "width": 30}
 ]
