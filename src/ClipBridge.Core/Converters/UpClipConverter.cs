@@ -1,7 +1,7 @@
 namespace ClipBridge.Core;
 
 // 실제 변환기: 출처를 판별하고 [출처 → 대상] 매트릭스(PRD 6.2, #14)대로 모든 대상·모드의 결과를 미리 만든다.
-// 아직 없는 변환기 칸은 통과로 둔다 (FR-16). 변환기 하나가 실패해도 그 칸만 통과한다.
+// 변환기가 없는 칸은 통과로 둔다 (FR-16). 변환기 하나가 실패해도 그 칸만 통과한다.
 // 모든 결과는 마지막에 줄간격 보정(PRD 6.4)의 공통 단계를 거친다
 public sealed class UpClipConverter : IClipConverter
 {
@@ -44,11 +44,12 @@ public sealed class UpClipConverter : IClipConverter
             // Excel → Word는 Office 기본 붙여넣기 (PRD 6.2)
             (SourceKind.Markdown, TargetApp.Hangul) => Markdown(snapshot, text => MarkdownToHangulConverter.Convert(text, mode)),   // C5
             (SourceKind.Markdown, TargetApp.Notion) => Markdown(snapshot, text => MarkdownToNotionConverter.Convert(text, mode)),   // C6
+            (SourceKind.Markdown, TargetApp.Word) => Markdown(snapshot, text => MarkdownToWordConverter.Convert(text, mode)),   // C8
             (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot, mode),   // C3
             (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot, mode),   // C4
+            (SourceKind.Web, TargetApp.Word) => WebToWordConverter.Convert(snapshot, mode),   // C7
             (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX
             (SourceKind.Web, TargetApp.Excel) => WebToExcelConverter.Convert(snapshot),   // C9 (P1, #25). 그 밖의 → Excel은 Excel 기본 붙여넣기
-            // 아직 없음: C7 인터넷 → Word(#10), C8 Markdown → Word(#12)
             _ => ConversionResult.Passthrough,
         };
 
