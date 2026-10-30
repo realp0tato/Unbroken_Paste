@@ -55,9 +55,11 @@ internal static class Program
         var fromAi = snapshot.SourceApp is { } app && AiServiceApps.Contains(app);
         if (text is not null && (!hasHtml || fromAi) && LooksLikeMarkdown(text))
         {
+            if (target == TargetApp.Hangul)
+                return ($"Markdown 글 → 한글, {mode}", MarkdownToHangulConverter.Convert(text, mode));
             var converted = MarkdownEngine.Convert(text, mode);
-            var id = target switch { TargetApp.Hangul => "C5", TargetApp.Notion => "C6", _ => "C8" };
-            return ($"Markdown 글 → {target}, {mode}", new ConversionResult(id, false, converted.Html, converted.PlainText, converted.Signals));
+            var id = target == TargetApp.Notion ? "C6" : "C8";
+            return ($"Markdown 글 → {target}, {mode} (공통 엔진)", new ConversionResult(id, false, converted.Html, converted.PlainText, converted.Signals));
         }
 
         return (hasHtml ? "인터넷 등 → 아직 변환기 없음" : "일반 텍스트 → 아직 변환기 없음", ConversionResult.Passthrough);
