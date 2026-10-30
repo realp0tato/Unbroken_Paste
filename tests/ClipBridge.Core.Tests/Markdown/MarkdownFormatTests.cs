@@ -75,6 +75,40 @@ public class MarkdownFormatTests
     }
 
     [Fact]
+    public void Format_UnsafeLink_TextAppearsOnce()
+    {
+        Assert.Equal("<p>위험</p>", Format("[위험](javascript:alert(1))").Html);
+    }
+
+    [Fact]
+    public void Format_ImageInsideLink_TextAppearsOnce()
+    {
+        Assert.Equal("<p><a href=\"https://x.com\">alt 글</a></p>", Format("[![alt](a.png) 글](https://x.com)").Html);
+    }
+
+    [Fact]
+    public void Format_ImageInsideUnsafeLink_TextAppearsOnce()
+    {
+        Assert.Equal("<p>alt 글</p>", Format("[![alt](a.png) 글](javascript:x)").Html);
+    }
+
+    [Theory]
+    [InlineData("<javascript:alert(1)>", "<p>javascript:alert(1)</p>")]
+    [InlineData("<data:text/html,x>", "<p>data:text/html,x</p>")]
+    [InlineData("<https://example.com>", "<p><a href=\"https://example.com\">https://example.com</a></p>")]
+    [InlineData("<me@example.com>", "<p><a href=\"mailto:me@example.com\">me@example.com</a></p>")]
+    public void Format_Autolink_KeepsSafeOnly(string markdown, string expected)
+    {
+        Assert.Equal(expected, Format(markdown).Html);
+    }
+
+    [Fact]
+    public void Format_SingleLineBreak_IsKept()
+    {
+        Assert.Equal("<p>첫 줄<br />\n둘째 줄</p>", Format("첫 줄\n둘째 줄").Html);
+    }
+
+    [Fact]
     public void Format_KeepsSafeLinksOnly()
     {
         var html = Format("[안전](https://example.com) [위험](javascript:alert(1))").Html!;
