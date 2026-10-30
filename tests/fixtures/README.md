@@ -68,6 +68,7 @@ macOS 스크립트(`dump-mac-clipboard.swift`)는 `formats`를 타입 이름 문
 - 같은 이름이 이미 있으면 멈춘다. 다시 저장하려면 `--force`를 붙인다.
 - 포맷 하나가 1MB를 넘으면 저장하지 않고 `meta.json`에만 적는다 (이미지 포맷 등). 바꾸려면 `--max-kb 4096`처럼 지정한다.
 - 비트맵·메타파일처럼 바이트로 읽을 수 없는 포맷은 `skipped`로 기록된다.
+- 저장한 샘플을 클립보드에 되돌려 넣으려면 `restore <샘플>`을 쓴다 (예: `dotnet run --project tools/ClipBridge.FixtureDump -- restore excel/win-basic-table`). 원본 앱에서 다시 복사하지 않고 같은 입력으로 붙여넣기를 반복할 때 쓴다 (#24, [Windows 검증표](../../docs/qa/windows.md)). 저장하지 않은 OLE·링크 포맷은 되돌아가지 않는다.
 - 이미지(`CF_DIB` 등)와 OLE 개체·링크 포맷(`Embed Source`, `Native`, `Biff8`, `Link`, `Hyperlink` 등)은 저장하지 않고 `skipped`에 `제외:`로 기록한다. 변환기가 쓰지 않고 크기가 크며, 통합 문서 파일 경로나 다른 시트 내용이 들어갈 수 있기 때문이다. 꼭 필요하면 `--all`을 붙인다.
 
 ## 수집·복원 도구 (macOS)
