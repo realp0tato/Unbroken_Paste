@@ -96,7 +96,7 @@ dotnet run --project src/ClipBridge.Helper
 {"type":"shutdown","id":2}
 ```
 
-지금은 실제 변환기 대신 `StubClipConverter`가 연결되어 있습니다. 한글·Notion·Word용 결과는 `[ClipBridge] ` 표시가 붙은 글이고, `Other`는 통과입니다. 실제 변환기(#14)가 들어오면 `Program.cs`에서 교체합니다.
+Helper는 실제 변환기 `UpClipConverter`(#14)를 씁니다. 출처를 판별하고(PRD 6.1) [출처 → 대상] 매트릭스(PRD 6.2)대로 결과를 만들며, 아직 없는 변환기 칸(인터넷 → Word C7, Markdown → Word C8, 일반 텍스트 TX)은 통과입니다.
 
 ## 빌드·앱 번들에 넣기
 

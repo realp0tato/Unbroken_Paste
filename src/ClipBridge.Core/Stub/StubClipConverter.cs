@@ -2,7 +2,7 @@ using System.Net;
 
 namespace ClipBridge.Core;
 
-// 앱 껍데기 연동 개발용 가짜 변환기. 실제 변환기(#14)가 들어오면 교체한다.
+// 앱 껍데기 연동 개발용 가짜 변환기. Helper는 UpClipConverter(#14)를 쓰고, 이것은 테스트에서만 쓴다.
 // 일반 텍스트가 있으면 한글·Notion·Word용으로 "[ClipBridge] " 표시를 붙인 결과를 주고, 그 외는 통과한다.
 public sealed class StubClipConverter : IClipConverter
 {

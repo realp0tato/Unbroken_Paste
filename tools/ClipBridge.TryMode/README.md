@@ -28,15 +28,16 @@ swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format
 
 ## 지금 연결된 변환기
 
+앱(Helper)과 같은 실제 변환기 `UpClipConverter`(#14)를 씁니다. 출처 판별은 PRD 6.1, 대상별 변환기는 PRD 6.2 매트릭스를 따릅니다.
+
 | 복사한 것 | Hangul | Notion | Word |
 |---|---|---|---|
-| Markdown 글 (일반 텍스트, 또는 Claude 앱 복사) | C5 (Markdown 엔진) | C6 (Markdown 엔진) | C8 (Markdown 엔진) |
-| Excel | C1 (장세찬) | 통과 | 통과 |
-| 인터넷·일반 텍스트 | 통과 | 통과 | 통과 |
+| Markdown 글 (일반 텍스트, 또는 Claude 앱 복사) | C5 | C6 | 통과 (C8 #12 전) |
+| Excel | C1 | C2 | 통과 (Office 기본) |
+| 인터넷 (AI 답변 드래그 복사 포함) | C3 | C4 | 통과 (C7 #10 전) |
+| 일반 텍스트 | 통과 (TX #6 전) | 통과 | 통과 |
 
-- 출처 판별은 PRD 6.1을 흉내 낸 **임시 규칙**입니다. 진짜 규칙은 #13·#14에서 Core에 들어갑니다.
-- Markdown 서식 적용은 아직 제목을 `<h1>` 같은 제목 태그로 냅니다. Word·한글용 "글자 크기·굵기" 방식(PRD v1.12)은 C5(#18)에서 들어갑니다.
-- 변환기가 새로 만들어지면 `Program.cs`의 `Convert`에 연결합니다.
+변환기가 Core에 추가되면 시험 모드도 자동으로 따라갑니다.
 
 ## 구성
 
