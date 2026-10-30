@@ -142,6 +142,7 @@ dotnet test                    # 변환기 단위 테스트
 ## 문서
 
 - [PRD (제품 요구사항 문서)](prd.md)
+- [작업 규칙 (브랜치·PR·리뷰)](CONTRIBUTING.md)
 - [이슈 목록](https://github.com/realp0tato/donga_hackathon/issues)
 
 ## 팀

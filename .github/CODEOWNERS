@@ -1,0 +1,8 @@
+# 리뷰어 자동 지정 (비공개 저장소는 GitHub Pro 이상에서 동작)
+# 규칙은 CONTRIBUTING.md 참고
+
+/src/ClipBridge.Core/             @sechanjang @proteinJ
+/tests/                           @sechanjang @proteinJ
+/src/ClipBridge.Core/Contracts/   @2-changmin @sechanjang
+/src/ClipBridge.Windows/          @sechanjang @proteinJ
+/macos/                           @realp0tato @2-changmin @sechanjang @proteinJ
