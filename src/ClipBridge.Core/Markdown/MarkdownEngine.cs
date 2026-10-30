@@ -25,14 +25,20 @@ public static class MarkdownEngine
 
     public static MarkdownOutput Convert(string markdown, MarkdownMode mode)
     {
-        var text = markdown.Replace("\r\n", "\n").Replace('\r', '\n');
-        var document = Markdig.Markdown.Parse(text, Pipeline);
+        var document = Parse(markdown, out var text);
 
         var plainText = MarkdownStripper.Strip(document, text);
         var signals = MarkdownSignals.Find(document, text);
         var html = mode == MarkdownMode.Format ? RenderHtml(document) : null;
 
         return new MarkdownOutput(html, plainText, signals);
+    }
+
+    // 줄바꿈을 \n으로 맞춘 뒤 구문 트리로 해석한다. text는 맞춘 원문 (원문 위치 계산용)
+    internal static MarkdownDocument Parse(string markdown, out string text)
+    {
+        text = markdown.Replace("\r\n", "\n").Replace('\r', '\n');
+        return Markdig.Markdown.Parse(text, Pipeline);
     }
 
     private static string RenderHtml(MarkdownDocument document)
@@ -59,6 +65,6 @@ public static class MarkdownEngine
         return writer.ToString().TrimEnd('\n');
     }
 
-    private static bool IsSafeLink(string? url) =>
+    internal static bool IsSafeLink(string? url) =>
         url is not null && SafeLinkSchemes.Any(scheme => url.StartsWith(scheme, StringComparison.OrdinalIgnoreCase));
 }
