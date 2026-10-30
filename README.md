@@ -238,6 +238,7 @@ dotnet run --project src/ClipBridge.Windows
 ```
 
 - 실행 파일은 `Unbroken Paste.exe`입니다 (`src/ClipBridge.Windows/bin/Debug/net10.0-windows/`). 작업 관리자에도 Unbroken Paste로 보입니다.
+- 한글·Word·Notion 창이 앞에 오면 그 앱용 변환 결과를 미리 클립보드에 써 두고, 다른 앱으로 가면 원본으로 되돌립니다. 그래서 메뉴·리본·오른쪽 클릭 붙여넣기도 변환됩니다(#26). UP이 쓴 내용은 Windows 클립보드 기록(Win+V)에 남지 않습니다.
 - 창 없이 작업 표시줄 알림 영역(트레이)에 UP 아이콘이 생깁니다. 보이지 않으면 `^`(숨겨진 아이콘 표시) 안을 확인하세요.
 - 아이콘을 오른쪽 클릭하면 메뉴(Markdown 처리·AI 검증·`UP 종료`)가 열립니다. 옵션은 `%APPDATA%\UnbrokenPaste\settings.json`에 값만 저장돼 재실행 후에도 유지됩니다. 이미 실행 중이면 새로 띄우지 않고 안내 창만 보여 줍니다.
 - 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다. 검증·측정할 때는 `-- --log up.log`를 붙이면 같은 줄이 파일에도 남습니다 ([Windows 검증표](docs/qa/windows.md)).

@@ -28,6 +28,8 @@ internal sealed class TrayApp : ApplicationContext
     private readonly ToolStripMenuItem _clipboardItem = new("클립보드");
     private readonly ToolStripMenuItem _characterItem = new("캐릭터");
     private readonly ClipboardHistory _history = new();  // UI 스레드에서만 쓴다
+    // 앞 창 미리 쓰기 (#26): 앞 창이 잠깐 머문 뒤에 쓴다. Alt+Tab으로 지나가는 창마다 클립보드를 바꾸지 않도록
+    private readonly System.Windows.Forms.Timer _focusTimer = new() { Interval = 150 };
     private TrayPreferences _preferences;
     private SlimeMode _mode = SlimeMode.Idle;
 
@@ -60,6 +62,11 @@ internal sealed class TrayApp : ApplicationContext
         _clipboard.OriginalRead += _copies.SetOriginal;
         _paste.Pasted += OnPaste;
         _writer.DataTaken += OnDataTaken;
+        // 메뉴·리본·오른쪽 클릭 붙여넣기는 키 입력이 없으므로, 대상 앱이 앞에 오면 그 앱용 결과를 미리 써 둔다 (FR-22, #26)
+        _focusTimer.Tick += (_, _) => WriteForForeground();
+        _addresses.ForegroundChanged += ScheduleForeground;
+        _addresses.AddressRead += () => _overlay.BeginInvoke(ScheduleForeground);
+        _copies.ResultsReady += () => _overlay.BeginInvoke(ScheduleForeground);
         DevLog.Info("app", $"started markdown={_options.MarkdownMode} ai={_options.AiVerification} character={character.Id} react={_preferences.ReactOnCopy}");
     }
 
@@ -67,6 +74,7 @@ internal sealed class TrayApp : ApplicationContext
     protected override void ExitThreadCore()
     {
         // 알림 영역에 아이콘이 남지 않게 메시지 루프가 끝나기 전에 숨긴다
+        _focusTimer.Stop();
         _animation?.Stop();
         _tray.Visible = false;
         _paste.Dispose();
@@ -85,6 +93,7 @@ internal sealed class TrayApp : ApplicationContext
     {
         if (disposing)
         {
+            _focusTimer.Dispose();
             _animation?.Dispose();
             _paste.Dispose();
             _addresses.Dispose();
@@ -254,9 +263,9 @@ internal sealed class TrayApp : ApplicationContext
         });
     }
 
-    private void OnDataTaken(string format)
+    private void OnDataTaken(string format, string? requester)
     {
-        DevLog.Info("paste", $"data taken format={format}");
+        DevLog.Info("paste", $"data taken format={format} by={requester ?? "unknown"}");
         _overlay.DataTaken();
     }
 
@@ -264,6 +273,41 @@ internal sealed class TrayApp : ApplicationContext
     private void OnPaste(Paste paste)
     {
         var started = Stopwatch.GetTimestamp();
+        var (result, outcome) = WriteFor(paste);
+        var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        DevLog.Info("paste", $"paste key={paste.Key} {Describe(paste)} converter={result.ConverterId} plan={outcome} elapsed={elapsed:0.0}ms");
+
+        // 테두리는 이 대상용 변환 결과가 실제로 클립보드에 있을 때만 강조색 (같은 대상에 두 번째로 붙일 때 포함).
+        // 아이콘은 키를 돌려준 뒤에 그려 붙여넣기 경로를 늦추지 않는다 (NFR-11)
+        var converted = _writer.OwnsClipboard && _writer.LastWrite?.Target == paste.Target;
+        var badge = PasteBadge.For(paste.Target, paste.Process, converted);
+        _overlay.BeginInvoke(() => _overlay.ShowPaste(badge, paste.ProcessPath));
+    }
+
+    private void ScheduleForeground()
+    {
+        _focusTimer.Stop();
+        _focusTimer.Start();
+    }
+
+    // 앞 창의 대상용 결과를 미리 쓰거나, 대상이 아닌 앱이면 원본으로 되돌린다. Ctrl+V와 같은 규칙(PastePlan)이라
+    // 이미 이 대상용 결과가 있거나 원본이 그대로면 아무것도 쓰지 않는다. 커서 아이콘은 띄우지 않는다
+    private void WriteForForeground()
+    {
+        _focusTimer.Stop();
+        var paste = _paste.Resolve("focus");
+        // 트레이 메뉴처럼 UP 자신의 창이 앞에 있으면 그대로 둔다
+        if (paste.ProcessPath is null || string.Equals(paste.ProcessPath, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var (result, outcome) = WriteFor(paste);
+        if (outcome != "leave")
+            DevLog.Info("paste", $"focus {Describe(paste)} converter={result.ConverterId} plan={outcome}");
+    }
+
+    // 붙여넣기 키와 앞 창 미리 쓰기가 같이 쓰는 기록 (FR-07, FR-16, PRD 6.5). UI 스레드
+    private (ConversionResult Result, string Outcome) WriteFor(Paste paste)
+    {
         var snapshot = _copies.Snapshot;
         var prepared = _copies.Prepared;
         // FR-16: 결과가 아직 없거나 다른 복사의 것이면 기다리지 않고 통과
@@ -278,17 +322,11 @@ internal sealed class TrayApp : ApplicationContext
         if (written is { } sequenceNumber)
             _clipboard.RememberOwnWrite(sequenceNumber);
 
-        var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         var outcome = plan.Action == PasteAction.Leave ? "leave" : written is null ? "skipped(clipboard busy)" : plan.Action.ToString();
-        // 브라우저면 판별 근거도 남긴다. 도메인만 남기고 전체 주소·제목은 남기지 않는다
-        var browser = paste.Via is null ? "" : $" url={paste.Host ?? "-"} via={paste.Via}";
-        DevLog.Info("paste", $"paste key={paste.Key} target={paste.Target} app={paste.Process ?? "unknown"}{browser} " +
-            $"converter={result.ConverterId} plan={outcome} elapsed={elapsed:0.0}ms");
-
-        // 테두리는 이 대상용 변환 결과가 실제로 클립보드에 있을 때만 강조색 (같은 대상에 두 번째로 붙일 때 포함).
-        // 아이콘은 키를 돌려준 뒤에 그려 붙여넣기 경로를 늦추지 않는다 (NFR-11)
-        var converted = _writer.OwnsClipboard && _writer.LastWrite?.Target == paste.Target;
-        var badge = PasteBadge.For(paste.Target, paste.Process, converted);
-        _overlay.BeginInvoke(() => _overlay.ShowPaste(badge, paste.ProcessPath));
+        return (result, outcome);
     }
+
+    // 브라우저면 판별 근거도 남긴다. 도메인만 남기고 전체 주소·제목은 남기지 않는다
+    private static string Describe(Paste paste) =>
+        $"target={paste.Target} app={paste.Process ?? "unknown"}" + (paste.Via is null ? "" : $" url={paste.Host ?? "-"} via={paste.Via}");
 }

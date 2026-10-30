@@ -27,6 +27,9 @@ internal sealed class CopyTracker(
         get { lock (_lock) return _snapshot; }
     }
 
+    // 결과 준비가 끝나 Prepared가 바뀌었을 때. 백그라운드 스레드에서 발생한다 (앞 창 미리 쓰기, #26)
+    public event Action? ResultsReady;
+
     // 원본을 되돌릴 때 쓸 포맷. 모든 포맷을 아직 읽지 못했거나 snapshot이 지금 복사가 아니면 snapshot의 포맷 (#80)
     public IReadOnlyDictionary<string, byte[]> OriginalOf(ClipboardSnapshot snapshot)
     {
@@ -145,6 +148,7 @@ internal sealed class CopyTracker(
                 log($"results seq={prepared.SequenceNumber} source={prepared.Source} {summary} prepare={elapsed:0.0}ms");
             }
         }
+        ResultsReady?.Invoke();
     }
 
     private void Expire(PreparedConversions prepared)

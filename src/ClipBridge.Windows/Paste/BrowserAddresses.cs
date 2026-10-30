@@ -33,6 +33,12 @@ internal sealed class BrowserAddresses : IDisposable
         Request(NativeMethods.GetForegroundWindow());
     }
 
+    // 앞 창이 바뀌거나 앞 창의 제목이 바뀌었을 때 (UI 스레드). 앞 창 미리 쓰기가 쓴다 (#26)
+    public event Action? ForegroundChanged;
+
+    // 주소를 새로 읽었을 때 (백그라운드 스레드). 앞 창이 브라우저면 대상이 바뀔 수 있다 (#26)
+    public event Action? AddressRead;
+
     // 붙여넣기 순간 부른다. 이 창이 지금 제목일 때 읽어 둔 주소가 있으면 true.
     // 아직 못 읽었거나 그 뒤 제목이 바뀌었으면 false이고, 그때는 창 제목 규칙으로 판단한다
     public bool TryGetHost(nint window, string title, out string? host)
@@ -61,6 +67,7 @@ internal sealed class BrowserAddresses : IDisposable
         if (eventType == EVENT_OBJECT_NAMECHANGE && window != NativeMethods.GetForegroundWindow())
             return;
         Request(window);
+        ForegroundChanged?.Invoke();
     }
 
     private void Request(nint window)
@@ -86,6 +93,7 @@ internal sealed class BrowserAddresses : IDisposable
             _known[window] = (title, host);
             // 도메인만 남기고 전체 주소·제목은 남기지 않는다 (macOS 로그와 같음)
             DevLog.Info("paste", $"browser url={host ?? "-"} via=uia");
+            AddressRead?.Invoke();
 
             if (_known.Count > 64)
             {

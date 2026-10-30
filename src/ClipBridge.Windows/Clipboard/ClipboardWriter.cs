@@ -24,8 +24,9 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         CreateHandle(new CreateParams { Parent = HWND_MESSAGE });
     }
 
-    // 대상 앱이 쓴 데이터를 처음 가져갈 때 UI 스레드에서 발생한다 (커서 아이콘이 사라지는 신호, #5)
-    public event Action<string>? DataTaken;
+    // 대상 앱이 쓴 데이터를 처음 가져갈 때 UI 스레드에서 발생한다 (커서 아이콘이 사라지는 신호, #5).
+    // (포맷 이름, 가져간 앱의 실행 파일 이름 또는 null)
+    public event Action<string, string?>? DataTaken;
 
     public LastWrite? LastWrite { get; private set; }
 
@@ -86,6 +87,7 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
                 if (id != 0)
                     SetData(id, data);
             }
+            MarkNotForHistory();
         }
         finally
         {
@@ -115,7 +117,9 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
                 if (!_taken)
                 {
                     _taken = true;
-                    DataTaken?.Invoke(ClipboardReader.FormatName(format));
+                    // 데이터를 달라고 한 앱은 지금 클립보드를 열고 있는 창의 앱이다
+                    var requester = Path.GetFileName(WindowProcess.ImagePath(NativeMethods.GetOpenClipboardWindow()));
+                    DataTaken?.Invoke(ClipboardReader.FormatName(format), string.IsNullOrEmpty(requester) ? null : requester);
                 }
                 m.Result = 0;
                 return;
@@ -164,6 +168,7 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
                 pending[id] = data;
                 NativeMethods.SetClipboardData(id, 0);  // 데이터는 WM_RENDERFORMAT에서
             }
+            MarkNotForHistory();
             _pending = pending;
             _taken = false;
             return true;
@@ -172,6 +177,16 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         {
             NativeMethods.CloseClipboard();
         }
+    }
+
+    // UP이 쓴 변환 결과·되돌린 원본은 Windows 클립보드 기록(Win+V)과 클라우드 동기화에 새 항목으로 남기지 않는다.
+    // 앞 창을 바꿀 때마다 미리 쓰므로(#26) 표시가 없으면 기록이 그 결과로 채워진다. 원본 복사는 이미 기록에 있다.
+    // 클립보드가 열려 있는 상태에서 호출한다
+    private static void MarkNotForHistory()
+    {
+        byte[] no = BitConverter.GetBytes(0);
+        SetData(ClipboardReader.FormatId(ConcealedCopy.CanIncludeInHistory), no);
+        SetData(ClipboardReader.FormatId(ConcealedCopy.CanUploadToCloud), no);
     }
 
     // 클립보드가 열려 있는 상태에서 호출한다
@@ -211,6 +226,9 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
 
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
+
+        [DllImport("user32.dll")]
+        public static extern nint GetOpenClipboardWindow();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern nint GlobalAlloc(uint flags, nuint bytes);
