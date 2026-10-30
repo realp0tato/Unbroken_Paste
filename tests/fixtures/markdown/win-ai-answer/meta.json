@@ -1,0 +1,50 @@
+{
+  "os": "windows",
+  "osVersion": "Microsoft Windows 10.0.26200",
+  "sourceApp": "Notepad.exe",
+  "sourceAppVersion": "11.2607.14.0",
+  "description": "AI 답변 Markdown: 제목·굵게·목록(중첩)·파이프 표·코드 블록·인용·빈 줄 과다, 메모장에서 복사",
+  "capturedAt": "2026-10-30T08:49:21.2285923+00:00",
+  "sequenceNumber": 1141,
+  "formats": [
+    {
+      "id": 49161,
+      "name": "DataObject",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 1,
+      "name": "CF_TEXT",
+      "file": "CF_TEXT.txt",
+      "size": 1656
+    },
+    {
+      "id": 13,
+      "name": "CF_UNICODETEXT",
+      "file": "CF_UNICODETEXT.txt",
+      "size": 828
+    },
+    {
+      "id": 49333,
+      "name": "EnterpriseDataProtectionId",
+      "skipped": "데이터 없음"
+    },
+    {
+      "id": 49171,
+      "name": "Ole Private Data",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 16,
+      "name": "CF_LOCALE",
+      "file": "CF_LOCALE.bin",
+      "size": 4
+    },
+    {
+      "id": 7,
+      "name": "CF_OEMTEXT",
+      "file": "CF_OEMTEXT.txt",
+      "size": 539
+    }
+  ]
+}
