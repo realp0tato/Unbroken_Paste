@@ -34,6 +34,8 @@ final class PasteWatcher: NSObject {
         let prompt = !defaults.bool(forKey: Self.askedKey)
         defaults.set(true, forKey: Self.askedKey)
         let options = ["AXTrustedCheckOptionPrompt": prompt] as CFDictionary  // kAXTrustedCheckOptionPrompt
+        // Default timeout for every Accessibility call from this app, so a hung app cannot stall a paste.
+        AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 0.05)
         if AXIsProcessTrustedWithOptions(options) {
             installTap()
         }
@@ -110,17 +112,44 @@ final class PasteWatcher: NSObject {
         }
     }
 
-    /// Focused window title and page address via Accessibility, with a short timeout so a hung app cannot stall the key.
-    /// Browsers that expose the address (Safari) report it as the window's AXDocument.
+    /// Focused window title and page address via Accessibility.
+    /// The address comes from the window's AXDocument when the browser sets it, otherwise from the page's web area (AXURL).
     private func focusedWindow(pid: pid_t) -> (title: String?, url: String?) {
+        let started = ProcessInfo.processInfo.systemUptime
         let app = AXUIElementCreateApplication(pid)
-        AXUIElementSetMessagingTimeout(app, 0.05)
-        var value: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(app, kAXFocusedWindowAttribute as CFString, &value) == .success,
-              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return (nil, nil) }
+        guard let value = Self.attribute(app, kAXFocusedWindowAttribute), CFGetTypeID(value) == AXUIElementGetTypeID() else {
+            Self.log.info("browser window not readable")
+            return (nil, nil)
+        }
         let window = value as! AXUIElement
-        AXUIElementSetMessagingTimeout(window, 0.05)
-        return (Self.attribute(window, kAXTitleAttribute) as? String, Self.urlString(Self.attribute(window, kAXDocumentAttribute)))
+        let title = Self.attribute(window, kAXTitleAttribute) as? String
+        var url = Self.urlString(Self.attribute(window, kAXDocumentAttribute))
+        let from = url != nil ? "document" : "webArea"
+        if url == nil {
+            url = Self.webAreaURL(in: window, deadline: started + 0.03)
+        }
+        // Only the host and whether a title was read; never the title or the full address.
+        let host = url.flatMap { URL(string: $0)?.host } ?? "none"
+        let ms = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
+        Self.log.info("browser url=\(host, privacy: .public) via=\(url == nil ? "none" : from, privacy: .public) title=\(title == nil ? "no" : "yes", privacy: .public) \(ms, privacy: .public)ms")
+        return (title, url)
+    }
+
+    /// Breadth-first search for the page's AXWebArea, bounded by element count and time so the key is not held up.
+    private static func webAreaURL(in window: AXUIElement, deadline: TimeInterval) -> String? {
+        var queue = [window]
+        var visited = 0
+        while !queue.isEmpty, visited < 150, ProcessInfo.processInfo.systemUptime < deadline {
+            let element = queue.removeFirst()
+            visited += 1
+            if attribute(element, kAXRoleAttribute) as? String == "AXWebArea" {
+                return urlString(attribute(element, "AXURL"))
+            }
+            if let children = attribute(element, kAXChildrenAttribute) as? [AXUIElement] {
+                queue.append(contentsOf: children)
+            }
+        }
+        return nil
     }
 
     private static func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
@@ -129,7 +158,7 @@ final class PasteWatcher: NSObject {
     }
 
     private static func urlString(_ value: CFTypeRef?) -> String? {
-        if let string = value as? String { return string }
+        if let string = value as? String, !string.isEmpty { return string }
         return (value as? URL)?.absoluteString
     }
 }
