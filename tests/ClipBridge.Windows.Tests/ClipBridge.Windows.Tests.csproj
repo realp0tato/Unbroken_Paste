@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ClipBridge.Core\ClipBridge.Core.csproj" />
     <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\CopyTracker.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Paste\PasteRules.cs" LinkBase="Windows" />
   </ItemGroup>
 
 </Project>

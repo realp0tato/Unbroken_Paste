@@ -206,6 +206,7 @@ dotnet run --project src/ClipBridge.Windows
   ```text
   10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
   10:21:03.540 [convert] results seq=812 source=PlainText Hangul=STUB Notion=STUB Word=STUB Other=PASS
+  10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=STUB
   ```
 
 **macOS 앱:** [macOS 앱 README](macos/ClipBridgeMenuBar/README.md)
