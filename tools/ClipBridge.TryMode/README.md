@@ -34,7 +34,7 @@ swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format
 |---|---|---|---|
 | Markdown 글 (일반 텍스트, 또는 Claude 앱 복사) | C5 | C6 | 통과 (C8 #12 전) |
 | Excel | C1 | C2 | 통과 (Office 기본) |
-| 인터넷 | 통과 (C3 #16 전) | 통과 (C4 #17 전) | 통과 (C7 #10 전) |
+| 인터넷 (AI 답변 드래그 복사 포함) | C3 | C4 | 통과 (C7 #10 전) |
 | 일반 텍스트 | 통과 (TX #6 전) | 통과 | 통과 |
 
 변환기가 Core에 추가되면 시험 모드도 자동으로 따라갑니다.

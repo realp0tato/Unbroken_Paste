@@ -1,13 +1,12 @@
-using System.Text;
 using System.Text.RegularExpressions;
+using ClipBridge.Core.Web;
 
 namespace ClipBridge.Core;
 
 // 출처·내용 판별 (PRD 6.1, #13). 위에서부터 먼저 맞는 규칙을 쓴다
 public static partial class SourceDetector
 {
-    // Chrome 계열이 넣는 페이지 주소. Safari는 넣지 않으므로 복사한 앱으로 판별한다 (PRD 6.1)
-    public const string MacChromiumSourceUrl = "org.chromium.source-url";
+    public const string MacChromiumSourceUrl = WebClipboard.MacChromiumSourceUrl;
 
     private static readonly string[] ExcelApps = ["EXCEL.EXE", "com.microsoft.Excel"];
     private static readonly string[] ExcelFormats = [ClipFormats.WinExcelXml, ClipFormats.WinExcelBiff12];
@@ -28,7 +27,7 @@ public static partial class SourceDetector
             return (SourceKind.Excel, ExcelClipboard.ReadTable(snapshot) is { IsTable: false } ? ContentKind.Text : ContentKind.Table);
 
         var text = ClipText.GetPlainText(snapshot);
-        var html = Html(snapshot, out var sourceUrl);
+        var html = WebClipboard.ReadHtml(snapshot, out var sourceUrl);
 
         // AI 서비스 복사는 Markdown 원문과 서식 HTML을 함께 넣는다 → HTML이 있어도 Markdown 글 (순서 2)
         if (text is not null && IsAiService(snapshot.SourceApp, sourceUrl) && LooksLikeMarkdown(text))
@@ -72,20 +71,6 @@ public static partial class SourceDetector
 
     private static bool IsWebUrl(string? url) =>
         url is not null && (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
-
-    // HTML 본문과 페이지 주소. Windows는 CF_HTML 헤더의 SourceURL, macOS Chrome 계열은 따로 넣은 주소
-    private static string? Html(ClipboardSnapshot snapshot, out string? sourceUrl)
-    {
-        sourceUrl = snapshot.Formats.TryGetValue(MacChromiumSourceUrl, out var url) ? Encoding.UTF8.GetString(url).Trim() : null;
-        if (snapshot.Formats.TryGetValue(ClipFormats.MacHtml, out var macHtml))
-            return Encoding.UTF8.GetString(macHtml);
-        if (snapshot.Formats.TryGetValue(ClipFormats.WinHtml, out var cfHtml) && CfHtml.Unwrap(cfHtml) is { } unwrapped)
-        {
-            sourceUrl ??= unwrapped.SourceUrl;
-            return unwrapped.Html;
-        }
-        return null;
-    }
 
     // 표 하나만 있으면 표, 표 밖에 글자가 있으면 글 (글 안의 표는 변환기가 표로 바꾼다)
     private static bool IsTableOnly(string html)
