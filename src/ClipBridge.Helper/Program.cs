@@ -13,8 +13,7 @@ internal static class Program
         using var input = new StreamReader(Console.OpenStandardInput(), utf8);
         using var output = new StreamWriter(Console.OpenStandardOutput(), utf8) { NewLine = "\n" };
 
-        // TODO(#14): 실제 변환기가 들어오면 교체
-        IClipConverter converter = new StubClipConverter();
+        IClipConverter converter = new UpClipConverter();
         await new HelperSession(converter, output).RunAsync(input);
     }
 }
