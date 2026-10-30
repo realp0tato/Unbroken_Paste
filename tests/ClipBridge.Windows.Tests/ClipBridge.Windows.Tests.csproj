@@ -23,6 +23,7 @@
     <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\CopyTracker.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Paste\PasteRules.cs" LinkBase="Windows" />
     <Compile Include="..\..\src\ClipBridge.Windows\Paste\PastePlan.cs" LinkBase="Windows" />
+    <Compile Include="..\..\src\ClipBridge.Windows\Overlay\OverlayRules.cs" LinkBase="Windows" />
   </ItemGroup>
 
 </Project>
