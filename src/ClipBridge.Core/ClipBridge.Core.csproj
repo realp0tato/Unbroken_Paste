@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ClipBridge.Core.Tests" />
+    <InternalsVisibleTo Include="ClipBridge.Helper.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,5 +6,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ClipBridge.Core.Tests/ClipBridge.Core.Tests.csproj" />
+    <Project Path="tests/ClipBridge.Helper.Tests/ClipBridge.Helper.Tests.csproj" />
   </Folder>
 </Solution>
