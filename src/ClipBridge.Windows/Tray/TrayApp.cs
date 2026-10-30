@@ -6,18 +6,21 @@ internal sealed class TrayApp : ApplicationContext
     private readonly Icon _icon = TrayIcon.Create(SystemInformation.SmallIconSize);
     private readonly ContextMenuStrip _menu = new();
     private readonly NotifyIcon _tray;
+    private readonly SlimeAnimation? _animation;
 
     public TrayApp()
     {
         // TODO(#22): Markdown 처리·AI 검증 메뉴
         _menu.Items.Add("종료", null, (_, _) => ExitThread());
         _tray = new NotifyIcon { Icon = _icon, Text = "UP", ContextMenuStrip = _menu, Visible = true };
+        _animation = SlimeAnimation.Start(_tray, SystemInformation.SmallIconSize);
     }
 
     // 종료할 때 클립보드는 건드리지 않는다 (FR-19)
     protected override void ExitThreadCore()
     {
         // 알림 영역에 아이콘이 남지 않게 메시지 루프가 끝나기 전에 숨긴다
+        _animation?.Stop();
         _tray.Visible = false;
         base.ExitThreadCore();
     }
@@ -26,6 +29,7 @@ internal sealed class TrayApp : ApplicationContext
     {
         if (disposing)
         {
+            _animation?.Dispose();
             _tray.Dispose();
             _menu.Dispose();
             _icon.Dispose();
