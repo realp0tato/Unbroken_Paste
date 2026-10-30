@@ -40,6 +40,9 @@ internal static class ClipboardReader
         }
     }
 
+    // 클립보드가 바뀔 때마다 OS가 올리는 번호 (FR-17 최신 복사 판단)
+    public static long SequenceNumber() => NativeMethods.GetClipboardSequenceNumber();
+
     // 표준 포맷은 CF_ 상수 이름, 등록 포맷은 등록 이름 (ClipFormats와 같은 규칙)
     public static string FormatName(uint id)
     {

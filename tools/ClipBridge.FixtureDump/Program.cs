@@ -6,12 +6,13 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using ClipBridge.Windows;
 
-// 복사 직후 클립보드의 모든 포맷을 tests/fixtures/<출처>/win-<이름>/에 저장한다 (#28)
-// 사용법: dotnet run --project tools/ClipBridge.FixtureDump -- <출처> <이름> "<설명>" [--force] [--max-kb N]
+// 다음 복사를 기다렸다가 클립보드의 모든 포맷을 tests/fixtures/<출처>/win-<이름>/에 저장한다 (#28)
+// 사용법: dotnet run --project tools/ClipBridge.FixtureDump -- <출처> <이름> "<설명>" [--now] [--force] [--max-kb N]
 
 string[] sources = ["excel", "web", "markdown", "plain"];
 var positional = new List<string>();
 var force = false;
+var now = false;
 long maxKb = 1024;
 
 for (var i = 0; i < args.Length; i++)
@@ -20,6 +21,9 @@ for (var i = 0; i < args.Length; i++)
     {
         case "--force":
             force = true;
+            break;
+        case "--now":
+            now = true;
             break;
         case "--max-kb" when i + 1 < args.Length && long.TryParse(args[i + 1], out var kb) && kb > 0:
             maxKb = kb;
@@ -36,15 +40,16 @@ for (var i = 0; i < args.Length; i++)
 if (positional.Count is < 2 or > 3)
 {
     Console.WriteLine("""
-        사용법: dotnet run --project tools/ClipBridge.FixtureDump -- <출처> <이름> "<설명>" [--force] [--max-kb N]
+        사용법: dotnet run --project tools/ClipBridge.FixtureDump -- <출처> <이름> "<설명>" [--now] [--force] [--max-kb N]
 
           출처      excel | web | markdown | plain
           이름      영문 소문자·숫자·하이픈 (예: basic-table). 폴더는 win-<이름>으로 만든다
           설명      복사한 내용 설명 (meta.json에 기록)
+          --now     다음 복사를 기다리지 않고 지금 클립보드를 저장
           --force   같은 이름의 샘플이 있으면 지우고 다시 저장
           --max-kb  포맷 하나의 최대 크기, 넘으면 저장하지 않고 meta.json에만 기록 (기본 1024)
 
-        먼저 원본 앱에서 복사한 뒤 실행한다.
+        실행한 뒤 원본 앱에서 복사하면 그 내용을 저장한다.
         예) dotnet run --project tools/ClipBridge.FixtureDump -- excel basic-table "3열 5행 표, 머리글 굵게"
         """);
     return 1;
@@ -69,11 +74,26 @@ var directory = Path.Combine(fixturesRoot, source, $"win-{name}");
 if (Directory.Exists(directory) && !force)
     return Fail($"이미 있는 샘플입니다: {directory}\n다시 저장하려면 --force를 붙이세요.");
 
+// 명령어를 복사해 붙여 넣는 동안 클립보드가 덮이므로, 실행한 뒤의 복사를 저장한다
+if (!now)
+{
+    Console.WriteLine("이제 원본 앱에서 복사하세요. 복사하면 바로 저장합니다. (취소: Ctrl+C)");
+    var started = ClipboardReader.SequenceNumber();
+    while (ClipboardReader.SequenceNumber() == started)
+        Thread.Sleep(100);
+    // 복사한 앱이 포맷을 다 올릴 때까지 잠깐 기다린다
+    Thread.Sleep(500);
+}
+
 var clipboard = ClipboardReader.Read(maxBytesPerFormat: maxKb * 1024);
 if (clipboard is null)
     return Fail("클립보드를 열 수 없습니다. 잠시 후 다시 실행해 주세요.");
 if (clipboard.Formats.Count == 0)
-    return Fail("클립보드가 비어 있습니다. 먼저 원본 앱에서 복사해 주세요.");
+    return Fail("클립보드가 비어 있습니다. 원본 앱에서 복사해 주세요.");
+
+var sourceApp = clipboard.OwnerPath is null ? null : Path.GetFileName(clipboard.OwnerPath);
+if (source == "excel" && !string.Equals(sourceApp, "EXCEL.EXE", StringComparison.OrdinalIgnoreCase))
+    return Fail($"Excel 샘플인데 복사한 앱이 {sourceApp ?? "(알 수 없음)"}입니다. 저장하지 않았습니다. Excel 데스크톱 앱에서 복사해 주세요.");
 
 // 클립보드를 읽은 뒤에 지워야 실패해도 기존 샘플이 남는다
 if (Directory.Exists(directory))
@@ -98,7 +118,7 @@ foreach (var format in clipboard.Formats)
 var meta = new SampleMeta(
     Os: "windows",
     OsVersion: RuntimeInformation.OSDescription,
-    SourceApp: clipboard.OwnerPath is null ? null : Path.GetFileName(clipboard.OwnerPath),
+    SourceApp: sourceApp,
     SourceAppVersion: AppVersion(clipboard.OwnerPath),
     Description: description,
     CapturedAt: DateTimeOffset.UtcNow,

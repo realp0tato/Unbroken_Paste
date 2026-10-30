@@ -53,13 +53,16 @@ Windows 등록 포맷의 `id`는 실행할 때마다 달라지므로 참고용�
 
 `tools/ClipBridge.FixtureDump`가 클립보드를 읽어 위 형식으로 저장한다. 저장소 루트에서 실행한다.
 
-1. 원본 앱(Excel, 브라우저 등)에서 내용을 선택하고 복사한다. Excel은 복사 테두리가 깜박이는 상태로 둔다.
-2. 터미널에서 실행한다.
+1. 터미널에서 먼저 실행한다. `이제 원본 앱에서 복사하세요`가 나오면 기다리는 상태다.
    ```bash
    dotnet run --project tools/ClipBridge.FixtureDump -- excel basic-table "3열 5행 표, 머리글 굵게"
    ```
+2. 원본 앱(Excel, 브라우저 등)에서 내용을 선택하고 복사한다. 복사하는 순간 저장된다.
 3. `tests/fixtures/excel/win-basic-table/`에 저장된 파일과 화면에 나온 포맷 목록을 확인한다.
 
+- 명령어를 복사해 붙여 넣는 과정에서 클립보드가 덮이므로, 실행한 **뒤의** 복사를 저장한다. 이미 복사해 둔 내용을 저장하려면 `--now`를 붙인다.
+- `excel` 샘플은 복사한 앱이 `EXCEL.EXE`가 아니면 저장하지 않는다.
+- Windows PowerShell 5.1에서 `meta.json`을 볼 때는 `Get-Content -Encoding UTF8`로 연다. 지정하지 않으면 한글이 깨져 보인다 (파일은 정상).
 - 같은 이름이 이미 있으면 멈춘다. 다시 저장하려면 `--force`를 붙인다.
 - 포맷 하나가 1MB를 넘으면 저장하지 않고 `meta.json`에만 적는다 (이미지 포맷 등). 바꾸려면 `--max-kb 4096`처럼 지정한다.
 - 비트맵·메타파일처럼 바이트로 읽을 수 없는 포맷은 `skipped`로 기록된다.
