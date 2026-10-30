@@ -58,10 +58,11 @@ internal sealed class CursorOverlay : Form
     // 붙여넣기: 대상 앱 아이콘. 대상 앱이 데이터를 가져가면(DataTaken) 바로, 아니면 1초 뒤 사라진다
     public void ShowPaste(PasteBadge badge, string? processPath)
     {
+        NotionApp.Remember(processPath);
         var icon = badge.Icon switch
         {
             BadgeIcon.ForegroundApp => IconOf(processPath),
-            BadgeIcon.NotionApp => IconOf(NotionAppPath()),
+            BadgeIcon.NotionApp => IconOf(NotionApp.Find()),
             _ => null,
         };
         Show(new Content(icon, Fill: false, badge.Letter), badge.Passthrough, PasteTimeoutSeconds);
@@ -248,13 +249,6 @@ internal sealed class CursorOverlay : Form
         }
         _icons[path] = bitmap;
         return bitmap;
-    }
-
-    // 브라우저의 Notion 웹에 보여 줄 Notion 앱 아이콘. 설치돼 있지 않으면 null → "N" 배지
-    private static string? NotionAppPath()
-    {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Notion", "Notion.exe");
-        return File.Exists(path) ? path : null;
     }
 
     private static Image? LoadUpBadge()

@@ -24,19 +24,41 @@ internal static class PasteTargets
     // 창 제목은 브라우저일 때만 필요하다
     public static bool IsBrowser(string? process) => process is not null && Browsers.Contains(process);
 
-    public static TargetApp Resolve(string? process, string? windowTitle)
+    // host: 브라우저 주소창의 도메인. 미리 읽어 둔 것이 없으면 null (#79, BrowserAddresses)
+    public static TargetApp Resolve(string? process, string? windowTitle, string? host = null)
     {
         if (process is null)
             return TargetApp.Other;
         if (Apps.TryGetValue(process, out var target))
             return target;
-        return IsBrowser(process) ? WebTarget(windowTitle) : TargetApp.Other;
+        return IsBrowser(process) ? WebTarget(host, windowTitle) : TargetApp.Other;
     }
 
-    // macOS TargetResolver.webTarget의 Notion 제목 규칙과 같다. 주소는 붙여넣기 순간에 읽기엔 느려서 쓰지 않는다.
+    // macOS TargetResolver.webTarget과 같다: 주소(도메인)를 먼저 보고, 모르면 창 제목.
     // 한컴독스 웹 한글은 macOS만 지원한다 (Windows는 데스크톱 한글 Hwp.exe로 충분)
-    private static TargetApp WebTarget(string? title) =>
-        title is not null && title.Contains("Notion", StringComparison.OrdinalIgnoreCase) ? TargetApp.Notion : TargetApp.Other;
+    private static TargetApp WebTarget(string? host, string? title)
+    {
+        if (host is not null && IsNotionHost(host))
+            return TargetApp.Notion;
+        return title is not null && title.Contains("Notion", StringComparison.OrdinalIgnoreCase) ? TargetApp.Notion : TargetApp.Other;
+    }
+
+    public static bool IsNotionHost(string host) =>
+        host == "notion.so" || host.EndsWith(".notion.so", StringComparison.Ordinal) || host.EndsWith(".notion.site", StringComparison.Ordinal);
+
+    // 주소창 값에서 도메인만 꺼낸다. 브라우저는 "notion.so/페이지"처럼 https://를 빼고 보여 주기도 한다.
+    // 주소가 아니면(검색어를 입력 중이거나 빈 칸) null
+    public static string? HostOf(string? address)
+    {
+        if (string.IsNullOrWhiteSpace(address))
+            return null;
+        var text = address.Trim();
+        if (text.Any(char.IsWhiteSpace))
+            return null;
+        if (!text.Contains("://", StringComparison.Ordinal))
+            text = "https://" + text;
+        return Uri.TryCreate(text, UriKind.Absolute, out var uri) && uri.Host.Contains('.') ? uri.Host.ToLowerInvariant() : null;
+    }
 }
 
 // 키 입력에서 붙여넣기(Ctrl+V, Shift+Insert)를 찾는다 (FR-05)
