@@ -9,9 +9,10 @@ public class PasteTargetsTests
     [InlineData("HWP.EXE", null, TargetApp.Hangul)]
     [InlineData("Notion.exe", null, TargetApp.Notion)]
     [InlineData("WINWORD.EXE", null, TargetApp.Word)]
+    [InlineData("EXCEL.EXE", null, TargetApp.Excel)]
     [InlineData("winword.exe", null, TargetApp.Word)]
     [InlineData("notepad.exe", null, TargetApp.Other)]
-    [InlineData("EXCEL.EXE", null, TargetApp.Other)]
+    [InlineData("POWERPNT.EXE", null, TargetApp.Other)]
     [InlineData(null, null, TargetApp.Other)]
     public void DesktopApps(string? process, string? title, TargetApp expected) =>
         Assert.Equal(expected, PasteTargets.Resolve(process, title));

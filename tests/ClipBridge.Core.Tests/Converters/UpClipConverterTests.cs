@@ -177,6 +177,11 @@ public class UpClipConverterTests
             data.Add("plain", TargetApp.Word, mode, "TX");
             data.Add("plain", TargetApp.Other, mode, "PASS");
             data.Add("other", TargetApp.Notion, mode, "PASS");
+            // Excel 대상(P1, #25): 웹에서 지울 찌꺼기가 있을 때만 C9 (WebToExcelConverterTests), 그 밖은 Excel 기본 붙여넣기
+            data.Add("excel", TargetApp.Excel, mode, "PASS");
+            data.Add("markdown", TargetApp.Excel, mode, "PASS");
+            data.Add("web", TargetApp.Excel, mode, "PASS");
+            data.Add("plain", TargetApp.Excel, mode, "PASS");
         }
         return data;
     }

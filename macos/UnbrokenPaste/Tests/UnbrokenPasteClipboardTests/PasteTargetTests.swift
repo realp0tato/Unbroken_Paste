@@ -10,6 +10,7 @@ final class PasteTargetTests: XCTestCase {
     func testDesktopApps() {
         // Bundle IDs confirmed on a Mac (#34)
         XCTAssertEqual(resolve("com.microsoft.Word"), .word)
+        XCTAssertEqual(resolve("com.microsoft.Excel"), .excel)
         XCTAssertEqual(resolve("notion.id"), .notion)
         XCTAssertEqual(resolve("net.golbin.hop"), .hangul)
     }
@@ -56,7 +57,7 @@ final class PasteTargetTests: XCTestCase {
     }
 
     func testUnknownOrMissingAppPassesThrough() {
-        XCTAssertEqual(resolve("com.microsoft.Excel"), .other)
+        XCTAssertEqual(resolve("com.microsoft.Powerpoint"), .other)
         XCTAssertEqual(resolve(nil), .other)
     }
 

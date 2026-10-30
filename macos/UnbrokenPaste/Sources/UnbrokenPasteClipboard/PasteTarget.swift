@@ -6,6 +6,7 @@ public enum TargetResolver {
     /// Exact bundle IDs. Hancom HWP is matched by `isHancomHwp` because its ID differs by version.
     public static let bundleTargets: [String: TargetApp] = [
         "com.microsoft.Word": .word,
+        "com.microsoft.Excel": .excel,  // P1 target expansion (#25)
         "notion.id": .notion,
         "net.golbin.hop": .hangul,  // HOP, open-source HWP editor for macOS
     ]

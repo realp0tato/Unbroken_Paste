@@ -59,7 +59,7 @@ macOS 앱이 Core를 쓰기 위한 보조 프로그램입니다. 앱이 실행 �
 
 ### results
 
-대상마다 확정된 결과입니다. 키는 `TargetApp` 이름(`Hangul`, `Notion`, `Word`, `Other`)이고, 값은 Core의 `ConversionResult`입니다.
+대상마다 확정된 결과입니다. 키는 `TargetApp` 이름(`Hangul`, `Notion`, `Word`, `Excel`, `Other`)이고, 값은 Core의 `ConversionResult`입니다.
 
 - `isPassthrough`가 true면 원본 스냅샷을 그대로 다시 기록합니다 (PRD 6.5).
 - false면 `html`을 `public.html`에, `plainText`를 `public.utf8-plain-text`에 기록합니다. 둘 중 null인 것은 기록하지 않습니다.

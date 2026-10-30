@@ -11,6 +11,7 @@ internal static class PasteTargets
         ["Hwp.exe"] = TargetApp.Hangul,
         ["Notion.exe"] = TargetApp.Notion,
         ["WINWORD.EXE"] = TargetApp.Word,
+        ["EXCEL.EXE"] = TargetApp.Excel,   // P1 대상 확장 (#25)
     };
 
     // Notion 웹을 창 제목으로 찾는 브라우저. 어느 브라우저로 열어도 같게 인식하도록

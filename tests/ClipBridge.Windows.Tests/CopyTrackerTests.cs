@@ -139,7 +139,7 @@ public class CopyTrackerTests
         await tracker.OnCopied(Copy(7, "비밀번호1234"));
 
         var line = Assert.Single(log);
-        Assert.Equal("results seq=7 source=PlainText Hangul=STUB Notion=STUB Word=STUB Other=PASS", line);
+        Assert.Equal("results seq=7 source=PlainText Hangul=STUB Notion=STUB Word=STUB Excel=PASS Other=PASS", line);
         Assert.DoesNotContain("비밀번호", line);
     }
 
