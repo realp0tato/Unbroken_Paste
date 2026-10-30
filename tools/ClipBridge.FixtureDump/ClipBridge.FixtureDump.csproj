@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 클립보드 샘플 수집 도구 (#28). macOS에서도 빌드는 되지만 실행은 Windows에서만 가능 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RootNamespace>ClipBridge.FixtureDump</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ClipBridge.Core\ClipBridge.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 클립보드 읽기는 Windows 앱과 같은 코드를 쓴다 -->
+  <ItemGroup>
+    <Compile Include="..\..\src\ClipBridge.Windows\Clipboard\*.cs" LinkBase="Clipboard" />
+  </ItemGroup>
+
+</Project>

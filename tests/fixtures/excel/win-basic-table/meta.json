@@ -1,0 +1,184 @@
+{
+  "os": "windows",
+  "osVersion": "Microsoft Windows 10.0.26200",
+  "sourceApp": "EXCEL.EXE",
+  "sourceAppVersion": "16.0.20527.20088",
+  "description": "3열 5행 표, 머리글 굵게",
+  "capturedAt": "2026-10-30T08:58:14.1506935+00:00",
+  "sequenceNumber": 1268,
+  "formats": [
+    {
+      "id": 49161,
+      "name": "DataObject",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 14,
+      "name": "CF_ENHMETAFILE",
+      "skipped": "GDI 핸들 포맷"
+    },
+    {
+      "id": 3,
+      "name": "CF_METAFILEPICT",
+      "skipped": "GDI 핸들 포맷"
+    },
+    {
+      "id": 2,
+      "name": "CF_BITMAP",
+      "skipped": "GDI 핸들 포맷"
+    },
+    {
+      "id": 49868,
+      "name": "Biff12",
+      "file": "Biff12.bin",
+      "size": 7394
+    },
+    {
+      "id": 49856,
+      "name": "Biff8",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 49940,
+      "name": "Biff5",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 4,
+      "name": "CF_SYLK",
+      "file": "CF_SYLK.bin",
+      "size": 2225
+    },
+    {
+      "id": 5,
+      "name": "CF_DIF",
+      "file": "CF_DIF.bin",
+      "size": 335
+    },
+    {
+      "id": 49867,
+      "name": "XML Spreadsheet",
+      "file": "XML Spreadsheet.bin",
+      "size": 2420
+    },
+    {
+      "id": 49350,
+      "name": "HTML Format",
+      "file": "HTML Format.bin",
+      "size": 3492
+    },
+    {
+      "id": 13,
+      "name": "CF_UNICODETEXT",
+      "file": "CF_UNICODETEXT.txt",
+      "size": 120
+    },
+    {
+      "id": 1,
+      "name": "CF_TEXT",
+      "file": "CF_TEXT.txt",
+      "size": 91
+    },
+    {
+      "id": 49811,
+      "name": "Csv",
+      "file": "Csv.bin",
+      "size": 91
+    },
+    {
+      "id": 49887,
+      "name": "Hyperlink",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 49871,
+      "name": "ShadowWorkbook",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 49831,
+      "name": "Web Custom Format Map",
+      "file": "Web Custom Format Map.bin",
+      "size": 41
+    },
+    {
+      "id": 49319,
+      "name": "Rich Text Format",
+      "file": "Rich Text Format.bin",
+      "size": 5325
+    },
+    {
+      "id": 49163,
+      "name": "Embed Source",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 49156,
+      "name": "Native",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 49155,
+      "name": "OwnerLink",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 49166,
+      "name": "Object Descriptor",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 49165,
+      "name": "Link Source",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 49167,
+      "name": "Link Source Descriptor",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 49906,
+      "name": "Link",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 129,
+      "name": "CF_DSPTEXT",
+      "file": "CF_DSPTEXT.bin",
+      "size": 11
+    },
+    {
+      "id": 49154,
+      "name": "ObjectLink",
+      "skipped": "제외: 파일 경로 포함"
+    },
+    {
+      "id": 49171,
+      "name": "Ole Private Data",
+      "skipped": "제외: OLE 개체"
+    },
+    {
+      "id": 16,
+      "name": "CF_LOCALE",
+      "file": "CF_LOCALE.bin",
+      "size": 4
+    },
+    {
+      "id": 7,
+      "name": "CF_OEMTEXT",
+      "file": "CF_OEMTEXT.txt",
+      "size": 91
+    },
+    {
+      "id": 8,
+      "name": "CF_DIB",
+      "skipped": "제외: 이미지"
+    },
+    {
+      "id": 17,
+      "name": "CF_DIBV5",
+      "skipped": "제외: 이미지"
+    }
+  ]
+}

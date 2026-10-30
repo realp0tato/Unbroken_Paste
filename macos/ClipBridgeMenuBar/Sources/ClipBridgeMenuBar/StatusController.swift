@@ -1,6 +1,7 @@
 import AppKit
 import ClipBridgeClipboard
 import ClipBridgeContracts
+import os
 import UserNotifications
 
 @MainActor
@@ -8,6 +9,7 @@ final class StatusController: NSObject {
     private static let headers: [SlimeMode: String] = [.idle: "대기 중", .busy: "구조 분석 중", .cpu: "CPU 연동 중"]
     private static let copyReaction: TimeInterval = 1.2
     private static let pollInterval: TimeInterval = 0.3
+    private static let log = Logger(subsystem: "app.clipbridge.menubar", category: "paste")
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let settings: Settings
@@ -22,7 +24,12 @@ final class StatusController: NSObject {
     private var nextPoll: TimeInterval = 0
     private var timer: Timer?
 
+    private let pasteWatcher = PasteWatcher()
+    private let overlay = CursorOverlay()
+    private let helper = HelperClient()
+
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
@@ -59,6 +66,19 @@ final class StatusController: NSObject {
         let timer = Timer(timeInterval: 1.0 / 60, target: self, selector: #selector(tick), userInfo: nil, repeats: true)
         RunLoop.main.add(timer, forMode: .common)  // keep animating while the menu is open
         self.timer = timer
+
+        overlay.upBadge = current?.badge()
+        pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
+        pasteWatcher.onPaste = { [weak self] paste in
+            self?.logPasteResult(paste)
+            // Runs inside the event tap: draw the badge after the key is on its way (NFR-11).
+            DispatchQueue.main.async {
+                self?.overlay.showPaste(target: paste.target, bundleID: paste.bundleID, appName: paste.appName)
+            }
+        }
+        pasteWatcher.start()
+        refreshPermission()
+        helper.start(options: settings.conversionOptions)
     }
 
     // MARK: - Menu
@@ -66,6 +86,10 @@ final class StatusController: NSObject {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(headerItem)
+        // Shown only while Accessibility is missing (FR-30): pasting still works, without conversion.
+        permissionItem.target = self
+        permissionItem.action = #selector(openAccessibilitySettings)
+        menu.addItem(permissionItem)
         menu.addItem(.separator())
 
         // PRD 4.2 menu
@@ -132,6 +156,10 @@ final class StatusController: NSObject {
         for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
     }
 
+    private func refreshPermission() {
+        permissionItem.isHidden = pasteWatcher.isActive
+    }
+
     private func refreshCharacters() {
         for (id, item) in characterItems { item.state = id == currentCharacter ? .on : .off }
     }
@@ -161,12 +189,14 @@ final class StatusController: NSObject {
         guard let raw = sender.representedObject as? String, let mode = MarkdownMode(rawValue: raw) else { return }
         settings.markdownMode = mode
         refreshOptions()
+        helper.setOptions(settings.conversionOptions)
     }
 
     @objc private func pickAI(_ sender: NSMenuItem) {
         guard let on = sender.representedObject as? Bool else { return }
         settings.aiVerification = on
         refreshOptions()
+        helper.setOptions(settings.conversionOptions)
     }
 
     @objc private func pickMode(_ sender: NSMenuItem) {
@@ -186,6 +216,7 @@ final class StatusController: NSObject {
         let newFrames = entry.frames()
         guard !newFrames.isEmpty else { return }
         frames = newFrames
+        overlay.upBadge = entry.badge()
         animator.frameCount = newFrames.count
         shownFrame = -1
         currentCharacter = id
@@ -194,7 +225,9 @@ final class StatusController: NSObject {
     }
 
     @objc private func recopy(_ sender: NSMenuItem) {
-        monitor.recopy(at: sender.tag)
+        if let snapshot = monitor.recopy(at: sender.tag) {
+            helper.prepare(snapshot)
+        }
         refreshClipboard()
     }
 
@@ -208,7 +241,12 @@ final class StatusController: NSObject {
         refreshClipboard()
     }
 
+    @objc private func openAccessibilitySettings() {
+        NSWorkspace.shared.open(PasteWatcher.accessibilitySettingsURL)
+    }
+
     @objc private func quit() {
+        helper.shutdown()
         NSApp.terminate(nil)
     }
 
@@ -226,15 +264,25 @@ final class StatusController: NSObject {
         if now >= nextPoll {
             nextPoll = now + Self.pollInterval
             switch monitor.poll() {
-            case .copied?:
+            case let .copied(snapshot)?:
+                helper.prepare(snapshot)
+                overlay.showCopy()
                 if settings.reactOnCopy {
                     animator.react(seconds: Self.copyReaction, now: now)
                 }
                 refreshClipboard()
-            case .ignored?, nil:
+            case .ignored?:
+                helper.clear()
+            case nil:
                 break
             }
         }
+    }
+
+    /// What this paste would get from the Helper. Writing it to the clipboard is #35.
+    private func logPasteResult(_ paste: PasteWatcher.Paste) {
+        let result = helper.result(for: paste.target, sequence: monitor.snapshot?.sequenceNumber ?? -1)
+        Self.log.info("paste uses converter=\(result.converterId, privacy: .public) target=\(paste.target.rawValue, privacy: .public)")
     }
 
     private func notify(_ body: String) {
