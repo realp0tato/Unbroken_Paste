@@ -188,7 +188,7 @@ def render_dance(filled, white, t, size, base_h):
     # of the chest. The chest sits between the eyes and the bottom, so the arm never covers the eyes.
     arm_w, hand_r, gap = 3.2 * SS, 2.6 * SS, 1.0 * SS
     eye_bottom -= lift_eyes
-    chest = top + bh * (eye_bottom + (1 - eye_bottom) * 0.55)
+    chest = top + bh * (eye_bottom + (1 - eye_bottom) * 0.64)
     shoulder = (left + bw * 0.86, chest - 0.03 * bh)
     hand = (left + bw * 0.60, chest + 0.065 * bh * -stroke)
 
