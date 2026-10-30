@@ -1,7 +1,7 @@
 import AppKit
 
 enum AppResources {
-    /// Contents/Resources inside ClipBridge.app, or the package's Resources folder for `swift run`.
+    /// Contents/Resources inside UP.app, or the package's Resources folder for `swift run`.
     static let root: URL = {
         if let bundled = Bundle.main.resourceURL,
            FileManager.default.fileExists(atPath: bundled.appendingPathComponent("characters.json").path) {
