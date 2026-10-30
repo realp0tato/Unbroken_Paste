@@ -47,9 +47,9 @@
 | C2 | Excel → Notion | 표: Notion 단순 표(첫 행 머리글) / 글: 셀마다 한 줄 | 구현 |
 | C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표 | 구현 |
 | C4 | 인터넷 → Notion | C3 + 링크·코드 블록 유지 | 구현 |
-| C7 | 인터넷 → Word | C3 + 링크 유지, 제목을 Word 제목 스타일로 | 개발 전 ([#10](https://github.com/realp0tato/donga_hackathon/issues/10)), 지금은 통과 |
+| C7 | 인터넷 → Word | C3 + 링크 유지. 제목은 글자 크기·굵기(제목 스타일 미사용), 표는 머리글 반복 없이 | 구현 |
 | C5·C6 | Markdown → 한글·Notion | 기본 **서식 적용**: Notion은 제목·굵게·목록·표 그대로, 한글은 `#`→큰 굵은 글자·`**`→굵게(제목 스타일 미사용) / 옵션: **기호 제거** | 구현 |
-| C8 | Markdown → Word | C5와 같은 방식 | 개발 전 ([#12](https://github.com/realp0tato/donga_hackathon/issues/12)), 지금은 통과 |
+| C8 | Markdown → Word | C5와 같은 방식 | 구현 |
 | TX | 일반 텍스트 → 한글·Notion·Word | 글자는 그대로 두고 줄간격만 정리. 탭으로 나눈 직사각형 글(TSV)은 표로 | 구현 |
 | 공통 | 줄간격 보정 | 연속 빈 줄·빈 문단·이중 문단 간격 정리, Windows는 줄바꿈 CRLF (모든 변환기에 적용) | 구현 |
 
@@ -258,8 +258,7 @@ open "build/Unbroken Paste.app"
 | 구분 | 상태 |
 |---|---|
 | 출처 판별·변환기 자동 선택·줄간격 보정 | 구현 |
-| 변환기 C1–C6, TX | 구현 |
-| 변환기 C7(인터넷 → Word)·C8(Markdown → Word) | 개발 전, 지금은 통과 |
+| 변환기 C1–C8, TX | 구현 |
 | AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
 | Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
 | macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
