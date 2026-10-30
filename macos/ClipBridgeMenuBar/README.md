@@ -22,7 +22,7 @@ open build/ClipBridge.app
 
 Xcode에서 열려면 `open Package.swift`.
 
-테스트 (Core 계약과 JSON 형식이 같은지 확인, Xcode 필요):
+테스트 (Core 계약 JSON 형식, 복사 감지 동작 확인, Xcode 필요):
 
 ```bash
 swift test
@@ -46,7 +46,8 @@ UP 종료  ⌘Q
 - **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
 - **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.clipbridge.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
 - **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Strip`/`Format`, AI 검증 기본 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
-- **클립보드:** 텍스트 복사 최근 10개를 메모리에만 보관해요. 비밀번호 관리자가 숨김 표시를 한 복사는 기록하지 않아요.
+- **복사 감지 (#33):** 0.3초마다 `changeCount`를 확인해요. 복사하면 모든 포맷을 `ClipboardSnapshot`으로 메모리에 1건만 보관하고, 그때 앞에 있던 앱의 번들 ID와 `changeCount`를 함께 기록해요. 앱이 직접 쓴 변경(`recordOwnWrite`)은 새 복사로 치지 않아요.
+- **클립보드:** 텍스트 복사 최근 10개를 메모리에만 보관해요. 비밀번호 관리자가 숨김 표시를 한 복사는 기록하지 않고, 이전 스냅샷도 버려서 그 뒤 붙여넣기에 예전 변환 결과가 붙지 않게 해요.
 - **CPU 연동:** 코드에는 있지만 메뉴에서 숨겨 두었어요 (`StatusController.swift`의 `cpu.isHidden`).
 
 ## 구조
@@ -55,10 +56,12 @@ UP 종료  ⌘Q
 |---|---|
 | `Sources/ClipBridgeContracts/Contracts.swift` | `src/ClipBridge.Core/Contracts`(#29)의 Swift 버전. Helper와 주고받는 타입과 JSON 형식(camelCase, enum 문자열, 바이트 Base64). C# 계약이 바뀌면 같이 바꾼다 |
 | `Tests/ClipBridgeContractsTests/` | C# `ContractsJsonTests`와 같은 JSON으로 검증 |
+| `Sources/ClipBridgeClipboard/ClipboardMonitor.swift` | 복사 감지, 원본 스냅샷, 자기 기록 무시, 최근 복사 기록 (#33) |
+| `Sources/ClipBridgeClipboard/PasteboardSource.swift` | `NSPasteboard` 접근 인터페이스. 테스트에서는 가짜 클립보드로 바꿔 끼움 |
+| `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등) |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |
-| `ClipboardHistory.swift` | 클립보드 감시와 최근 복사 기록 |
 | `Settings.swift` | 옵션 저장 |
 | `Characters.swift` | `Resources/characters.json`과 캐릭터 프레임 로드 |
 | `tools/make_frames.py` | 캐릭터 이미지에서 통통 튀는 프레임 생성 (개발용 Python 스크립트) |
