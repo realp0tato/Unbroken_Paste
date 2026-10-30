@@ -47,6 +47,27 @@ UP 종료  ⌘Q
 - **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.clipbridge.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
 - **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Strip`/`Format`, AI 검증 기본 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
 - **복사 감지 (#33):** 0.3초마다 `changeCount`를 확인해요. 복사하면 모든 포맷을 `ClipboardSnapshot`으로 메모리에 1건만 보관하고, 그때 앞에 있던 앱의 번들 ID와 `changeCount`를 함께 기록해요. 앱이 직접 쓴 변경(`recordOwnWrite`)은 새 복사로 치지 않아요.
+- **붙여넣기 감지 (#34):** 키보드 이벤트 탭으로 Cmd+V를 감지하고, 앞쪽 앱으로 대상(한글·Notion·Word·기타)을 판별해요. 키는 그대로 통과시키고 버리거나 다시 보내지 않아요. 시스템이 탭을 꺼도 바로 다시 켜요. 판별 결과는 시스템 로그로 확인해요.
+
+  ```bash
+  log stream --level info --predicate 'subsystem == "app.clipbridge.menubar"'
+  ```
+- **손쉬운 사용 권한:** 처음 실행할 때 한 번 요청해요. 허용하기 전에는 메뉴 맨 위에 `⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기`가 보이고, 붙여넣기는 변환 없이 평소대로 돼요. 설정에서 허용하면 2초 안에 자동으로 켜지고 항목이 사라져요.
+  - `./scripts/build-app.sh`로 다시 빌드하면 서명이 바뀌어서 권한이 풀릴 수 있어요. 그러면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 UP를 지우고(−) 다시 허용하세요.
+  - `swift run`으로 실행하면 권한은 UP가 아니라 실행한 터미널 앱에 붙어요.
+
+### 대상 앱 매핑 (PRD 4.5)
+
+| 대상 | 판별 기준 |
+|---|---|
+| Word | 번들 ID `com.microsoft.Word` (맥에서 확인) |
+| Notion 앱 | 번들 ID `notion.id` (맥에서 확인) |
+| 한글 (HOP) | 번들 ID `net.golbin.hop` (맥에서 확인). [HOP](https://github.com/golbin/hop)는 HWP 파일을 여는 오픈소스 편집기 |
+| 한글 (한컴오피스) | 번들 ID가 `com.hancom.`으로 시작하고 `hwp`가 들어 있거나, 앱 이름에 `HWP`·`한글`이 있음 (버전마다 ID가 달라 규칙으로 판별, 맥에서 미확인) |
+| Notion 웹 | 브라우저(Safari, Chrome, Edge, Firefox, Whale, Arc)의 앞쪽 창 제목에 `Notion`이 있음. 확인할 수 없으면 통과 |
+| 그 외 | 통과 |
+
+설치된 앱의 번들 ID 확인: `osascript -e 'id of app "Microsoft Word"'` (앱 이름만 바꿔서 실행)
 - **클립보드:** 텍스트 복사 최근 10개를 메모리에만 보관해요. 비밀번호 관리자가 숨김 표시를 한 복사는 기록하지 않고, 이전 스냅샷도 버려서 그 뒤 붙여넣기에 예전 변환 결과가 붙지 않게 해요.
 - **CPU 연동:** 코드에는 있지만 메뉴에서 숨겨 두었어요 (`StatusController.swift`의 `cpu.isHidden`).
 
@@ -58,7 +79,9 @@ UP 종료  ⌘Q
 | `Tests/ClipBridgeContractsTests/` | C# `ContractsJsonTests`와 같은 JSON으로 검증 |
 | `Sources/ClipBridgeClipboard/ClipboardMonitor.swift` | 복사 감지, 원본 스냅샷, 자기 기록 무시, 최근 복사 기록 (#33) |
 | `Sources/ClipBridgeClipboard/PasteboardSource.swift` | `NSPasteboard` 접근 인터페이스. 테스트에서는 가짜 클립보드로 바꿔 끼움 |
-| `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등) |
+| `Sources/ClipBridgeClipboard/PasteTarget.swift` | 대상 앱 판별(`TargetResolver`)과 Cmd+V 판정(`PasteKey`) (#34) |
+| `Sources/ClipBridgeMenuBar/PasteWatcher.swift` | 이벤트 탭, 손쉬운 사용 권한 요청·재확인, 브라우저 창 제목 읽기 (#34) |
+| `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |

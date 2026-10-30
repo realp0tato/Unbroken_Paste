@@ -22,7 +22,10 @@ final class StatusController: NSObject {
     private var nextPoll: TimeInterval = 0
     private var timer: Timer?
 
+    private let pasteWatcher = PasteWatcher()
+
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
     private let clipboardMenu = NSMenu()
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
@@ -59,6 +62,10 @@ final class StatusController: NSObject {
         let timer = Timer(timeInterval: 1.0 / 60, target: self, selector: #selector(tick), userInfo: nil, repeats: true)
         RunLoop.main.add(timer, forMode: .common)  // keep animating while the menu is open
         self.timer = timer
+
+        pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
+        pasteWatcher.start()
+        refreshPermission()
     }
 
     // MARK: - Menu
@@ -66,6 +73,10 @@ final class StatusController: NSObject {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(headerItem)
+        // Shown only while Accessibility is missing (FR-30): pasting still works, without conversion.
+        permissionItem.target = self
+        permissionItem.action = #selector(openAccessibilitySettings)
+        menu.addItem(permissionItem)
         menu.addItem(.separator())
 
         // PRD 4.2 menu
@@ -130,6 +141,10 @@ final class StatusController: NSObject {
     private func refreshMode() {
         headerItem.title = "UP · " + (Self.headers[animator.mode] ?? "")
         for (mode, item) in modeItems { item.state = mode == animator.mode ? .on : .off }
+    }
+
+    private func refreshPermission() {
+        permissionItem.isHidden = pasteWatcher.isActive
     }
 
     private func refreshCharacters() {
@@ -206,6 +221,10 @@ final class StatusController: NSObject {
     @objc private func toggleReact() {
         settings.reactOnCopy.toggle()
         refreshClipboard()
+    }
+
+    @objc private func openAccessibilitySettings() {
+        NSWorkspace.shared.open(PasteWatcher.accessibilitySettingsURL)
     }
 
     @objc private func quit() {
