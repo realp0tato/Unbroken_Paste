@@ -27,6 +27,7 @@ final class StatusController: NSObject {
     private let pasteWatcher = PasteWatcher()
     private let overlay = CursorOverlay()
     private let helper = HelperClient()
+    private let writer = PasteWriter()
 
     private let headerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionItem = NSMenuItem(title: "⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기", action: nil, keyEquivalent: "")
@@ -70,11 +71,13 @@ final class StatusController: NSObject {
 
         overlay.upBadge = current?.badge()
         pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
+        writer.onDataTaken = { [weak self] in self?.overlay.dataTaken() }
         pasteWatcher.onPaste = { [weak self] paste in
-            self?.logPasteResult(paste)
-            // Runs inside the event tap: draw the badge after the key is on its way (NFR-11).
+            // Runs inside the event tap, before the target app gets the key (#35).
+            let converted = self?.writeForPaste(paste) ?? false
+            // Draw the badge after the key is on its way (NFR-11).
             DispatchQueue.main.async {
-                self?.overlay.showPaste(target: paste.target, bundleID: paste.bundleID, appName: paste.appName)
+                self?.overlay.showPaste(target: paste.target, bundleID: paste.bundleID, appName: paste.appName, converted: converted)
             }
         }
         pasteWatcher.start()
@@ -264,6 +267,7 @@ final class StatusController: NSObject {
     }
 
     @objc private func quit() {
+        writer.settleBeforeQuit(snapshot: monitor.snapshot)
         helper.shutdown()
         NSApp.terminate(nil)
     }
@@ -297,10 +301,27 @@ final class StatusController: NSObject {
         }
     }
 
-    /// What this paste would get from the Helper. Writing it to the clipboard is #35.
-    private func logPasteResult(_ paste: PasteWatcher.Paste) {
-        let result = helper.result(for: paste.target, sequence: monitor.snapshot?.sequenceNumber ?? -1)
-        Self.log.info("paste uses converter=\(result.converterId, privacy: .public) target=\(paste.target.rawValue, privacy: .public)")
+    /// Puts the target's conversion result (or the original back) on the clipboard before the paste lands (#35).
+    /// Returns whether the clipboard now holds a conversion for this target. Never blocks or drops the key.
+    private func writeForPaste(_ paste: PasteWatcher.Paste) -> Bool {
+        let started = ProcessInfo.processInfo.systemUptime
+        let snapshot = monitor.snapshot
+        let result = snapshot.map { helper.result(for: paste.target, sequence: $0.sequenceNumber) } ?? .passthrough
+        let plan = PastePlan.decide(snapshotSequence: snapshot?.sequenceNumber, changeCount: writer.changeCount,
+                                    lastWrite: writer.lastWrite, result: result, target: paste.target)
+        if let count = writer.apply(plan, snapshot: snapshot, target: paste.target) {
+            monitor.recordOwnWrite(changeCount: count)  // FR-02: not a new copy, not a history entry
+        }
+        let converted = writer.lastWrite.map { $0.target == paste.target && $0.changeCount == writer.changeCount } ?? false
+        let action: String
+        switch plan {
+        case .leave: action = "leave"
+        case .writeResult: action = "write"
+        case .restoreOriginal: action = "restore"
+        }
+        let ms = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
+        Self.log.info("paste \(action, privacy: .public) converter=\(result.converterId, privacy: .public) target=\(paste.target.rawValue, privacy: .public) \(ms, privacy: .public)ms")
+        return converted
     }
 
     private func notify(_ body: String) {
