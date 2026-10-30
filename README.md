@@ -117,7 +117,7 @@ tests/
   ClipBridge.Core.Tests/   # ④ 변환기 단위 테스트
   fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
 macos/
-  ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, Xcode 프로젝트, 솔루션에 포함 안 됨)
+  ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
 prd.md
 README.md
 CONTRIBUTING.md
@@ -140,7 +140,7 @@ CONTRIBUTING.md
 | ③ | `src/ClipBridge.Helper/` | macOS 앱이 ①을 쓸 수 있게 해 주는 보조 프로그램. 표준 입출력으로 요청을 받아 ①을 호출하고 결과를 돌려준다 | 장세찬 |
 | ④ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
 | ⑤ | `tests/fixtures/` | Excel·웹에서 복사했을 때 클립보드에 실제로 들어가는 데이터를 파일로 저장. ④의 입력으로 쓴다 ([규칙](tests/fixtures/README.md)) | 이창민(Windows), 윤승희(macOS) |
-| ⑥ | `macos/ClipBridgeMenuBar/` | macOS 앱 껍데기: 메뉴 막대, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ③을 통해 ①을 호출. Swift라서 Xcode에서 연다 | 윤승희 |
+| ⑥ | `macos/ClipBridgeMenuBar/` | macOS 앱 껍데기: 메뉴 막대, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ③을 통해 ①을 호출. Swift라서 C# 솔루션과 별도로 빌드한다 | 윤승희 |
 
 ### 흐름
 
