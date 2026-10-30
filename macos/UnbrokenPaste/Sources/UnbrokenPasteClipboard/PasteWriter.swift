@@ -1,5 +1,5 @@
 import AppKit
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 
 /// Writes conversion results and restores originals on the general pasteboard (#35, PRD 4.5).
 ///

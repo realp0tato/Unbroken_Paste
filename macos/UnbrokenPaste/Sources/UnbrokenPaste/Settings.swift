@@ -1,9 +1,31 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import Foundation
 
 /// Option values only (PRD 4.2). Stored in UserDefaults; copied text is never stored.
 final class Settings {
+    /// Bundle ID before the rename to Unbroken Paste (#47).
+    static let legacyDomain = "app.clipbridge.menubar"
+    private static let migratedKey = "migratedLegacyDefaults"
+    private static let migratedKeys = ["markdownMode", "aiVerification", "reactOnCopy", "character"]
+
     private let defaults = UserDefaults.standard
+
+    init() {
+        Self.migrateLegacyDefaults(into: defaults)
+    }
+
+    /// Copies menu options saved under the old bundle ID once, so the rename does not reset them.
+    /// "askedAccessibility" is left behind on purpose: the renamed app needs its own permission prompt.
+    static func migrateLegacyDefaults(into defaults: UserDefaults, legacy: UserDefaults? = UserDefaults(suiteName: legacyDomain)) {
+        guard !defaults.bool(forKey: migratedKey) else { return }
+        defaults.set(true, forKey: migratedKey)
+        guard let legacy else { return }
+        for key in migratedKeys where defaults.object(forKey: key) == nil {
+            if let value = legacy.object(forKey: key) {
+                defaults.set(value, forKey: key)
+            }
+        }
+    }
 
     var markdownMode: MarkdownMode {
         get {

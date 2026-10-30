@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import XCTest
 
 /// Wire format of src/ClipBridge.Helper (README examples).

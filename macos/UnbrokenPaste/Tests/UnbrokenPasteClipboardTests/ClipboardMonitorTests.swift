@@ -1,5 +1,5 @@
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 import XCTest
 
 private final class FakePasteboard: PasteboardSource {
@@ -38,14 +38,21 @@ private final class FakePasteboard: PasteboardSource {
 final class ClipboardMonitorTests: XCTestCase {
     // XCTest makes a fresh instance per test, so each test starts clean.
     private let pasteboard = FakePasteboard()
+    // Lazy, so each test calls start() first: the monitor treats what is already on the pasteboard as seen.
     private lazy var monitor = ClipboardMonitor(pasteboard: pasteboard, frontmostApp: { "com.microsoft.Excel" })
 
+    private func start() {
+        _ = monitor
+    }
+
     func testNoChangeIsNotACopy() {
+        start()
         XCTAssertNil(monitor.poll())
         XCTAssertNil(monitor.snapshot)
     }
 
     func testCopyKeepsEveryFormatSourceAppAndSequence() {
+        start()
         pasteboard.copyText("a\tb", html: "<table></table>")
 
         guard case .copied(let snapshot) = monitor.poll() else { return XCTFail("expected a copy") }
@@ -59,6 +66,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testNonTextCopyIsKeptButNotInHistory() {
+        start()
         pasteboard.copy([("public.png", Data([0x89, 0x50]))])
 
         guard case .copied(let snapshot) = monitor.poll() else { return XCTFail("expected a copy") }
@@ -68,6 +76,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testOwnWriteIsNotACopyAndKeepsSnapshot() {
+        start()
         pasteboard.copyText("original")
         _ = monitor.poll()
         let original = monitor.snapshot
@@ -81,6 +90,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testUserCopyAfterOwnWriteIsDetected() {
+        start()
         monitor.recordOwnWrite(changeCount: pasteboard.writeText("converted"))
         pasteboard.copyText("user copy")
 
@@ -90,6 +100,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testConcealedCopyIsIgnoredAndDropsPreviousSnapshot() {
+        start()
         pasteboard.copyText("visible")
         _ = monitor.poll()
 
@@ -101,6 +112,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testEmptyPasteboardIsIgnored() {
+        start()
         pasteboard.copyText("a")
         _ = monitor.poll()
 
@@ -111,6 +123,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testLaterCopyMakesEarlierSnapshotStale() {
+        start()
         pasteboard.copyText("A")
         guard case .copied(let a) = monitor.poll() else { return XCTFail("expected A") }
         pasteboard.copyText("B")
@@ -121,6 +134,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testFastCopiesBetweenPollsKeepOnlyTheLatest() {
+        start()
         pasteboard.copyText("A")
         pasteboard.copyText("B")
 
@@ -131,6 +145,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testHistoryMovesRepeatsToTopAndKeepsTen() {
+        start()
         for i in 0..<12 {
             pasteboard.copyText("item \(i)")
             _ = monitor.poll()
@@ -145,6 +160,7 @@ final class ClipboardMonitorTests: XCTestCase {
     }
 
     func testRecopyBecomesSnapshotWithoutBeingCountedAgain() {
+        start()
         pasteboard.copyText("first")
         _ = monitor.poll()
         pasteboard.copyText("second")

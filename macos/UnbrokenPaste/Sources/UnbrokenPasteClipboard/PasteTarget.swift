@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import Foundation
 
 /// Paste target from the frontmost app (PRD 4.5, #34). Anything unrecognised is `.other`, which passes through.

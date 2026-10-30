@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import Foundation
 
 public enum CopyEvent: Equatable {

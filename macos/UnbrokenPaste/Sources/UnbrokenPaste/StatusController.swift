@@ -1,6 +1,6 @@
 import AppKit
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 import os
 import UserNotifications
 
@@ -9,7 +9,7 @@ final class StatusController: NSObject {
     private static let headers: [SlimeMode: String] = [.idle: "대기 중", .busy: "구조 분석 중", .cpu: "CPU 연동 중"]
     private static let copyReaction: TimeInterval = 1.2
     private static let pollInterval: TimeInterval = 0.3
-    private static let log = Logger(subsystem: "app.clipbridge.menubar", category: "paste")
+    private static let log = Logger(subsystem: "app.unbrokenpaste.menubar", category: "paste")
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let settings: Settings

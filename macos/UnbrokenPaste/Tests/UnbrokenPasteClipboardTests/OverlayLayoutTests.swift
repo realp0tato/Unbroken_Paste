@@ -1,5 +1,5 @@
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 import CoreGraphics
 import XCTest
 

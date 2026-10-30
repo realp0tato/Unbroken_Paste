@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import Foundation
 import os
 
@@ -9,7 +9,7 @@ import os
 /// pasting normally even when the Helper is not there (PRD 10).
 @MainActor
 final class HelperClient: NSObject {
-    private static let log = Logger(subsystem: "app.clipbridge.menubar", category: "helper")
+    private static let log = Logger(subsystem: "app.unbrokenpaste.menubar", category: "helper")
     private static let responseTimeout: TimeInterval = 10
     private static let maxRestartDelay: TimeInterval = 30
 
@@ -217,10 +217,10 @@ final class HelperClient: NSObject {
     // MARK: - Locating the Helper
 
     #if arch(arm64)
-    private static let helperName = "ClipBridge.Helper-arm64"
+    private static let helperName = "UnbrokenPaste.Helper-arm64"
     private static let devFolder = "helper-arm64"
     #else
-    private static let helperName = "ClipBridge.Helper-x64"
+    private static let helperName = "UnbrokenPaste.Helper-x64"
     private static let devFolder = "helper-x64"
     #endif
 
@@ -234,7 +234,7 @@ final class HelperClient: NSObject {
             return bundled
         }
         let dev = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()  // ClipBridgeMenuBar
+            .deletingLastPathComponent()  // UnbrokenPaste
             .deletingLastPathComponent()  // Sources
             .deletingLastPathComponent()  // package root
             .appendingPathComponent("build/\(devFolder)/ClipBridge.Helper")
