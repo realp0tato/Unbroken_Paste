@@ -83,6 +83,20 @@ public class CopyTrackerTests
         Assert.Equal(1, tracker.Snapshot?.SequenceNumber);
     }
 
+    // 로그에는 번호·변환기 ID만 남고 복사한 본문은 남지 않는다 (macOS 로그와 같은 규칙)
+    [Fact]
+    public async Task Log_HasConverterIdsButNoCopiedText()
+    {
+        var log = new ConcurrentQueue<string>();
+        using var tracker = new CopyTracker(new StubClipConverter(), () => ConversionOptions.Default, log: log.Enqueue);
+
+        await tracker.OnCopied(Copy(7, "비밀번호1234"));
+
+        var line = Assert.Single(log);
+        Assert.Equal("results seq=7 source=PlainText Hangul=STUB Notion=STUB Word=STUB Other=PASS", line);
+        Assert.DoesNotContain("비밀번호", line);
+    }
+
     // 복사마다 Release를 부를 때까지 준비를 끝내지 않는 변환기
     private sealed class GatedConverter : IClipConverter
     {

@@ -61,7 +61,10 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
         {
             // FR-02: UP 자신이 기록한 변경은 무시한다
             if (_ownWrites.Remove(sequenceNumber) || NativeMethods.GetClipboardOwner() == Handle)
+            {
+                DevLog.Info("copy", $"ignored own write seq={sequenceNumber}");
                 return;
+            }
         }
 
         // 원본 앱이 지연 렌더링으로 데이터를 만드는 동안 이 스레드(키보드 훅이 도는 UI 스레드)를 막지 않도록
@@ -74,9 +77,16 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
         var clipboard = ClipboardReader.Read(include: SnapshotFormats.Contains);
         // 읽는 사이에 다시 복사됐으면 그 복사의 알림이 따로 오므로 버린다
         if (clipboard is null || clipboard.SequenceNumber != sequenceNumber)
+        {
+            DevLog.Info("copy", clipboard is null
+                ? $"clipboard busy seq={sequenceNumber}"
+                : $"skipped seq={sequenceNumber} newer={clipboard.SequenceNumber}");
             return;
+        }
 
-        Copied?.Invoke(clipboard.ToSnapshot());
+        var snapshot = clipboard.ToSnapshot();
+        DevLog.Info("copy", $"copy seq={snapshot.SequenceNumber} app={snapshot.SourceApp ?? "unknown"} formats={string.Join(",", snapshot.Formats.Keys)}");
+        Copied?.Invoke(snapshot);
     }
 
     private static class NativeMethods

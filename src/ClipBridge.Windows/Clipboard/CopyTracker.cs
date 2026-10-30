@@ -4,7 +4,9 @@ namespace ClipBridge.Windows;
 
 // 가장 최근 복사 1건의 원본 스냅샷과 미리 준비한 변환 결과를 관리한다 (FR-03, FR-17, NFR-08, PRD 6.5).
 // Windows API를 쓰지 않으므로 ClipBridge.Windows.Tests가 이 파일을 그대로 컴파일해 시험한다.
-internal sealed class CopyTracker(IClipConverter converter, Func<ConversionOptions> options, TimeSpan? expiry = null) : IDisposable
+// log에는 번호·변환기 ID만 넘기고 복사한 본문은 넘기지 않는다
+internal sealed class CopyTracker(
+    IClipConverter converter, Func<ConversionOptions> options, TimeSpan? expiry = null, Action<string>? log = null) : IDisposable
 {
     // NFR-08: 준비한 결과는 120초 후 해제하고, 스냅샷은 다음 복사까지 둔다
     private readonly TimeSpan _expiry = expiry ?? TimeSpan.FromSeconds(120);
@@ -35,7 +37,10 @@ internal sealed class CopyTracker(IClipConverter converter, Func<ConversionOptio
         {
             // 스냅샷을 백그라운드에서 읽으므로 이전 복사가 늦게 도착할 수 있다
             if (_snapshot is not null && snapshot.SequenceNumber <= _snapshot.SequenceNumber)
+            {
+                log?.Invoke($"ignored older copy seq={snapshot.SequenceNumber} current={_snapshot.SequenceNumber}");
                 return Task.CompletedTask;
+            }
 
             ReleasePrepared();
             _preparing?.Cancel();
@@ -62,9 +67,12 @@ internal sealed class CopyTracker(IClipConverter converter, Func<ConversionOptio
         {
             prepared = converter.Prepare(snapshot, options(), ct);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // 취소됐거나 변환기가 실패하면 결과를 두지 않는다. 붙여넣기는 원본으로 동작한다 (FR-16)
+            log?.Invoke(ex is OperationCanceledException
+                ? $"prepare canceled seq={snapshot.SequenceNumber}"
+                : $"prepare failed seq={snapshot.SequenceNumber} error={ex.GetType().Name}");
             return;
         }
 
@@ -74,11 +82,18 @@ internal sealed class CopyTracker(IClipConverter converter, Func<ConversionOptio
             if (!ReferenceEquals(snapshot, _snapshot) || ct.IsCancellationRequested)
             {
                 prepared.Dispose();
+                log?.Invoke($"dropped late results seq={snapshot.SequenceNumber} current={_snapshot?.SequenceNumber}");
                 return;
             }
 
             _prepared = prepared;
             _expiryTimer = new System.Threading.Timer(_ => Expire(prepared), null, _expiry, Timeout.InfiniteTimeSpan);
+            if (log is not null)
+            {
+                var current = options();
+                var summary = string.Join(" ", Enum.GetValues<TargetApp>().Select(target => $"{target}={prepared.Get(target, current).ConverterId}"));
+                log($"results seq={prepared.SequenceNumber} source={prepared.Source} {summary}");
+            }
         }
     }
 
@@ -87,7 +102,10 @@ internal sealed class CopyTracker(IClipConverter converter, Func<ConversionOptio
         lock (_lock)
         {
             if (ReferenceEquals(prepared, _prepared))
+            {
                 ReleasePrepared();
+                log?.Invoke($"results expired seq={prepared.SequenceNumber}");
+            }
         }
     }
 
