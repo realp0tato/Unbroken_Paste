@@ -34,7 +34,13 @@ public static partial class SourceDetector
             return (SourceKind.Markdown, MarkdownContent(text));
 
         if (html is not null && (IsWebUrl(sourceUrl) || IsBrowser(snapshot.SourceApp)))
+        {
+            // 화면에 Markdown 원문이 글자 그대로 보이는 경우(GitHub 코드·Raw 보기, 굵게를 해석하지 못한 문단 등):
+            // HTML에 서식 태그가 없고 글자가 Markdown이면 Markdown 글로 보고 Markdown 처리 옵션을 따른다
+            if (text is not null && !FormattingTag().IsMatch(html) && LooksLikeMarkdown(text))
+                return (SourceKind.Markdown, MarkdownContent(text));
             return (SourceKind.Web, IsTableOnly(html) ? ContentKind.Table : ContentKind.Text);
+        }
 
         if (html is null && text is not null)
             return LooksLikeMarkdown(text)
@@ -44,12 +50,12 @@ public static partial class SourceDetector
         return (SourceKind.Other, ContentKind.Text);
     }
 
-    // PRD 6.1: 제목 문법 1개 이상, 또는 Markdown 문법 2개 이상.
+    // PRD 6.1: 제목 문법 1개 이상, 짝이 맞는 **굵게** 1개 이상, 또는 Markdown 문법 2개 이상.
     // 구분선(|---|)까지 갖춘 파이프 표는 머리글 줄 + 구분선 줄이라 그것만으로 Markdown으로 본다
     public static bool LooksLikeMarkdown(string text)
     {
         var lines = text.Replace("\r\n", "\n").Split('\n');
-        if (lines.Any(line => HeadingLine().IsMatch(line)) || lines.Any(line => TableSeparator().IsMatch(line)))
+        if (lines.Any(line => HeadingLine().IsMatch(line)) || lines.Any(line => TableSeparator().IsMatch(line)) || BoldText().IsMatch(text))
             return true;
         var hits = 0;
         if (BoldText().IsMatch(text)) hits++;
@@ -102,4 +108,7 @@ public static partial class SourceDetector
     private static partial Regex TableBlock();
     [GeneratedRegex(@"<[^>]*>|<!--.*?-->", RegexOptions.Singleline)]
     private static partial Regex Tag();
+    // 사이트가 서식을 입힌 HTML이면 웹 글로 다룬다 (이 태그가 하나도 없으면 글자만 있는 HTML)
+    [GeneratedRegex(@"<(h[1-6]|strong|b|em|i|del|s|ul|ol|li|table|a|img|blockquote)[\s>/]", RegexOptions.IgnoreCase)]
+    private static partial Regex FormattingTag();
 }

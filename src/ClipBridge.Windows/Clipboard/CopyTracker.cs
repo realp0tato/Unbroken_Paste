@@ -14,6 +14,8 @@ internal sealed class CopyTracker(
     private ClipboardSnapshot? _snapshot;
     private PreparedConversions? _prepared;
     private CancellationTokenSource? _preparing;
+    // 지금까지 본 가장 최근 복사의 번호 (숨김 복사 포함)
+    private long _latest = long.MinValue;
     private System.Threading.Timer? _expiryTimer;
 
     // 가장 최근 복사의 원본. 통과할 때 되돌려 기록한다 (#3)
@@ -36,18 +38,37 @@ internal sealed class CopyTracker(
         lock (_lock)
         {
             // 스냅샷을 백그라운드에서 읽으므로 이전 복사가 늦게 도착할 수 있다
-            if (_snapshot is not null && snapshot.SequenceNumber <= _snapshot.SequenceNumber)
+            if (snapshot.SequenceNumber <= _latest)
             {
-                log?.Invoke($"ignored older copy seq={snapshot.SequenceNumber} current={_snapshot.SequenceNumber}");
+                log?.Invoke($"ignored older copy seq={snapshot.SequenceNumber} current={_latest}");
                 return Task.CompletedTask;
             }
 
+            _latest = snapshot.SequenceNumber;
             ReleasePrepared();
             _preparing?.Cancel();
             _snapshot = snapshot;
             _preparing = preparing = new CancellationTokenSource();
         }
         return Task.Run(() => Prepare(snapshot, preparing.Token));
+    }
+
+    // 숨김 표시가 된 복사(#78). 이전 복사의 스냅샷과 결과를 버려, 그 뒤 붙여넣기는 클립보드 내용이 그대로 붙는다
+    // (macOS ClipboardMonitor가 snapshot을 nil로 두는 것과 같음)
+    public void Discard(long sequenceNumber)
+    {
+        lock (_lock)
+        {
+            if (sequenceNumber <= _latest)
+                return;
+
+            _latest = sequenceNumber;
+            _preparing?.Cancel();
+            _preparing = null;
+            ReleasePrepared();
+            _snapshot = null;
+        }
+        log?.Invoke($"discarded seq={sequenceNumber}");
     }
 
     public void Dispose()

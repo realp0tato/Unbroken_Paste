@@ -31,6 +31,9 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
     // 다른 앱에서 복사했을 때 백그라운드 스레드에서 발생한다
     public event Action<ClipboardSnapshot>? Copied;
 
+    // 숨김 표시가 된 복사(비밀번호 관리자 등, #78). 내용은 읽지 않고 시퀀스 번호만 알린다. 백그라운드 스레드
+    public event Action<long>? Concealed;
+
     // UP이 클립보드에 기록한 뒤 호출한다 (#3). 이 번호의 변경은 새 복사로 취급하지 않는다
     public void RememberOwnWrite(long sequenceNumber)
     {
@@ -80,19 +83,35 @@ internal sealed class ClipboardMonitor : NativeWindow, IDisposable
 
     private void ReadSnapshot(long sequenceNumber)
     {
-        var clipboard = ClipboardReader.Read(include: SnapshotFormats.Contains);
-        // 읽는 사이에 다시 복사됐으면 그 복사의 알림이 따로 오므로 버린다
-        if (clipboard is null || clipboard.SequenceNumber != sequenceNumber)
+        // 숨김 표시부터 본다. 숨김이면 복사한 본문(비밀번호 등)은 읽지 않는다 (#78)
+        var marks = ClipboardReader.Read(include: ConcealedCopy.NeedsData);
+        if (!IsCurrent(marks, sequenceNumber))
+            return;
+        if (ConcealedCopy.IsConcealed(marks!.Formats.Select(format => (format.Name, format.Data))))
         {
-            DevLog.Info("copy", clipboard is null
-                ? $"clipboard busy seq={sequenceNumber}"
-                : $"skipped seq={sequenceNumber} newer={clipboard.SequenceNumber}");
+            DevLog.Info("copy", $"ignored concealed copy seq={sequenceNumber}");
+            Concealed?.Invoke(sequenceNumber);
             return;
         }
 
-        var snapshot = clipboard.ToSnapshot();
+        var clipboard = ClipboardReader.Read(include: SnapshotFormats.Contains);
+        if (!IsCurrent(clipboard, sequenceNumber))
+            return;
+
+        var snapshot = clipboard!.ToSnapshot();
         DevLog.Info("copy", $"copy seq={snapshot.SequenceNumber} app={snapshot.SourceApp ?? "unknown"} formats={string.Join(",", snapshot.Formats.Keys)}");
         Copied?.Invoke(snapshot);
+    }
+
+    // 읽는 사이에 다시 복사됐으면 그 복사의 알림이 따로 오므로 버린다
+    private static bool IsCurrent(ClipboardReader.Result? clipboard, long sequenceNumber)
+    {
+        if (clipboard is not null && clipboard.SequenceNumber == sequenceNumber)
+            return true;
+        DevLog.Info("copy", clipboard is null
+            ? $"clipboard busy seq={sequenceNumber}"
+            : $"skipped seq={sequenceNumber} newer={clipboard.SequenceNumber}");
+        return false;
     }
 
     private static class NativeMethods

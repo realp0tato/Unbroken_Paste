@@ -12,6 +12,7 @@ public class MarkdownFormatTests
     [InlineData("## 주요 결과", "<h2>주요 결과</h2>")]
     [InlineData("**중요한 내용**", "<strong>중요한 내용</strong>")]
     [InlineData("~~취소선~~", "<del>취소선</del>")]
+    [InlineData("**복사했는지(출처)**와", "<strong>복사했는지(출처)</strong>와")]
     public void Format_AppliesFormatting(string markdown, string expectedFragment)
     {
         Assert.Contains(expectedFragment, Format(markdown).Html);

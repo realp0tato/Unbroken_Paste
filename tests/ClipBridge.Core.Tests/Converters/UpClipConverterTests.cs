@@ -88,6 +88,30 @@ public class UpClipConverterTests
         Assert.Equal(SourceKind.Web, SourceDetector.Detect(snapshot).Source);
     }
 
+    // GitHub가 "**…(출처)**와"를 굵게로 해석하지 못해 기호가 글자로 보이는 문단 (다크 모드 스타일만 있는 span)
+    [Fact]
+    public void Detect_WebHtmlWithoutFormatting_ShowingMarkdown_IsMarkdown()
+    {
+        var snapshot = Snapshot("com.google.Chrome",
+            (ClipFormats.MacHtml, "<meta charset='utf-8'><span style=\"color: rgb(240, 246, 252); background-color: rgb(13, 17, 23);\">평소처럼, **어디서 복사했는지(출처)**와 붙인다</span>"),
+            (ClipFormats.MacUtf8Text, "평소처럼, **어디서 복사했는지(출처)**와 붙인다"),
+            (SourceDetector.MacChromiumSourceUrl, "https://github.com/realp0tato/donga_hackathon"));
+
+        Assert.Equal((SourceKind.Markdown, ContentKind.Text), SourceDetector.Detect(snapshot));
+    }
+
+    // 사이트가 서식을 입힌 HTML은 기호가 일부 남아 있어도 웹 글
+    [Fact]
+    public void Detect_FormattedWebHtml_WithLeftoverSymbols_IsWeb()
+    {
+        var snapshot = Snapshot("com.google.Chrome",
+            (ClipFormats.MacHtml, "<h2>제목</h2><p><strong>굵게</strong>와 **남은(기호)**를</p>"),
+            (ClipFormats.MacUtf8Text, "제목\n굵게와 **남은(기호)**를"),
+            (SourceDetector.MacChromiumSourceUrl, "https://github.com/x/y"));
+
+        Assert.Equal(SourceKind.Web, SourceDetector.Detect(snapshot).Source);
+    }
+
     [Fact]
     public void Detect_HtmlFromNonBrowserWithoutUrl_IsOther()
     {
@@ -100,7 +124,8 @@ public class UpClipConverterTests
     [InlineData("# 제목", SourceKind.Markdown)]
     [InlineData("**굵게** 그리고\n- 목록", SourceKind.Markdown)]
     [InlineData("| a | b |\n|---|---|\n| 1 | 2 |", SourceKind.Markdown)]
-    [InlineData("**굵게**만 하나", SourceKind.PlainText)]
+    [InlineData("**굵게**만 하나", SourceKind.Markdown)]   // 짝이 맞는 굵게는 하나만 있어도 Markdown
+    [InlineData("별표 ** 하나", SourceKind.PlainText)]
     [InlineData("그냥 메모\n두 번째 줄", SourceKind.PlainText)]
     [InlineData("file_name 과 2*3", SourceKind.PlainText)]
     public void Detect_PlainTextOnly(string text, SourceKind expected)
@@ -183,9 +208,10 @@ public class UpClipConverterTests
         var format = prepared.Get(TargetApp.Hangul, new(MarkdownMode.Format, false));
         var strip = prepared.Get(TargetApp.Hangul, new(MarkdownMode.Strip, false));
 
-        Assert.NotNull(format.Html);
-        Assert.Null(strip.Html);
+        Assert.Contains("<b>중요한 내용</b>", format.Html);
+        Assert.DoesNotContain("<b>", strip.Html);
         Assert.Equal("주요 결과\n중요한 내용\n항목", strip.PlainText);
+        Assert.Null(prepared.Get(TargetApp.Notion, new(MarkdownMode.Strip, false)).Html);
     }
 
     [Fact]
