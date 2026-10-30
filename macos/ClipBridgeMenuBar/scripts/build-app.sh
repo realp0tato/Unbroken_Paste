@@ -1,11 +1,11 @@
 #!/bin/bash
-# Build UP.app (menu bar only, ad-hoc signed) into ./build
+# Build "Unbroken Paste.app" (menu bar only, ad-hoc signed) into ./build
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 swift build -c release
 BIN="$(swift build -c release --show-bin-path)/ClipBridgeMenuBar"
-APP="build/UP.app"
+APP="build/Unbroken Paste.app"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -33,8 +33,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key><string>app.clipbridge.menubar</string>
-    <key>CFBundleName</key><string>UP</string>
-    <key>CFBundleDisplayName</key><string>UP</string>
+    <key>CFBundleName</key><string>Unbroken Paste</string>
+    <key>CFBundleDisplayName</key><string>Unbroken Paste</string>
     <key>CFBundleExecutable</key><string>UP</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>0.1.0</string>
