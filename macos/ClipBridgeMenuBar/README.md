@@ -22,6 +22,12 @@ open build/ClipBridge.app
 
 Xcode에서 열려면 `open Package.swift`.
 
+테스트 (Core 계약과 JSON 형식이 같은지 확인, Xcode 필요):
+
+```bash
+swift test
+```
+
 ## 메뉴
 
 ```text
@@ -39,7 +45,7 @@ ClipBridge 종료  ⌘Q
 
 - **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
 - **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.clipbridge.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
-- **Markdown 처리·AI 검증:** 지금은 값만 저장해요. 변환기 연결은 Core 작업 후 진행.
+- **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Strip`/`Format`, AI 검증 기본 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
 - **클립보드:** 텍스트 복사 최근 10개를 메모리에만 보관해요. 비밀번호 관리자가 숨김 표시를 한 복사는 기록하지 않아요.
 - **CPU 연동:** 코드에는 있지만 메뉴에서 숨겨 두었어요 (`StatusController.swift`의 `cpu.isHidden`).
 
@@ -47,7 +53,9 @@ ClipBridge 종료  ⌘Q
 
 | 파일 | 역할 |
 |---|---|
-| `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행 |
+| `Sources/ClipBridgeContracts/Contracts.swift` | `src/ClipBridge.Core/Contracts`(#29)의 Swift 버전. Helper와 주고받는 타입과 JSON 형식(camelCase, enum 문자열, 바이트 Base64). C# 계약이 바뀌면 같이 바꾼다 |
+| `Tests/ClipBridgeContractsTests/` | C# `ContractsJsonTests`와 같은 JSON으로 검증 |
+| `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |
 | `ClipboardHistory.swift` | 클립보드 감시와 최근 복사 기록 |
