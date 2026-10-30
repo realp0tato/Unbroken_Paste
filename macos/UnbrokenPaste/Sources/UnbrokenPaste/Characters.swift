@@ -8,7 +8,7 @@ enum AppResources {
             return bundled
         }
         return URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()  // ClipBridgeMenuBar
+            .deletingLastPathComponent()  // UnbrokenPaste
             .deletingLastPathComponent()  // Sources
             .deletingLastPathComponent()  // package root
             .appendingPathComponent("Resources")

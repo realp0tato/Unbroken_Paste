@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import XCTest
 
 /// Mirrors tests/ClipBridge.Core.Tests/Contracts/ContractsJsonTests.cs so both sides agree on the wire format.

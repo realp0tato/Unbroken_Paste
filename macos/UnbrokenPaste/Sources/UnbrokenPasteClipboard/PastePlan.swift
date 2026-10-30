@@ -1,4 +1,4 @@
-import ClipBridgeContracts
+import UnbrokenPasteContracts
 import Foundation
 
 /// What UP should do to the clipboard at the moment of a paste (#35, PRD 4.4, 6.5, FR-07, FR-16).

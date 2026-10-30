@@ -2,7 +2,7 @@ import AppKit
 import Darwin
 
 @main
-enum ClipBridgeMenuBarApp {
+enum UnbrokenPasteApp {
     @MainActor
     static func main() {
         guard SingleInstance.acquire() else {
@@ -18,10 +18,10 @@ enum ClipBridgeMenuBarApp {
     }
 }
 
-/// One ClipBridge per user: an exclusive lock on a file in the user's temp directory.
+/// One Unbroken Paste per user: an exclusive lock on a file in the user's temp directory.
 enum SingleInstance {
     static func acquire() -> Bool {
-        let path = FileManager.default.temporaryDirectory.appendingPathComponent("app.clipbridge.menubar.lock").path
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent("app.unbrokenpaste.menubar.lock").path
         let fd = open(path, O_CREAT | O_RDWR, 0o600)
         guard fd >= 0 else { return true }  // cannot check; do not block startup
         if flock(fd, LOCK_EX | LOCK_NB) == 0 {

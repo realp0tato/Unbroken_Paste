@@ -1,6 +1,6 @@
 import AppKit
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 
 /// Round badge next to the mouse pointer (#38, FR-18, PRD 4.3).
 /// A non-activating, click-through panel: it never takes focus, keyboard input or IME composition.

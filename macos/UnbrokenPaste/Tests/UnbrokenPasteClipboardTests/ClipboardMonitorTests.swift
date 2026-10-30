@@ -1,5 +1,5 @@
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 import XCTest
 
 private final class FakePasteboard: PasteboardSource {

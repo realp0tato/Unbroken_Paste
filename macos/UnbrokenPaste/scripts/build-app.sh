@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 swift build -c release
-BIN="$(swift build -c release --show-bin-path)/ClipBridgeMenuBar"
+BIN="$(swift build -c release --show-bin-path)/UnbrokenPaste"
 APP="build/Unbroken Paste.app"
 
 rm -rf "$APP"
@@ -21,8 +21,8 @@ esac
 HELPER_DIR="build/helper-$ARCH"
 if command -v dotnet >/dev/null 2>&1; then
     dotnet publish ../../src/ClipBridge.Helper -c Release -r "$RID" -o "$HELPER_DIR" --nologo -v quiet
-    cp "$HELPER_DIR/ClipBridge.Helper" "$APP/Contents/MacOS/ClipBridge.Helper-$ARCH"
-    codesign --force --sign - "$APP/Contents/MacOS/ClipBridge.Helper-$ARCH"
+    cp "$HELPER_DIR/ClipBridge.Helper" "$APP/Contents/MacOS/UnbrokenPaste.Helper-$ARCH"
+    codesign --force --sign - "$APP/Contents/MacOS/UnbrokenPaste.Helper-$ARCH"
 else
     echo "warning: dotnet not found; building UP without the Helper (pastes pass through)" >&2
 fi
@@ -32,7 +32,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleIdentifier</key><string>app.clipbridge.menubar</string>
+    <key>CFBundleIdentifier</key><string>app.unbrokenpaste.menubar</string>
     <key>CFBundleName</key><string>Unbroken Paste</string>
     <key>CFBundleDisplayName</key><string>Unbroken Paste</string>
     <key>CFBundleExecutable</key><string>UP</string>

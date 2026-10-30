@@ -148,7 +148,7 @@ UP
 |---|---|
 | 기본값 | Markdown 처리: **서식 적용** / AI 검증: **켜기** |
 | 적용 시점 | 메뉴에서 바꾸는 즉시, 다음 붙여넣기부터 적용. 이미 복사한 내용도 다시 복사할 필요 없음 |
-| 저장 | 옵션 값만 저장해 재실행 후에도 유지. 복사 본문은 저장하지 않음. Windows: `%APPDATA%\UnbrokenPaste\settings.json` / macOS: `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`) |
+| 저장 | 옵션 값만 저장해 재실행 후에도 유지. 복사 본문은 저장하지 않음. Windows: `%APPDATA%\UnbrokenPaste\settings.json` / macOS: `UserDefaults` (`~/Library/Preferences/app.unbrokenpaste.menubar.plist`) |
 | 영향 범위 | Markdown 처리는 Markdown 글 출처에만 적용. AI 검증은 모든 변환기 결과 중 의심 신호가 있는 것에 적용(6.6절) |
 
 #### 4.2.1 미정 사항 (추후 결정)
@@ -226,12 +226,12 @@ Windows와 macOS는 4.1–4.4의 같은 사용자 경험을 제공한다. 변환
 | 복사 감지 | 클립보드 변경 알림 | 클립보드 변경 횟수(`changeCount`) 확인 |
 | 복사한 앱 판별 | 클립보드 소유 프로세스 | 복사 시점의 앞쪽(frontmost) 앱 |
 | 붙여넣기 키 | Ctrl+V, Shift+Insert | Cmd+V |
-| 대상 앱 인식 | 전경 창 프로세스 이름 | 앞쪽 앱의 번들 ID. 확인한 매핑: Word `com.microsoft.Word`, Notion `notion.id`, 한글 HOP `net.golbin.hop`, 한컴오피스 한글은 `com.hancom.*hwp*` 규칙([macOS 앱 README](macos/ClipBridgeMenuBar/README.md)). 브라우저는 활성 탭 주소·제목으로 Notion 웹과 한컴독스 웹 한글을 인식 |
+| 대상 앱 인식 | 전경 창 프로세스 이름 | 앞쪽 앱의 번들 ID. 확인한 매핑: Word `com.microsoft.Word`, Notion `notion.id`, 한글 HOP `net.golbin.hop`, 한컴오피스 한글은 `com.hancom.*hwp*` 규칙([macOS 앱 README](macos/UnbrokenPaste/README.md)). 브라우저는 활성 탭 주소·제목으로 Notion 웹과 한컴독스 웹 한글을 인식 |
 | 클립보드 기록과 “가져간 순간” 신호 | 지연 렌더링(`WM_RENDERFORMAT`) | 지연 제공(`NSPasteboardItemDataProvider`) |
 | 커서 아이콘 | 비활성·클릭 통과 창 | 포커스를 가져가지 않는 비활성 패널·클릭 통과 |
 | 변환기 호출 | Core 라이브러리를 직접 참조 | Core를 보조 프로그램(`ClipBridge.Helper`)으로 빌드해 앱에 포함. 앱이 실행 중 계속 띄워 두고 표준 입출력으로 요청·응답 |
 | 필요 권한 | 일반 사용자 권한 | 최초 실행 시 **손쉬운 사용** 권한을 한 번 요청(Cmd+V 감지에 필요). 거부되면 변환 없이 기본 붙여넣기로 동작하고, 메뉴에 권한 안내 항목을 표시(4.2.2). 실행 중 허용하면 2초 안에 자동으로 감지 |
-| 옵션 저장 | `%APPDATA%\UnbrokenPaste\settings.json` | `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, 4.2) |
+| 옵션 저장 | `%APPDATA%\UnbrokenPaste\settings.json` | `UserDefaults` (`~/Library/Preferences/app.unbrokenpaste.menubar.plist`, 4.2) |
 
 - 클립보드 포맷 이름은 OS마다 다르다(예: Windows `HTML Format`, macOS `public.html`). Core는 두 OS의 포맷을 모두 입력으로 받는다.
 - macOS에서도 보조 프로그램 호출(변환)은 복사 시점에 하고, 붙여넣기 순간에는 미리 받아 둔 결과를 기록만 한다(NFR-03).

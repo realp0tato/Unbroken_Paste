@@ -111,8 +111,8 @@ dotnet publish src/ClipBridge.Helper -c Release -r osx-x64   -o out/helper-x64  
 
 ```text
 Unbroken Paste.app/Contents/MacOS/UP                      # 메뉴 막대 앱
-Unbroken Paste.app/Contents/MacOS/ClipBridge.Helper-arm64
-Unbroken Paste.app/Contents/MacOS/ClipBridge.Helper-x64
+Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-arm64
+Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-x64
 ```
 
 - 실행 위치: 앱에서 `Bundle.main.url(forAuxiliaryExecutable:)`로 찾고, `#if arch(arm64)`로 아키텍처에 맞는 파일을 고릅니다. `lipo`로 합치지 마세요. 단일 파일 실행 파일은 뒤에 데이터를 붙인 구조라 합치면 깨질 수 있습니다.

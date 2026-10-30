@@ -2,14 +2,14 @@
 
 Swift (macOS 13 이상). 메뉴 막대에서 UP 슬라임이 통통 튀고, 아이콘을 누르면 메뉴가 열려요. (#23)
 
-공통 메뉴와 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대), 추가 메뉴(상태 변경·클립보드·캐릭터)는 PRD 4.2.2를 따른다. 화면에 보이는 이름은 UP이고, 폴더·모듈·번들 ID 같은 코드 이름은 README 규칙대로 당분간 `ClipBridge`를 유지한다.
+공통 메뉴와 기본값은 [PRD 4.2절](../../prd.md#42-메뉴-앱-windows-트레이--macos-메뉴-막대), 추가 메뉴(상태 변경·클립보드·캐릭터)는 PRD 4.2.2를 따른다. 프로그램 이름은 **Unbroken Paste**, 그 밖의 화면 표시는 **UP**이다. 이 폴더의 코드 이름(폴더·패키지·모듈·번들 ID)은 `UnbrokenPaste`이고, 맥 앱이 쓰는 C# 프로젝트(`src/ClipBridge.*`)는 팀이 정한 시점에 따로 바꾼다.
 
 ## 실행
 
 Xcode 또는 Command Line Tools(`xcode-select --install`)가 필요해요. 변환(Helper)까지 쓰려면 [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)도 필요해요. 없으면 앱은 그대로 동작하고 붙여넣기만 변환 없이 평소대로 돼요.
 
 ```bash
-cd macos/ClipBridgeMenuBar
+cd macos/UnbrokenPaste
 swift run
 ```
 
@@ -20,7 +20,7 @@ swift run
 open "build/Unbroken Paste.app"
 ```
 
-`build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 이 Mac의 아키텍처용으로 빌드해 `Unbroken Paste.app/Contents/MacOS/ClipBridge.Helper-arm64`(또는 `-x64`)로 넣어요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
+`build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 이 Mac의 아키텍처용으로 빌드해 `Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-arm64`(또는 `-x64`)로 넣어요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
 
 Xcode에서 열려면 `open Package.swift`.
 
@@ -45,19 +45,20 @@ AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API �
 UP 종료  ⌘Q
 ```
 
-- **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.clipbridge.menubar.plist`, `swift run`일 때는 `ClipBridgeMenuBar.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
-- **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.clipbridge.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
+- **옵션 저장:** `UserDefaults` (`~/Library/Preferences/app.unbrokenpaste.menubar.plist`, `swift run`일 때는 `UnbrokenPaste.plist`). 옵션 값만 저장하고 복사 본문은 저장하지 않아요. (PRD 4.2)
+- **중복 실행 방지:** 이미 실행 중이면 두 번째 실행은 바로 종료돼요. 사용자 임시 폴더의 잠금 파일(`app.unbrokenpaste.menubar.lock`)로 확인하고, 앱이 끝나면 잠금은 자동으로 풀려요.
 - **Markdown 처리·AI 검증:** Core 계약과 같은 값(`Strip`/`Format`, AI 검증 기본 켬)으로 저장하고 `Settings.conversionOptions`로 꺼내요. 변환기 연결은 Helper 연동(#36)에서 진행.
 - **복사 감지 (#33):** 0.3초마다 `changeCount`를 확인해요. 복사하면 모든 포맷을 `ClipboardSnapshot`으로 메모리에 1건만 보관하고, 그때 앞에 있던 앱의 번들 ID와 `changeCount`를 함께 기록해요. 앱이 직접 쓴 변경(`recordOwnWrite`)은 새 복사로 치지 않아요.
 - **붙여넣기 감지 (#34):** 키보드 이벤트 탭으로 Cmd+V를 감지하고, 앞쪽 앱으로 대상(한글·Notion·Word·기타)을 판별해요. 키는 그대로 통과시키고 버리거나 다시 보내지 않아요. 시스템이 탭을 꺼도 바로 다시 켜요. 판별 결과는 시스템 로그로 확인해요.
 
   ```bash
-  log stream --level info --predicate 'subsystem == "app.clipbridge.menubar"'
+  log stream --level info --predicate 'subsystem == "app.unbrokenpaste.menubar"'
   ```
 - **손쉬운 사용 권한:** 처음 실행할 때 한 번 요청해요. 허용하기 전에는 메뉴 맨 위에 `⚠︎ 손쉬운 사용 권한 필요 · 눌러서 설정 열기`가 보이고, 붙여넣기는 변환 없이 평소대로 돼요. 설정에서 허용하면 2초 안에 자동으로 켜지고 항목이 사라져요.
   - `./scripts/build-app.sh`로 다시 빌드하면 서명이 바뀌어서 권한이 풀릴 수 있어요. 그러면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 UP를 지우고(−) 다시 허용하세요.
   - `swift run`으로 실행하면 권한은 UP가 아니라 실행한 터미널 앱에 붙어요.
-  - 앱 이름이 `ClipBridge.app`에서 `Unbroken Paste.app`으로 바뀌었어요(#47). 예전에 허용한 `ClipBridge` 항목은 지우고 `Unbroken Paste`를 새로 허용하세요. 실행 중인 앱을 터미널에서 끄려면 `pkill -x UP; pkill -f ClipBridge.Helper`(실행 파일 이름은 `UP`).
+  - 앱 이름이 `ClipBridge.app`에서 `Unbroken Paste.app`으로, 번들 ID가 `app.clipbridge.menubar`에서 `app.unbrokenpaste.menubar`로 바뀌었어요(#47). 예전에 허용한 `ClipBridge` 항목은 지우고 `Unbroken Paste`를 새로 허용하세요. 실행 중인 앱을 터미널에서 끄려면 `pkill -x UP; pkill -f UnbrokenPaste.Helper`(실행 파일 이름은 `UP`).
+  - 예전 번들 ID로 저장된 메뉴 옵션은 처음 실행할 때 한 번 옮겨 와요(`Settings.migrateLegacyDefaults`).
   - 이름 규칙: 프로그램 이름(앱 파일·Finder·앱 정보)은 풀네임 **Unbroken Paste**, 메뉴·툴팁·알림 등 그 밖의 화면 표시는 **UP**이에요.
 - **Helper 연동 (#36):** 앱이 켜질 때 Helper를 실행해 계속 띄워 두고 표준 입출력으로 주고받아요([프로토콜](../../src/ClipBridge.Helper/README.md)). 복사하면 `prepare`로 대상별 결과를 미리 받고, 메뉴에서 Markdown 처리·AI 검증을 바꾸면 `setOptions`를 보내요. Helper에는 Core가 읽는 포맷(`public.html`, `public.utf8-plain-text`, `public.rtf`)만 보내고, 원본 스냅샷 전체는 앱에 남겨 둬요.
   - 가장 최근 복사와 순서 번호가 같은 결과만 써요. 결과가 없거나 오래됐거나 오류면 통과예요.
@@ -96,19 +97,19 @@ UP 종료  ⌘Q
 
 | 파일 | 역할 |
 |---|---|
-| `Sources/ClipBridgeContracts/Contracts.swift` | `src/ClipBridge.Core/Contracts`(#29)의 Swift 버전. Helper와 주고받는 타입과 JSON 형식(camelCase, enum 문자열, 바이트 Base64). C# 계약이 바뀌면 같이 바꾼다 |
-| `Tests/ClipBridgeContractsTests/` | C# `ContractsJsonTests`와 같은 JSON으로 검증 |
-| `Sources/ClipBridgeClipboard/ClipboardMonitor.swift` | 복사 감지, 원본 스냅샷, 자기 기록 무시, 최근 복사 기록 (#33) |
-| `Sources/ClipBridgeClipboard/PasteboardSource.swift` | `NSPasteboard` 접근 인터페이스. 테스트에서는 가짜 클립보드로 바꿔 끼움 |
-| `Sources/ClipBridgeClipboard/PasteTarget.swift` | 대상 앱 판별(`TargetResolver`)과 Cmd+V 판정(`PasteKey`) (#34) |
-| `Sources/ClipBridgeMenuBar/PasteWatcher.swift` | 이벤트 탭, 손쉬운 사용 권한 요청·재확인, 브라우저 창 제목 읽기 (#34) |
-| `Sources/ClipBridgeMenuBar/CursorOverlay.swift` | 포인터 옆 동그라미 아이콘 패널 (#38) |
-| `Sources/ClipBridgeMenuBar/HelperClient.swift` | Helper 실행·재시작·요청/응답, 최근 복사의 결과 보관 (#36) |
-| `Sources/ClipBridgeContracts/HelperProtocol.swift` | Helper 메시지 타입, 보낼 포맷 고르기, 줄 단위 읽기 (#36) |
-| `Sources/ClipBridgeClipboard/PastePlan.swift` | 붙여넣기 순간 클립보드에 무엇을 할지 결정 (쓰기·원본 복원·그대로) (#35) |
-| `Sources/ClipBridgeClipboard/PasteWriter.swift` | 지연 제공으로 결과·원본 기록, 데이터 요청 알림, 종료 시 원본 복원 (#35) |
-| `Sources/ClipBridgeClipboard/OverlayLayout.swift` | 아이콘 위치 계산(가장자리 뒤집기)과 보여줄 배지 결정 (#38) |
-| `Tests/ClipBridgeClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
+| `Sources/UnbrokenPasteContracts/Contracts.swift` | `src/ClipBridge.Core/Contracts`(#29)의 Swift 버전. Helper와 주고받는 타입과 JSON 형식(camelCase, enum 문자열, 바이트 Base64). C# 계약이 바뀌면 같이 바꾼다 |
+| `Tests/UnbrokenPasteContractsTests/` | C# `ContractsJsonTests`와 같은 JSON으로 검증 |
+| `Sources/UnbrokenPasteClipboard/ClipboardMonitor.swift` | 복사 감지, 원본 스냅샷, 자기 기록 무시, 최근 복사 기록 (#33) |
+| `Sources/UnbrokenPasteClipboard/PasteboardSource.swift` | `NSPasteboard` 접근 인터페이스. 테스트에서는 가짜 클립보드로 바꿔 끼움 |
+| `Sources/UnbrokenPasteClipboard/PasteTarget.swift` | 대상 앱 판별(`TargetResolver`)과 Cmd+V 판정(`PasteKey`) (#34) |
+| `Sources/UnbrokenPaste/PasteWatcher.swift` | 이벤트 탭, 손쉬운 사용 권한 요청·재확인, 브라우저 창 제목 읽기 (#34) |
+| `Sources/UnbrokenPaste/CursorOverlay.swift` | 포인터 옆 동그라미 아이콘 패널 (#38) |
+| `Sources/UnbrokenPaste/HelperClient.swift` | Helper 실행·재시작·요청/응답, 최근 복사의 결과 보관 (#36) |
+| `Sources/UnbrokenPasteContracts/HelperProtocol.swift` | Helper 메시지 타입, 보낼 포맷 고르기, 줄 단위 읽기 (#36) |
+| `Sources/UnbrokenPasteClipboard/PastePlan.swift` | 붙여넣기 순간 클립보드에 무엇을 할지 결정 (쓰기·원본 복원·그대로) (#35) |
+| `Sources/UnbrokenPasteClipboard/PasteWriter.swift` | 지연 제공으로 결과·원본 기록, 데이터 요청 알림, 종료 시 원본 복원 (#35) |
+| `Sources/UnbrokenPasteClipboard/OverlayLayout.swift` | 아이콘 위치 계산(가장자리 뒤집기)과 보여줄 배지 결정 (#38) |
+| `Tests/UnbrokenPasteClipboardTests/` | 가짜 클립보드로 복사 감지 동작 검증 (연속 복사, 자기 기록, 숨김 복사 등), 대상 판별·Cmd+V 판정 |
 | `App.swift` | 진입점. Dock 아이콘 없이 메뉴 막대 전용으로 실행, 중복 실행 방지 |
 | `StatusController.swift` | 메뉴 막대 아이템, 메뉴 구성, 애니메이션 타이머 |
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |

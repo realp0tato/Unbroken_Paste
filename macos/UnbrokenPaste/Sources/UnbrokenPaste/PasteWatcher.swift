@@ -1,7 +1,7 @@
 import AppKit
 import ApplicationServices
-import ClipBridgeClipboard
-import ClipBridgeContracts
+import UnbrokenPasteClipboard
+import UnbrokenPasteContracts
 import os
 
 /// Cmd+V detection and paste target recognition (#34, FR-05, FR-30, PRD 4.5).
@@ -18,7 +18,7 @@ final class PasteWatcher: NSObject {
 
     static let accessibilitySettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
     private static let askedKey = "askedAccessibility"
-    private static let log = Logger(subsystem: "app.clipbridge.menubar", category: "paste")
+    private static let log = Logger(subsystem: "app.unbrokenpaste.menubar", category: "paste")
 
     var onPaste: ((Paste) -> Void)?
     /// Called when the permission state changes (granted later in System Settings, for example).

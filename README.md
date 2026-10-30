@@ -126,7 +126,7 @@ tools/
   ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구
   ClipBridge.TryMode/      # 복사할 때마다 변환 결과를 클립보드에 넣어 보는 개발용 시험 모드 (macOS)
 macos/
-  ClipBridgeMenuBar/       # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
+  UnbrokenPaste/           # ⑥ macOS 앱 (Swift, C# 솔루션에 포함 안 됨)
 prd.md
 README.md
 CONTRIBUTING.md
@@ -149,7 +149,7 @@ CONTRIBUTING.md
 | ③ | `src/ClipBridge.Helper/` | macOS 앱이 ①을 쓸 수 있게 해 주는 보조 프로그램. 표준 입출력으로 요청을 받아 ①을 호출하고 결과를 돌려준다 | 장세찬 |
 | ④ | `tests/ClipBridge.Core.Tests/` | "이 입력이면 이 결과가 나와야 한다"를 코드로 적어 `dotnet test`로 자동 확인 | ①을 만드는 사람 |
 | ⑤ | `tests/fixtures/` | Excel·웹에서 복사했을 때 클립보드에 실제로 들어가는 데이터를 파일로 저장. ④의 입력으로 쓴다 ([규칙](tests/fixtures/README.md)) | 이창민(Windows), 윤승희(macOS) |
-| ⑥ | `macos/ClipBridgeMenuBar/` | macOS 앱 껍데기: 메뉴 막대, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ③을 통해 ①을 호출. Swift라서 C# 솔루션과 별도로 빌드한다 | 윤승희 |
+| ⑥ | `macos/UnbrokenPaste/` | macOS 앱 껍데기: 메뉴 막대, 복사·붙여넣기 감지, 클립보드 기록, 커서 아이콘. ③을 통해 ①을 호출. Swift라서 C# 솔루션과 별도로 빌드한다 | 윤승희 |
 
 ### 흐름
 
@@ -175,7 +175,7 @@ Cmd+V ─▶ ⑥ 대상 앱 인식 ─▶ 미리 받은 결과를 클립보드�
 |---|---|
 | 변환기·Helper (macOS) | .NET 10 SDK, VS Code + C# Dev Kit 또는 JetBrains Rider |
 | Windows 앱 (Windows) | .NET 10 SDK, Visual Studio 또는 Rider |
-| macOS 앱 (macOS) | Xcode 또는 Command Line Tools, .NET 10 SDK (Helper 빌드용). 실행 방법은 [macOS 앱 README](macos/ClipBridgeMenuBar/README.md) |
+| macOS 앱 (macOS) | Xcode 또는 Command Line Tools, .NET 10 SDK (Helper 빌드용). 실행 방법은 [macOS 앱 README](macos/UnbrokenPaste/README.md) |
 
 - 클립보드에 들어가는 데이터는 OS마다 다릅니다. Windows PC와 Mac에서 각각 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 두 OS 샘플로 모두 테스트합니다.
 - 한글·Word·Notion 실제 붙여넣기 검증은 해당 OS에서 직접 해야 합니다.
@@ -209,7 +209,7 @@ dotnet run --project src/ClipBridge.Windows
   10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=STUB
   ```
 
-**macOS 앱:** [macOS 앱 README](macos/ClipBridgeMenuBar/README.md)
+**macOS 앱:** [macOS 앱 README](macos/UnbrokenPaste/README.md)
 
 ## 문서
 
