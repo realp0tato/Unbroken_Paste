@@ -1,4 +1,5 @@
 import AppKit
+import ClipBridgeClipboard
 import ClipBridgeContracts
 import UserNotifications
 
@@ -10,7 +11,9 @@ final class StatusController: NSObject {
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let settings: Settings
-    private let history = ClipboardHistory()
+    private let monitor = ClipboardMonitor(pasteboard: SystemPasteboard()) {
+        NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    }
     private let characters: [SlimeCharacter]
     private let animator: SlimeAnimator
     private var frames: [NSImage]
@@ -135,12 +138,12 @@ final class StatusController: NSObject {
 
     private func refreshClipboard() {
         clipboardMenu.removeAllItems()
-        if history.items.isEmpty {
+        if monitor.history.isEmpty {
             addItem("아직 복사한 내용이 없어요", to: clipboardMenu, action: nil)
         } else {
             addItem("최근 복사 · 누르면 다시 복사", to: clipboardMenu, action: nil)
-            for (index, text) in history.items.enumerated() {
-                let item = addItem("\(index + 1). \(ClipboardHistory.preview(text))", to: clipboardMenu, action: #selector(recopy(_:)))
+            for (index, text) in monitor.history.enumerated() {
+                let item = addItem("\(index + 1). \(ClipboardMonitor.preview(text))", to: clipboardMenu, action: #selector(recopy(_:)))
                 item.tag = index
             }
             clipboardMenu.addItem(.separator())
@@ -191,12 +194,12 @@ final class StatusController: NSObject {
     }
 
     @objc private func recopy(_ sender: NSMenuItem) {
-        history.recopy(at: sender.tag)
+        monitor.recopy(at: sender.tag)
         refreshClipboard()
     }
 
     @objc private func clearHistory() {
-        history.clear()
+        monitor.clearHistory()
         refreshClipboard()
     }
 
@@ -222,11 +225,14 @@ final class StatusController: NSObject {
         }
         if now >= nextPoll {
             nextPoll = now + Self.pollInterval
-            if history.poll() {
+            switch monitor.poll() {
+            case .copied?:
                 if settings.reactOnCopy {
                     animator.react(seconds: Self.copyReaction, now: now)
                 }
                 refreshClipboard()
+            case .ignored?, nil:
+                break
             }
         }
     }
