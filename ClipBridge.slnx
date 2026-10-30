@@ -11,5 +11,6 @@
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/ClipBridge.FixtureDump/ClipBridge.FixtureDump.csproj" />
+    <Project Path="tools/ClipBridge.TryMode/ClipBridge.TryMode.csproj" />
   </Folder>
 </Solution>
