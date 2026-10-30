@@ -106,6 +106,26 @@ public class WebHtmlCleanerTests
         Assert.Equal(expected, WebHtmlCleaner.ToMarkdown(html, keepLinks: false, mode).Markdown);
     }
 
+    // 기호 제거 모드면 웹 글도 서식 없이 평문 (제목 크기·굵게·목록 기호 없음, 표는 탭 구분)
+    [Fact]
+    public void Strip_WebToHangul_IsPlainParagraphs()
+    {
+        var result = WebToHangulConverter.Convert("<h2>주요 결과</h2><p><strong>중요</strong>한 내용</p><ul><li>항목</li></ul><table><tr><td>a</td><td>b</td></tr></table>", MarkdownMode.Strip);
+
+        Assert.Equal("주요 결과\n\n중요한 내용\n\n항목\n\na\tb", result.PlainText);
+        Assert.DoesNotMatch("<(b|table)[ >]|font-size|font-weight", result.Html!);
+        Assert.Contains(">중요한 내용</p>", result.Html);
+    }
+
+    [Fact]
+    public void Strip_WebToNotion_IsPlainTextOnly()
+    {
+        var result = WebToNotionConverter.Convert("<h2>주요 결과</h2><p><strong>중요</strong>한 <a href=\"https://example.com\">링크</a></p>", MarkdownMode.Strip);
+
+        Assert.Null(result.Html);
+        Assert.Equal("주요 결과\n\n중요한 링크", result.PlainText);
+    }
+
     [Theory]
     [InlineData(MarkdownMode.Format, "<b>복사했는지(출처)</b>와 붙인다")]
     [InlineData(MarkdownMode.Strip, ">복사했는지(출처)와 붙인다")]
