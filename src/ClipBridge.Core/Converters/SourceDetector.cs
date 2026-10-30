@@ -39,7 +39,7 @@ public static partial class SourceDetector
         if (html is null && text is not null)
             return LooksLikeMarkdown(text)
                 ? (SourceKind.Markdown, MarkdownContent(text))
-                : (SourceKind.PlainText, ContentKind.Text);
+                : (SourceKind.PlainText, PlainTextConverter.ReadTable(text) is not null ? ContentKind.Table : ContentKind.Text);
 
         return (SourceKind.Other, ContentKind.Text);
     }

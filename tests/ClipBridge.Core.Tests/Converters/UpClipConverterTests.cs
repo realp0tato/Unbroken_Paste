@@ -108,6 +108,15 @@ public class UpClipConverterTests
         Assert.Equal(expected, SourceDetector.Detect(MacText(text)).Source);
     }
 
+    [Theory]
+    [InlineData("이름\t역할\n재현\t변환기\n", ContentKind.Table)]
+    [InlineData("이름\t역할", ContentKind.Text)]           // 한 줄짜리 탭 글
+    [InlineData("이름\t역할\n재현", ContentKind.Text)]     // 직사각형 아님
+    public void Detect_PlainTextTsv(string text, ContentKind expected)
+    {
+        Assert.Equal((SourceKind.PlainText, expected), SourceDetector.Detect(MacText(text)));
+    }
+
     [Fact]
     public void Detect_MarkdownPipeTableOnly_IsTable()
     {
@@ -138,7 +147,10 @@ public class UpClipConverterTests
             data.Add("web", TargetApp.Hangul, mode, "C3");
             data.Add("web", TargetApp.Notion, mode, "C4");
             data.Add("web", TargetApp.Word, mode, "PASS");        // C7 #10 전
-            data.Add("plain", TargetApp.Hangul, mode, "PASS");    // TX #6 전
+            data.Add("plain", TargetApp.Hangul, mode, "TX");
+            data.Add("plain", TargetApp.Notion, mode, "TX");
+            data.Add("plain", TargetApp.Word, mode, "TX");
+            data.Add("plain", TargetApp.Other, mode, "PASS");
             data.Add("other", TargetApp.Notion, mode, "PASS");
         }
         return data;
@@ -192,6 +204,30 @@ public class UpClipConverterTests
         cts.Cancel();
 
         Assert.Throws<OperationCanceledException>(() => new UpClipConverter().Prepare(MacText(Markdown), ConversionOptions.Default, cts.Token));
+    }
+
+    // ---- 줄간격 보정 공통 단계 (PRD 6.4) ----
+
+    [Fact]
+    public void Prepare_WindowsSnapshot_PlainTextUsesCrlf()
+    {
+        var snapshot = new ClipboardSnapshot(new Dictionary<string, byte[]>
+        {
+            [ClipFormats.WinUnicodeText] = Encoding.Unicode.GetBytes("첫 줄\n\n\n둘째 줄\r\n셋째 줄\0"),
+        }, "notepad.exe", 1);
+        var options = new ConversionOptions(MarkdownMode.Format, false);
+        using var prepared = new UpClipConverter().Prepare(snapshot, options, CancellationToken.None);
+
+        Assert.Equal("첫 줄\r\n\r\n둘째 줄\r\n셋째 줄", prepared.Get(TargetApp.Word, options).PlainText);
+    }
+
+    [Fact]
+    public void Prepare_MacSnapshot_PlainTextUsesLf()
+    {
+        var options = new ConversionOptions(MarkdownMode.Strip, false);
+        using var prepared = new UpClipConverter().Prepare(MacText(Markdown), options, CancellationToken.None);
+
+        Assert.DoesNotContain("\r", prepared.Get(TargetApp.Notion, options).PlainText);
     }
 
     // ---- C3·C4 ----

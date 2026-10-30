@@ -18,7 +18,7 @@ internal static class MarkdownStripper
         return builder.ToString().TrimEnd('\n');
     }
 
-    // 블록 사이 빈 줄은 원문에 있던 만큼만 둔다 (빈 줄 정리는 줄간격 보정 #6이 맡는다)
+    // 블록 사이 빈 줄은 원문에 있던 곳에만 1줄 둔다 (연속 빈 줄은 1줄로). 표 앞뒤는 항상 1줄 (PRD 6.4)
     // indent: 이어지는 줄 앞에 붙일 공백. columnOffset: 목록 들여쓰기를 계산할 때 뺄 원문 열(인용 기호 > 만큼)
     private static void WriteBlocks(StringBuilder builder, ContainerBlock container, string source, string indent, int columnOffset)
     {
@@ -28,7 +28,7 @@ internal static class MarkdownStripper
             if (block is ThematicBreakBlock or LinkReferenceDefinitionGroup)
                 continue;
             if (previous is not null)
-                builder.Append(HasBlankLineBetween(previous, block, source) ? "\n\n" : "\n");
+                builder.Append(previous is MdTable || block is MdTable || HasBlankLineBetween(previous, block, source) ? "\n\n" : "\n");
             WriteBlock(builder, block, source, indent, columnOffset);
             previous = block;
         }
