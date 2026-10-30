@@ -66,4 +66,29 @@ public sealed class AppSettingsTests : IDisposable
 
         Assert.Equal("slime", JsonNode.Parse(File.ReadAllText(FilePath))!["character"]!.GetValue<string>());
     }
+
+    // #44: 캐릭터·복사 반응은 옵션과 같은 파일에 저장하고 서로 지우지 않는다
+    [Fact]
+    public void TrayPreferences_SaveAndLoadWithoutTouchingOptions()
+    {
+        var settings = new AppSettings(FilePath);
+        settings.Save(new ConversionOptions(MarkdownMode.Strip, AiVerification: false));
+
+        settings.Save(new TrayPreferences("cat", ReactOnCopy: false));
+
+        Assert.Equal(new TrayPreferences("cat", false), settings.LoadTray());
+        Assert.Equal(new ConversionOptions(MarkdownMode.Strip, false), settings.Load());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("""{"character":"dragon","reactOnCopy":"yes"}""")]
+    [InlineData("""{"character":3}""")]
+    public void TrayPreferences_UnknownValuesFallBackToDefaults(string content)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+        File.WriteAllText(FilePath, content);
+
+        Assert.Equal(TrayPreferences.Default, new AppSettings(FilePath).LoadTray());
+    }
 }

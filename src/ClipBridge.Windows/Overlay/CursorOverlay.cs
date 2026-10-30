@@ -17,7 +17,7 @@ internal sealed class CursorOverlay : Form
     private const int ShadowMargin = 6;
 
     private readonly System.Windows.Forms.Timer _timer = new() { Interval = 15 };
-    private readonly Image? _upBadge = LoadUpBadge();
+    private Image? _upBadge = LoadBadge(TrayCharacter.Find(null));
     // 실행 파일 경로 → 아이콘 (없으면 null). 같은 앱 아이콘을 다시 읽지 않는다 (NFR-11)
     private readonly Dictionary<string, Bitmap?> _icons = new(StringComparer.OrdinalIgnoreCase);
     private Content _content = new(null, false, "UP");
@@ -50,6 +50,18 @@ internal sealed class CursorOverlay : Form
                 | NativeMethods.WS_EX_NOACTIVATE | NativeMethods.WS_EX_TOPMOST;
             return cp;
         }
+    }
+
+    // 트레이에서 고른 캐릭터의 배지로 바꾼다 (#44). 읽지 못하면 지금 배지를 둔다
+    public void SetCharacter(TrayCharacter character)
+    {
+        if (LoadBadge(character) is not { } badge)
+            return;
+        // 복사 배지를 보여 주는 중이면 다른 모니터로 옮겨 다시 그릴 때 새 그림을 쓴다
+        if (_content.Picture is not null && ReferenceEquals(_content.Picture, _upBadge))
+            _content = _content with { Picture = badge };
+        _upBadge?.Dispose();
+        _upBadge = badge;
     }
 
     // 복사: UP 캐릭터 배지 0.8초
@@ -251,9 +263,9 @@ internal sealed class CursorOverlay : Form
         return bitmap;
     }
 
-    private static Image? LoadUpBadge()
+    private static Image? LoadBadge(TrayCharacter character)
     {
-        using var stream = typeof(CursorOverlay).Assembly.GetManifestResourceStream("ClipBridge.Windows.badge.png");
+        using var stream = typeof(CursorOverlay).Assembly.GetManifestResourceStream(character.BadgeResource);
         return stream is null ? null : new Bitmap(stream);
     }
 
