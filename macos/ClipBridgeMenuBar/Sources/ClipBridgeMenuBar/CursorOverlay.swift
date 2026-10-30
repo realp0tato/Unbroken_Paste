@@ -43,8 +43,8 @@ final class CursorOverlay: NSObject {
         show(for: Self.copyDuration)
     }
 
-    func showPaste(target: TargetApp, bundleID: String?, appName: String?) {
-        switch OverlayBadge.forPaste(target: target, bundleID: bundleID, appName: appName) {
+    func showPaste(target: TargetApp, bundleID: String?, appName: String?, converted: Bool) {
+        switch OverlayBadge.forPaste(target: target, bundleID: bundleID, appName: appName, converted: converted) {
         case let .app(id, letter, passthrough):
             badgeView.content = icon(for: id).map { .image($0) } ?? .letter(letter)
             badgeView.passthrough = passthrough

@@ -35,15 +35,17 @@ public enum OverlayBadge: Equatable {
         .word: ("com.microsoft.Word", "W"),
     ]
 
-    public static func forPaste(target: TargetApp, bundleID: String?, appName: String?) -> OverlayBadge {
+    /// `converted` is whether a conversion result was actually written; it decides the border (PRD 4.3).
+    public static func forPaste(target: TargetApp, bundleID: String?, appName: String?, converted: Bool? = nil) -> OverlayBadge {
+        let passthrough = !(converted ?? (target != .other))
         if let service = serviceApps[target] {
-            return .app(bundleID: service.bundleID, letter: service.letter, passthrough: false)
+            return .app(bundleID: service.bundleID, letter: service.letter, passthrough: passthrough)
         }
         guard let bundleID else { return .unknown }
         if target == .hangul, TargetResolver.browsers.contains(bundleID) {
-            return .letter("한", passthrough: false)  // not the browser's icon
+            return .letter("한", passthrough: passthrough)  // not the browser's icon
         }
-        return .app(bundleID: bundleID, letter: letter(appName: appName, bundleID: bundleID), passthrough: target == .other)
+        return .app(bundleID: bundleID, letter: letter(appName: appName, bundleID: bundleID), passthrough: passthrough)
     }
 
     static func letter(appName: String?, bundleID: String) -> String {
