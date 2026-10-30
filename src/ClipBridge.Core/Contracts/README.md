@@ -31,10 +31,10 @@ Windows 앱(`ClipBridge.Windows`)과 macOS 앱(`ClipBridge.Helper` 경유)이 Co
 
 ## 가짜 구현
 
-실제 변환기가 들어오기 전까지 `StubClipConverter`를 쓴다. 일반 텍스트가 있으면 한글·Notion·Word용으로 `[ClipBridge] ` 표시를 붙인 결과를 주고, 그 외 대상·포맷은 통과한다. 변환 결과가 실제로 붙는지 눈으로 확인할 수 있다.
+앱(Windows `TrayApp`, macOS용 Helper)은 실제 변환기 `UpClipConverter`(#14)를 쓴다. `StubClipConverter`는 앱 껍데기 테스트(`CopyTrackerTests`, `HelperSessionTests`)용으로 남겨 둔 가짜 구현이다. 일반 텍스트가 있으면 한글·Notion·Word용으로 `[ClipBridge] ` 표시를 붙인 결과를 주고, 그 외 대상·포맷은 통과한다. 변환 결과가 실제로 붙는지 눈으로 확인할 수 있다.
 
 ```csharp
-IClipConverter converter = new StubClipConverter();
+IClipConverter converter = new UpClipConverter();   // 테스트에서는 new StubClipConverter()
 using var prepared = converter.Prepare(snapshot, ConversionOptions.Default, ct);
 var result = prepared.Get(TargetApp.Hangul, ConversionOptions.Default);
 ```

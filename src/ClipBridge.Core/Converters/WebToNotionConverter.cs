@@ -9,7 +9,8 @@ public static class WebToNotionConverter
 {
     public const string Id = "C4";
 
-    // mode는 화면에 글자로 남은 **…**만 다룬다 (WebHtmlCleaner.ToMarkdown)
+    // Markdown 처리 옵션을 따른다. 서식 적용: 제목·목록·표·코드·링크를 Notion 블록용 HTML로.
+    // 기호 제거: 일반 텍스트만 (C6 기호 제거와 같음)
     public static ConversionResult Convert(ClipboardSnapshot snapshot, MarkdownMode mode = MarkdownMode.Format) =>
         WebClipboard.IsTooLarge(snapshot) || WebClipboard.ReadHtml(snapshot, out _) is not { } html
             ? ConversionResult.Passthrough
@@ -20,7 +21,7 @@ public static class WebToNotionConverter
         var cleaned = WebHtmlCleaner.ToMarkdown(html, keepLinks: true, mode);
         if (cleaned.Markdown.Length == 0)
             return ConversionResult.Passthrough;
-        var output = MarkdownEngine.Convert(cleaned.Markdown, MarkdownMode.Format);
+        var output = MarkdownEngine.Convert(cleaned.Markdown, mode);
         return new ConversionResult(Id, false, output.Html, output.PlainText, cleaned.Signals);
     }
 }
