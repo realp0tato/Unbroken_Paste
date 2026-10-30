@@ -1,0 +1,85 @@
+{\rtf1\ansi\ansicpg949\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red255\green255\blue255;\red3\green32\blue16;\red20\green105\blue39;
+\red8\green62\blue28;\red148\green194\blue254;\red9\green26\blue54;\red34\green36\blue39;\red164\green164\blue164;
+\red253\green129\blue143;\red26\green203\blue79;}
+{\*\expandedcolortbl;;\cssrgb\c100000\c100000\c100000;\cssrgb\c0\c16471\c7451;\cssrgb\c5882\c47843\c20392;
+\cssrgb\c0\c30196\c14510;\cssrgb\c64314\c80784\c99608;\cssrgb\c2745\c14118\c27451;\cssrgb\c17647\c18824\c20392;\cssrgb\c70196\c70196\c70196;
+\cssrgb\c100000\c59216\c62745;\cssrgb\c0\c81569\c38039;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\deftab720
+\pard\pardeftab720\sa320\partightenfactor0
+
+\f0\fs80 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Clipboard API\
+\pard\pardeftab720\partightenfactor0
+
+\fs32 \cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3 Baseline\cb1 \
+\pard\pardeftab720\partightenfactor0
+
+\fs24 \cf0 \cb4 WIDELY AVAILABLE\
+\pard\pardeftab720\partightenfactor0
+
+\fs32 \cf0 \cb3 *\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb2 \
+\pard\pardeftab720\sa320\partightenfactor0
+\cf0 \cb3 This feature is well established and works across many devices and browser versions. It\'92s been available across browsers since 2020\uc0\u45380  3\u50900 .\cb1 \
+\pard\pardeftab720\sa320\partightenfactor0
+
+\fs25\fsmilli12800 \cf0 \cb5 * Some parts of this feature may have varying levels of support.\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0\cf6 \cb3 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\ul \outl0\strokewidth0 \strokec6 See full compatibility\cf0 \cb1 \ulnone \strokec2 \
+\ls1\ilvl0\cf6 \cb3 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}{\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/ko/docs/Glossary/Baseline/Compatibility"}}{\fldrslt \expnd0\expndtw0\kerning0
+\ul \outl0\strokewidth0 \strokec6 Learn more}}\cf0 \cb1 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\sa320\partightenfactor0
+
+\fs32 \cf0 Clipboard API\uc0\u45716  \u53364 \u47549 \u48372 \u46300  \u47749 \u47161 (\u51096 \u46972 \u45236 \u44592 , \u48373 \u49324 , \u48537 \u50668 \u45347 \u44592 )\u50640  \u51025 \u45813 \u54616 \u44144 \u45208  \u49884 \u49828 \u53596  \u53364 \u47549 \u48372 \u46300 \u50640  \u48708 \u46041 \u44592 \u51201 \u51004 \u47196  \u51217 \u44540 \u54616 \u44256  \u50424  \u49688  \u51080 \u45716  \u44592 \u45733 \u51012  \u51228 \u44277 \u54633 \u45768 \u45796 .\
+\pard\pardeftab720\sa320\partightenfactor0
+\cf0 \cb7 \uc0\u52280 \u44256  : \u51060  API\u45716  {\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/ko/docs/Web/API/Web_Workers_API"}}{\fldrslt \cf6 \ul \ulc6 \strokec6 \uc0\u50937  \u50892 \u52964 }}\uc0\u50640 \u49436  \u49324 \u50857 \u54624  \u49688  \u50630 \u49845 \u45768 \u45796 . ({\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/en-US/docs/Web/API/WorkerNavigator"}}{\fldrslt \cf6 \cb8 \ul \ulc6 \strokec6 WorkerNavigator}}\uc0\u50640  \u45432 \u52636 \u46104 \u51648  \u50506 \u51020 )\cb1 \
+Clipboard API\uc0\u45716  {\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/ko/docs/Web/API/Document/execCommand"}}{\fldrslt \cf6 \cb8 \ul \ulc6 \strokec6 document.execCommand()}}\uc0\u47484  \u49324 \u50857 \u54620  \u53364 \u47549 \u48372 \u46300  \u51217 \u44540 \u51012  \u45824 \u52404 \u54616 \u44592  \u50948 \u54644  \u46356 \u51088 \u51064 \u46104 \u50632 \u49845 \u45768 \u45796 .\
+\pard\pardeftab720\partightenfactor0
+
+\fs48 \cf0 In this article\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0
+\fs32 \cf0 \cb7 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \uc0\u53364 \u47549 \u48372 \u46300  \u51217 \u44540 \cb1 \
+\ls2\ilvl0\cb7 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \uc0\u51064 \u53552 \u54168 \u51060 \u49828 \cb1 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \uc0\u47749 \u49464 \
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \uc0\u48652 \u46972 \u50864 \u51200  \u54840 \u54872 \u49457 \
+\ls2\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \uc0\u44057 \u51060  \u48372 \u44592 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\fs64 \cf0 \uc0\u53364 \u47549 \u48372 \u46300  \u51217 \u44540 \
+\pard\pardeftab720\sa320\partightenfactor0
+
+\fs32 \cf0 \uc0\u49884 \u49828 \u53596  \u53364 \u47549 \u48372 \u46300 \u50640  \u51217 \u44540 \u54624  \u46416  \cb8 Clipboard\cb1  \uc0\u44061 \u52404 \u51032  \u51064 \u49828 \u53556 \u49828 \u47484  \u49373 \u49457 \u54616 \u51648  \u50506 \u44256 , \u51204 \u50669  {\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/ko/docs/Web/API/Navigator/clipboard"}}{\fldrslt \cf6 \cb8 \ul \ulc6 \strokec6 Navigator.clipboard}}\uc0\u47484  \u49324 \u50857 \u54633 \u45768 \u45796 .\
+\pard\pardeftab720\partightenfactor0
+\cf0 JS\
+\pard\pardeftab720\qc\partightenfactor0
+
+\f1\fs28 \cf0 Copy
+\f0 \
+\pard\pardeftab720\partightenfactor0
+
+\fs32 \cf0 \cb8 navigator\cf9 \strokec9 .\cf0 \strokec2 clipboard\
+  \cf9 \strokec9 .\cf10 \strokec10 readText\cf9 \strokec9 ()\cf0 \strokec2 \
+  \cf9 \strokec9 .\cf10 \strokec10 then\cf9 \strokec9 (\cf0 \strokec2 \
+    \cf9 \strokec9 (\cf0 \strokec2 clipText\cf9 \strokec9 )\cf0 \strokec2  => \cf9 \strokec9 (\cf0 \strokec2 document\cf9 \strokec9 .\cf10 \strokec10 querySelector\cf9 \strokec9 (\cf11 \strokec11 ".editor"\cf9 \strokec9 ).\cf0 \strokec2 innerText += clipText\cf9 \strokec9 ),\cf0 \strokec2 \
+  \cf9 \strokec9 );\cf0 \strokec2 \
+\pard\pardeftab720\sa320\partightenfactor0
+\cf0 \cb1 \uc0\u50948 \u51032  \u53076 \u46300  \u51312 \u44033 \u51008  \u53364 \u47549 \u48372 \u46300 \u50640 \u49436  \u53581 \u49828 \u53944 \u47484  \u44032 \u51256 \u50752 \u49436 , \cb8 editor\cb1  \uc0\u53364 \u47000 \u49828 \u47484  \u44032 \u51652  \u52395  \u48264 \u51704  \u50836 \u49548 \u51032  \u53080 \u53584 \u52768  \u46244 \u50640  \u52628 \u44032 \u54633 \u45768 \u45796 . {\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText"}}{\fldrslt \cf6 \cb8 \ul \ulc6 \strokec6 readText()}}\uc0\u45716  ({\field{\*\fldinst{HYPERLINK "https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read"}}{\fldrslt \cf6 \cb8 \ul \ulc6 \strokec6 read()}}\uc0\u46020  \u47560 \u52268 \u44032 \u51648 \u47196 ) \u53364 \u47549 \u48372 \u46300 \u51032  \u45236 \u50857 \u51060  \u53581 \u49828 \u53944 \u44032  \u50500 \u45768 \u47732  \u48712  \u47928 \u51088 \u50676 \u51012  \u48152 \u54872 \u54616 \u48064 \u47196 , \u51060  \u53076 \u46300 \u45716  \u50504 \u51204 \u54633 \u45768 \u45796 .}

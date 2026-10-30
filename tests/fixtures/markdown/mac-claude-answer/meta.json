@@ -1,0 +1,13 @@
+{
+  "description" : "Markdown 글: Claude 데스크톱 앱 답변의 복사 버튼으로 복사한 AI 답변 (제목·굵게·기울임·중첩 목록·표·코드 블록·링크·연속 빈 줄)",
+  "formats" : [
+    "public.html",
+    "public.utf8-plain-text",
+    "org.chromium.internal.source-rfh-token",
+    "org.chromium.source-url"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.6.2",
+  "sourceApp" : "com.anthropic.claudefordesktop",
+  "sourceAppVersion" : "4.4212.0"
+}

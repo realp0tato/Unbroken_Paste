@@ -1,0 +1,15 @@
+{
+  "description" : "뉴스형 글: 위키백과 '클립보드' 본문 문단, 소제목 포함 (https://ko.wikipedia.org/wiki/클립보드)",
+  "formats" : [
+    "com.apple.webarchive",
+    "public.rtf",
+    "public.html",
+    "public.utf8-plain-text",
+    "com.apple.WebKit.custom-pasteboard-data",
+    "public.utf16-external-plain-text"
+  ],
+  "os" : "mac",
+  "osVersion" : "26.6.2",
+  "sourceApp" : "com.apple.Safari",
+  "sourceAppVersion" : "26.6.2"
+}
