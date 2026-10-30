@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 성능 측정 도구 (#24, NFR-02·NFR-03). Windows API를 쓰지 않아 어느 OS에서도 실행된다 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ClipBridge.Measure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ClipBridge.Core\ClipBridge.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 샘플은 테스트와 같은 코드로 읽는다 -->
+  <ItemGroup>
+    <Compile Include="..\..\tests\ClipBridge.Core.Tests\Fixtures\Fixture.cs" LinkBase="Fixtures" />
+    <None Include="..\..\tests\fixtures\**\*" Exclude="..\..\tests\fixtures\**\.gitkeep;..\..\tests\fixtures\tools\**" LinkBase="fixtures" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

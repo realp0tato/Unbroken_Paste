@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ClipBridge.Core;
 
 namespace ClipBridge.Windows;
@@ -84,6 +85,8 @@ internal sealed class CopyTracker(
     private void Prepare(ClipboardSnapshot snapshot, CancellationToken ct)
     {
         PreparedConversions prepared;
+        // 결과 준비 시간 (NFR-02 측정용)
+        var started = Stopwatch.GetTimestamp();
         try
         {
             prepared = converter.Prepare(snapshot, options(), ct);
@@ -97,6 +100,7 @@ internal sealed class CopyTracker(
             return;
         }
 
+        var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         lock (_lock)
         {
             // FR-17: A→B 연속 복사에서 늦게 끝난 A의 결과는 버린다
@@ -113,7 +117,7 @@ internal sealed class CopyTracker(
             {
                 var current = options();
                 var summary = string.Join(" ", Enum.GetValues<TargetApp>().Select(target => $"{target}={prepared.Get(target, current).ConverterId}"));
-                log($"results seq={prepared.SequenceNumber} source={prepared.Source} {summary}");
+                log($"results seq={prepared.SequenceNumber} source={prepared.Source} {summary} prepare={elapsed:0.0}ms");
             }
         }
     }

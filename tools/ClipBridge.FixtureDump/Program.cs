@@ -8,6 +8,14 @@ using ClipBridge.Windows;
 
 // 다음 복사를 기다렸다가 클립보드의 모든 포맷을 tests/fixtures/<출처>/win-<이름>/에 저장한다 (#28)
 // 사용법: dotnet run --project tools/ClipBridge.FixtureDump -- <출처> <이름> "<설명>" [--now] [--all] [--force] [--max-kb N]
+// 저장한 샘플을 클립보드에 되돌려 넣기 (#24): dotnet run --project tools/ClipBridge.FixtureDump -- restore <샘플>
+
+if (args is ["restore", var sample])
+{
+    if (!OperatingSystem.IsWindows())
+        return Fail("Windows에서만 실행할 수 있습니다.");
+    return Restore.Run(sample, FindFixturesRoot());
+}
 
 string[] sources = ["excel", "web", "markdown", "plain"];
 var positional = new List<string>();
@@ -53,6 +61,9 @@ if (positional.Count is < 2 or > 3)
           --all     이미지·OLE 개체 포맷도 저장 (기본은 meta.json에만 기록)
           --force   같은 이름의 샘플이 있으면 지우고 다시 저장
           --max-kb  포맷 하나의 최대 크기, 넘으면 저장하지 않고 meta.json에만 기록 (기본 1024)
+
+        저장한 샘플 되돌려 넣기: dotnet run --project tools/ClipBridge.FixtureDump -- restore <샘플>
+          샘플      tests/fixtures 기준 경로 (예: excel/win-basic-table) 또는 샘플 폴더
 
         실행한 뒤 원본 앱에서 복사하면 그 내용을 저장한다.
         예) dotnet run --project tools/ClipBridge.FixtureDump -- excel basic-table "3열 5행 표, 머리글 굵게"
