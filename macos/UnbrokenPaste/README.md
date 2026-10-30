@@ -22,6 +22,18 @@ open "build/Unbroken Paste.app"
 
 `build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 이 Mac의 아키텍처용으로 빌드해 `Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-arm64`(또는 `-x64`)로 넣어요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
 
+배포용 DMG 만들기 (#40):
+
+```bash
+./scripts/build-app.sh
+./scripts/build-dmg.sh
+```
+
+`build/UnbrokenPaste-0.1.0.dmg`가 생겨요. 열면 앱과 `Applications` 바로가기가 있어서 앱을 끌어다 놓으면 설치돼요. 앱, DMG 볼륨, DMG 파일 모두 슬라임 아이콘(`Resources/AppIcon.icns`)으로 보여요. Helper는 .NET 런타임을 함께 묶은 단일 파일이라 받는 Mac에 .NET이 없어도 돼요.
+
+- DMG 파일 자체의 아이콘은 만든 Mac의 Finder에서만 보여요. 웹에 올렸다 받으면 파일 아이콘은 기본 모양으로 돌아가고, 열었을 때의 볼륨 아이콘과 앱 아이콘은 그대로예요.
+- 서명·공증을 하지 않은 앱이라 받은 Mac에서 처음 열면 열 수 없다는 경고가 떠요. 경고를 닫고 시스템 설정 → 개인정보 보호 및 보안 맨 아래의 "그래도 열기"를 눌러요(macOS 14 이하는 앱을 Control-클릭 → 열기도 돼요). 그래도 안 열리면 터미널에서 `xattr -dr com.apple.quarantine "/Applications/Unbroken Paste.app"`.
+
 Xcode에서 열려면 `open Package.swift`.
 
 테스트 (Core 계약 JSON 형식, 복사 감지 동작 확인, Xcode 필요):
@@ -116,6 +128,8 @@ UP 종료  ⌘Q
 | `Settings.swift` | 옵션 저장 |
 | `Characters.swift` | `Resources/characters.json`과 캐릭터 프레임 로드 |
 | `tools/make_frames.py` | 캐릭터 이미지에서 통통 튀는 프레임 생성 (개발용 Python 스크립트) |
+| `tools/make_icon.py` | 캐릭터 이미지로 앱 아이콘 `Resources/AppIcon.icns` 생성 (개발용 Python 스크립트) |
+| `scripts/build-app.sh` / `scripts/build-dmg.sh` | `.app` 빌드 / 배포용 DMG 만들기 |
 
 아이콘 애니메이션은 SwiftUI `MenuBarExtra` 대신 AppKit `NSStatusItem`으로 그린다. 초당 수십 번 이미지를 바꾸는 애니메이션과 수시로 바뀌는 클립보드 메뉴를 안정적으로 처리하기 위해서다.
 
