@@ -2,9 +2,9 @@
 
 평소처럼 복사하고 붙여넣으면, **어디서 복사했는지(출처)** 와 **어디에 붙이는지(대상)** 를 인식해 그 조합에 맞는 변환기로 글·표·줄간격을 정리한 결과를 붙여 주는 백그라운드 앱입니다.
 
-> 대학 AX 해커톤 MVP · 현재 **개발 중**입니다. 아래 기능은 [PRD](prd.md)에 정의된 요구사항이며, 구현·검증 상태는 [이슈](https://github.com/realp0tato/donga_hackathon/issues)에서 관리합니다.
+> 대학 AX 해커톤 MVP · 현재 **개발 중**입니다. 아래 기능은 [PRD](prd.md)에 정의된 요구사항입니다. 지금 동작하는 범위는 [구현 현황](#구현-현황), 남은 작업은 [이슈](https://github.com/realp0tato/donga_hackathon/issues)에서 확인하세요.
 
-> **이름:** 제품 이름은 **UP**(UnbrokenPaste의 약자)입니다. 코드의 폴더·프로젝트·네임스페이스는 아직 `ClipBridge.*`이며, 추후 한꺼번에 `UnbrokenPaste.*`로 바꿉니다.
+> **이름:** 제품 이름은 **UP**(UnbrokenPaste의 약자)이고, 앱 파일·앱 정보에는 풀네임 **Unbroken Paste**를 씁니다. macOS 앱 코드는 `UnbrokenPaste`로 바뀌었고, C# 폴더·프로젝트·네임스페이스는 아직 `ClipBridge.*`이며 추후 `UnbrokenPaste.*`로 바꿉니다.
 
 ## 해결하려는 문제
 
@@ -36,20 +36,22 @@
 | **Excel** (표·글) | **C1** | **C2** | 통과 ※ | 통과 |
 | **인터넷** (글·표) | **C3** | **C4** | **C7** | 통과 |
 | **Markdown 글** | **C5** | **C6** | **C8** | 통과 |
-| **일반 텍스트** | 줄간격 정리 | 줄간격 정리 | 줄간격 정리 | 통과 |
+| **일반 텍스트** | **TX** 줄간격 정리 | **TX** | **TX** | 통과 |
 | 기타 (이미지·파일 등) | 통과 | 통과 | 통과 | 통과 |
 
 ※ Excel → Word는 같은 Office 제품이라 Word의 기본 붙여넣기가 더 안정적이므로 변환하지 않습니다.
 
-| ID | 변환기 | 하는 일 |
-|---|---|---|
-| C1 | Excel → 한글 | 표: 셀 값·굵게·정렬·테두리·열 너비만 남긴 표 / 글: 셀마다 한 문단 |
-| C2 | Excel → Notion | 표: Notion 단순 표(첫 행 머리글) / 글: 셀마다 한 줄 |
-| C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표 |
-| C4 | 인터넷 → Notion | C3 + 링크·코드 블록 유지 |
-| C7 | 인터넷 → Word | C3 + 링크 유지, 제목을 Word 제목 스타일로 |
-| C5·C6·C8 | Markdown → 한글·Notion·Word | 기본 **서식 적용**: Notion은 제목·굵게·목록·표 그대로, Word·한글은 `#`→큰 굵은 글자·`**`→굵게(제목 스타일 미사용) / 옵션: **기호 제거** |
-| 공통 | 줄간격 보정 | 연속 빈 줄·빈 문단·이중 문단 간격 정리 (모든 변환기에 적용) |
+| ID | 변환기 | 하는 일 | 상태 |
+|---|---|---|---|
+| C1 | Excel → 한글 | 표: 셀 값·굵게·정렬·테두리·열 너비만 남긴 표 / 글: 셀마다 한 문단 | 구현 |
+| C2 | Excel → Notion | 표: Notion 단순 표(첫 행 머리글) / 글: 셀마다 한 줄 | 구현 |
+| C3 | 인터넷 → 한글 | 사이트 서식 제거, 제목·굵게·목록만 유지, 표는 테두리 있는 단순 표 | 구현 |
+| C4 | 인터넷 → Notion | C3 + 링크·코드 블록 유지 | 구현 |
+| C7 | 인터넷 → Word | C3 + 링크 유지, 제목을 Word 제목 스타일로 | 개발 전 ([#10](https://github.com/realp0tato/donga_hackathon/issues/10)), 지금은 통과 |
+| C5·C6 | Markdown → 한글·Notion | 기본 **서식 적용**: Notion은 제목·굵게·목록·표 그대로, 한글은 `#`→큰 굵은 글자·`**`→굵게(제목 스타일 미사용) / 옵션: **기호 제거** | 구현 |
+| C8 | Markdown → Word | C5와 같은 방식 | 개발 전 ([#12](https://github.com/realp0tato/donga_hackathon/issues/12)), 지금은 통과 |
+| TX | 일반 텍스트 → 한글·Notion·Word | 글자는 그대로 두고 줄간격만 정리. 탭으로 나눈 직사각형 글(TSV)은 표로 | 구현 |
+| 공통 | 줄간격 보정 | 연속 빈 줄·빈 문단·이중 문단 간격 정리, Windows는 줄바꿈 CRLF (모든 변환기에 적용) | 구현 |
 
 변환 규칙 상세: [PRD 6절](prd.md#6-변환기-및-변환-규칙)
 
@@ -68,9 +70,21 @@ UP
 └─ 종료
 ```
 
+**Markdown 처리**는 Markdown 글과 인터넷에서 복사한 글에 적용됩니다. Excel·일반 텍스트에는 적용하지 않습니다.
+
+| 옵션 | 결과 |
+|---|---|
+| 서식 적용 (기본) | `#` 제목은 큰 글자(Notion은 제목 블록), `**`는 굵게, 목록·표·코드도 서식으로. 웹 글은 제목·굵게·목록·표를 유지 |
+| 기호 제거 | 기호와 서식을 모두 빼고 평문으로. 서식이 적용된 웹 글(GitHub README, Claude 답변 드래그 복사 등)도 평문으로 붙음 |
+
+- Claude 등 AI 서비스의 복사 버튼, 메모장의 Markdown 원문, 웹 화면에 글자로 보이는 Markdown 원문은 모두 Markdown 글로 판별합니다.
+- `**어디서 복사했는지(출처)**와`처럼 한국어 조사 바로 앞의 강조도 굵게로 인식합니다. 표준 Markdown(GitHub 포함)은 이 경우 기호를 그대로 보여 줍니다.
+
 macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(메모리 전용), 캐릭터 선택 메뉴가 있습니다. 자세한 내용은 [PRD 4.2.2](prd.md#422-macos-추가-메뉴와-메뉴-막대-아이콘)를 보세요.
 
 ## AI 검증과 개인정보
+
+> **현재 상태:** AI 검증은 아직 구현 전입니다([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 메뉴 항목과 설정 저장은 있지만, 켜 두어도 지금은 외부로 아무것도 보내지 않고 변환기 결과가 그대로 붙습니다. 아래는 구현 후의 동작입니다.
 
 - **기본값은 켜짐**입니다. 변환 결과 중 **의심스러운 것만** AI로 한 번 더 검증합니다. 메뉴에서 끌 수 있습니다.
 - AI는 정해진 구조 수정 지시만 낼 수 있고 글자를 새로 만들 수 없습니다. 코드 검사를 통과한 수정만 쓰이며, 통과하지 못하면 변환기 결과가 그대로 붙습니다.
@@ -95,14 +109,14 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 | 구성 | 기술 | 비고 |
 |---|---|---|
 | 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C8·줄간격 보정·AI 검증. **OS API 사용 금지** → 두 OS에서 공유, macOS에서 개발·테스트 가능 |
-| HTML 파싱·정리 | [AngleSharp](https://github.com/AngleSharp/AngleSharp), [HtmlSanitizer](https://github.com/mganss/HtmlSanitizer) | 웹·Excel HTML 파싱, 허용 목록 방식 정리 |
-| Markdown | [Markdig](https://github.com/xoofx/markdig) | 서식 적용 모드의 파싱 |
-| 테스트 | xUnit | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
+| HTML 파싱·정리 | [AngleSharp](https://github.com/AngleSharp/AngleSharp) | 웹·Excel HTML 파싱. 웹 글은 허용한 구조(제목·굵게·목록·표·링크·코드)만 Markdown으로 옮긴 뒤 다시 그려 사이트 서식을 버림 |
+| Markdown | [Markdig](https://github.com/xoofx/markdig) | 서식 적용·기호 제거 모두 Markdig 구문 트리로 처리. 한국어 조사 앞 강조는 `UseCjkFriendlyEmphasis` |
+| 테스트 | xUnit v3 (Microsoft.Testing.Platform) | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
 | Windows 앱 (`ClipBridge.Windows`) | C# · .NET 10 · WinForms (`net10.0-windows`) | Core를 직접 참조. 트레이(`NotifyIcon`), 커서 아이콘 창, P/Invoke로 Win32 호출: 키보드 감지(`WH_KEYBOARD_LL`), 클립보드 감지(`AddClipboardFormatListener`), 지연 렌더링(`WM_RENDERFORMAT`) |
 | macOS 보조 프로그램 (`ClipBridge.Helper`) | C# · .NET 10 콘솔 앱 | Core를 macOS 앱에서 쓰기 위한 다리. macOS 앱이 실행 중 계속 띄워 두고 표준 입출력으로 변환 요청·응답 |
 | macOS 앱 | Swift 패키지 · AppKit (`NSStatusItem`) | 메뉴 막대(슬라임 애니메이션 아이콘), 클립보드 감시(`NSPasteboard`), Cmd+V 감지(이벤트 탭, 손쉬운 사용 권한), 지연 제공(`NSPasteboardItemDataProvider`), 커서 아이콘(비활성 패널). 옵션은 `UserDefaults`에 저장. Helper를 앱 번들에 포함 |
 | AI 검증 | Claude API (Messages API, `HttpClient`) | Core 안에서 호출. 모델 예: Claude Haiku 5.5. API 키는 환경 변수 `ANTHROPIC_API_KEY`에서 읽음 |
-| 배포 | `dotnet publish` self-contained 단일 실행 파일 | .NET 설치 없이 실행. Windows 앱, macOS용 Helper 모두 |
+| 배포 | `dotnet publish` self-contained 단일 실행 파일, macOS는 DMG | .NET 설치 없이 실행. Windows 앱, macOS용 Helper 모두. macOS는 `build-dmg.sh`로 앱을 DMG로 묶음 |
 
 **서버는 없습니다.** 모든 변환은 사용자 PC에서 이루어지고, AI 검증이 켜져 있을 때만 앱이 AI API를 직접 호출합니다.
 
@@ -187,8 +201,9 @@ dotnet build ClipBridge.slnx   # macOS에서도 Windows 앱까지 빌드됨 (Win
 dotnet test                    # 변환기 단위 테스트
 ```
 
-- 외부 패키지(AngleSharp, HtmlSanitizer, Markdig)는 해당 기능 담당자가 작업할 때 `dotnet add src/ClipBridge.Core package <이름>`으로 추가합니다.
-- 테스트 프로젝트의 패키지 버전은 `*`로 되어 있습니다. 처음 빌드한 사람이 실제 설치된 버전으로 고정합니다.
+- 테스트는 xUnit v3(Microsoft.Testing.Platform)로 돌아갑니다. 패키지 버전은 고정되어 있습니다.
+- 외부 패키지(AngleSharp, Markdig 등)는 `dotnet add src/ClipBridge.Core package <이름>`으로 추가합니다.
+- 변환 결과를 실제 앱에 붙여 보려면 macOS 시험 모드를 씁니다: `swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format` ([설명](tools/ClipBridge.TryMode/README.md))
 
 ## 설치 및 실행
 
@@ -206,12 +221,37 @@ dotnet run --project src/ClipBridge.Windows
 - 터미널에서 실행하면 그 터미널에 동작 기록이 한 줄씩 나옵니다 (macOS의 `log stream`과 같은 용도). 복사한 본문은 남기지 않습니다.
   ```text
   10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
-  10:21:03.540 [convert] results seq=812 source=PlainText Hangul=STUB Notion=STUB Word=STUB Other=PASS
-  10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=STUB plan=WriteResult elapsed=1.8ms
+  10:21:03.540 [convert] results seq=812 source=Excel Hangul=C1 Notion=C2 Word=PASS Other=PASS
+  10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=C1 plan=WriteResult elapsed=1.8ms
   10:21:07.131 [paste] data taken format=HTML Format
   ```
 
-**macOS 앱:** [macOS 앱 README](macos/UnbrokenPaste/README.md)
+**macOS 앱**
+
+```bash
+cd macos/UnbrokenPaste
+./scripts/build-app.sh            # build/Unbroken Paste.app (변환 엔진 Helper 포함)
+open "build/Unbroken Paste.app"
+./scripts/build-dmg.sh            # 배포용 DMG (선택)
+```
+
+- 메뉴 막대에 슬라임 아이콘이 생깁니다. 처음 실행할 때 **손쉬운 사용** 권한을 허용해야 붙여넣기가 변환됩니다.
+- 다시 빌드하면 서명이 바뀌어 권한이 풀립니다. 복사 아이콘은 뜨는데 붙여넣기 때 대상 앱 아이콘이 안 뜨고 원본 그대로 붙으면, 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 Unbroken Paste를 지우고(−) 다시 추가(+)하세요.
+- 자세한 내용: [macOS 앱 README](macos/UnbrokenPaste/README.md)
+
+## 구현 현황
+
+2026년 10월 30일 기준. 자세한 내용은 [PRD 12절](prd.md#12-구현-현황)을 보세요.
+
+| 구분 | 상태 |
+|---|---|
+| 출처 판별·변환기 자동 선택·줄간격 보정 | 구현 |
+| 변환기 C1–C6, TX | 구현 |
+| 변환기 C7(인터넷 → Word)·C8(Markdown → Word) | 개발 전, 지금은 통과 |
+| AI 검증·의심 신호 판정 | 개발 전 ([#20](https://github.com/realp0tato/donga_hackathon/issues/20)). 의심 신호 S2·S3·S4·S7·S9는 변환기가 이미 기록 |
+| Windows 앱 (트레이·메뉴 옵션·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
+| macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
+| 성능·사용자 시간 절감 | 아직 측정하지 않음 |
 
 ## 문서
 
