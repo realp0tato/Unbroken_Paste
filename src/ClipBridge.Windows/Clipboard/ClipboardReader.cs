@@ -57,6 +57,17 @@ internal static class ClipboardReader
         return NativeMethods.GetClipboardFormatName(id, buffer, buffer.Capacity) > 0 ? buffer.ToString() : $"#{id}";
     }
 
+    // FormatName의 반대. 처음 보는 등록 이름은 등록하고, 알 수 없으면 0
+    public static uint FormatId(string name)
+    {
+        foreach (var (id, standard) in StandardFormats)
+        {
+            if (standard == name)
+                return id;
+        }
+        return name.StartsWith('#') ? 0 : NativeMethods.RegisterClipboardFormat(name);
+    }
+
     private static bool TryOpen(nint owner)
     {
         // 다른 앱이 잠깐 열고 있을 수 있어 짧게 재시도한다
@@ -149,6 +160,9 @@ internal static class ClipboardReader
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern nint GetClipboardData(uint format);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "RegisterClipboardFormatW")]
+        public static extern uint RegisterClipboardFormat(string name);
 
         [DllImport("user32.dll")]
         public static extern nint GetClipboardOwner();
