@@ -11,14 +11,11 @@ final class CursorOverlay: NSObject {
     private static let fadeDuration: TimeInterval = 0.15
     private static let shadowMargin: CGFloat = 6
 
-    /// Shown on copy. Set to the current slime frame; tinted to the label colour when drawn.
-    var upImage: NSImage? {
-        didSet { tintedUpImage = nil }
-    }
+    /// Round character image shown on copy, filling the whole badge (the character's `badge.png`).
+    var upBadge: NSImage?
 
     private let panel: OverlayPanel
     private let badgeView = BadgeView()
-    private var tintedUpImage: NSImage?
     private var iconCache: [String: NSImage?] = [:]  // bundle ID → icon (nil = none found), NFR-11
     private var timer: Timer?
     private var hideAt: TimeInterval = 0
@@ -41,7 +38,7 @@ final class CursorOverlay: NSObject {
     }
 
     func showCopy() {
-        badgeView.content = upImage.map { .image(tinted($0)) } ?? .letter("UP")
+        badgeView.content = upBadge.map { .fill($0) } ?? .letter("UP")
         badgeView.passthrough = false
         show(for: Self.copyDuration)
     }
@@ -102,19 +99,6 @@ final class CursorOverlay: NSObject {
         iconCache[bundleID] = icon
         return icon
     }
-
-    /// Template frames are black; draw them in the label colour so they show on light and dark badges.
-    private func tinted(_ image: NSImage) -> NSImage {
-        if let tintedUpImage { return tintedUpImage }
-        let result = NSImage(size: image.size, flipped: false) { rect in
-            image.draw(in: rect)
-            NSColor.labelColor.set()
-            rect.fill(using: .sourceAtop)
-            return true
-        }
-        tintedUpImage = result
-        return result
-    }
 }
 
 private final class OverlayPanel: NSPanel {
@@ -124,6 +108,9 @@ private final class OverlayPanel: NSPanel {
 
 private final class BadgeView: NSView {
     enum Content {
+        /// Round artwork that fills the whole badge (the UP character on copy).
+        case fill(NSImage)
+        /// App icon inside the badge.
         case image(NSImage)
         case letter(String)
     }
@@ -146,12 +133,12 @@ private final class BadgeView: NSView {
         path.fill()
         NSGraphicsContext.restoreGraphicsState()
 
-        // Plain paste (no conversion) gets a quiet border; converted targets get the accent colour (PRD 4.3).
-        (passthrough ? NSColor.separatorColor : NSColor.controlAccentColor).setStroke()
-        path.lineWidth = passthrough ? 1 : 1.5
-        path.stroke()
-
         switch content {
+        case let .fill(image):
+            NSGraphicsContext.saveGraphicsState()
+            path.addClip()
+            image.draw(in: circle)
+            NSGraphicsContext.restoreGraphicsState()
         case let .image(image):
             image.draw(in: fit(image.size, in: circle.insetBy(dx: 5, dy: 5)))
         case let .letter(text):
@@ -162,6 +149,11 @@ private final class BadgeView: NSView {
             let size = text.size(withAttributes: attributes)
             text.draw(at: NSPoint(x: circle.midX - size.width / 2, y: circle.midY - size.height / 2), withAttributes: attributes)
         }
+
+        // Plain paste (no conversion) gets a quiet border; converted targets get the accent colour (PRD 4.3).
+        (passthrough ? NSColor.separatorColor : NSColor.controlAccentColor).setStroke()
+        path.lineWidth = passthrough ? 1 : 1.5
+        path.stroke()
     }
 
     private func fit(_ size: NSSize, in box: NSRect) -> NSRect {

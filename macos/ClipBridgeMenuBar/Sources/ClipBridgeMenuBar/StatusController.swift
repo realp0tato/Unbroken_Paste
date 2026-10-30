@@ -64,7 +64,7 @@ final class StatusController: NSObject {
         RunLoop.main.add(timer, forMode: .common)  // keep animating while the menu is open
         self.timer = timer
 
-        overlay.upImage = frames.first
+        overlay.upBadge = current?.badge()
         pasteWatcher.onPermissionChange = { [weak self] in self?.refreshPermission() }
         pasteWatcher.onPaste = { [weak self] paste in
             // Runs inside the event tap: draw the badge after the key is on its way (NFR-11).
@@ -209,7 +209,7 @@ final class StatusController: NSObject {
         let newFrames = entry.frames()
         guard !newFrames.isEmpty else { return }
         frames = newFrames
-        overlay.upImage = newFrames.first
+        overlay.upBadge = entry.badge()
         animator.frameCount = newFrames.count
         shownFrame = -1
         currentCharacter = id
