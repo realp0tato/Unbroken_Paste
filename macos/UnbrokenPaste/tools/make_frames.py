@@ -173,13 +173,14 @@ def render_stickman(t, size):
     cx = size[0] / 2
 
     hip = (cx - 0.5, 29.5)
-    # Unseen chest joint: kicks up and toward the figure's back (the right of the frame once mirrored);
-    # the upper torso, shoulders and head ride up with it, so the torso bends at the chest.
-    # Rest position: halfway between the old bend point (y 22.5) and just under the head (y 15.2).
-    chest = (cx + 0.4 - 2.4 * pop, 18.9 - 2.6 * pop)
-    neck = (cx + 0.6 - 0.6 * pop, 16.5 - 2.2 * pop)
-    head = (cx + 0.2 - 0.4 * pop, 9.8 - 1.8 * pop)  # tipped toward the back shoulder, lifts with the chest
-    tilt = math.radians(18 + 8 * pop)  # head tilted to the side
+    # Only the chest and the arm move; hips, neck, shoulders and head stay put.
+    # Unseen chest joint, halfway between the old bend point (y 22.5) and just under the head (y 15.2):
+    # on the beat it kicks out toward the figure's back (the right of the frame once mirrored) and a little
+    # up, so the torso bends sharply there.
+    chest = (cx + 0.4 - 4.6 * pop, 18.9 - 1.4 * pop)
+    neck = (cx + 0.6, 16.5)
+    head = (cx + 0.2, 9.8)  # tipped toward the back shoulder
+    tilt = math.radians(18)  # head tilted to the side
 
     body = Image.new("L", (cw, ch), 0)
 
@@ -203,7 +204,7 @@ def render_stickman(t, size):
     # Back arm hangs (far shoulder, slightly behind).
     back_shoulder = (neck[0] - 2.4, neck[1] + 1.4)
     line(body, back_shoulder, (cx - 5.6, 23.6), 2.2)
-    line(body, (cx - 5.6, 23.6), (cx - 6.4, 28.6 + 0.3 * pop), 2.2)
+    line(body, (cx - 5.6, 23.6), (cx - 6.4, 28.6), 2.2)
     # Head with two eyes cut out, turned right and tilted.
     line(body, neck, head, 2.4)  # short neck so the tilt shows
     disc(body, head, 5.4)
@@ -216,7 +217,7 @@ def render_stickman(t, size):
 
     # Active arm: front shoulder, elbow out to the side, hand sliding down across the chest and back.
     shoulder = (neck[0] + 2.2, neck[1] + 1.2)
-    hand = (cx + 4.2 - 0.8 * pop - 5.4 * sweep, 18.2 - 1.8 * pop + 7.6 * sweep)
+    hand = (cx + 4.2 - 5.4 * sweep, 18.2 + 7.6 * sweep)
     elbow = (cx + 7.4 - 0.8 * sweep, 21.0 + 3.2 * sweep)
     arm = Image.new("L", (cw, ch), 0)
     edge = Image.new("L", (cw, ch), 0)
