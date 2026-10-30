@@ -23,6 +23,8 @@ DerivedData/
 *.xcuserstate
 .build/
 .swiftpm/
+# macOS 앱 빌드 결과 (scripts/build-app.sh·build-dmg.sh가 만드는 .app, Helper, DMG)
+macos/*/build/
 
 # macOS / Windows
 .DS_Store
