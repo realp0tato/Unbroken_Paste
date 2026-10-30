@@ -65,9 +65,22 @@ public static partial class SourceDetector
         return hits >= 2;
     }
 
-    private static bool IsExcel(ClipboardSnapshot snapshot) =>
+    // Word에서 복사했는지. 출처 종류(SourceKind)는 기타지만, 한글로 붙일 때는 웹처럼 HTML을 정리한다 (UpClipConverter)
+    private static readonly string[] WordApps = ["WINWORD.EXE", "com.microsoft.Word"];
+
+    internal static bool IsWord(ClipboardSnapshot snapshot) =>
+        WordApps.Contains(snapshot.SourceApp, StringComparer.OrdinalIgnoreCase)
+        || (snapshot.Formats.TryGetValue(MacOfficeAppBundleId, out var app)
+            && System.Text.Encoding.UTF8.GetString(app).Trim('\0', ' ') == "com.microsoft.Word");
+
+    // macOS의 com.microsoft.* 포맷은 Word·PowerPoint도 넣으므로, 그중 복사한 앱 번들 ID(appbundleid)로 Excel만 고른다
+    public const string MacOfficeAppBundleId = "com.microsoft.appbundleid";
+
+    internal static bool IsExcel(ClipboardSnapshot snapshot) =>
         ExcelApps.Contains(snapshot.SourceApp)
-        || snapshot.Formats.Keys.Any(type => ExcelFormats.Contains(type) || type.StartsWith("com.microsoft.", StringComparison.Ordinal));
+        || snapshot.Formats.Keys.Any(type => ExcelFormats.Contains(type))
+        || (snapshot.Formats.TryGetValue(MacOfficeAppBundleId, out var app)
+            && System.Text.Encoding.UTF8.GetString(app).Trim('\0', ' ') == "com.microsoft.Excel");
 
     private static bool IsAiService(string? sourceApp, string? sourceUrl) =>
         AiApps.Contains(sourceApp)
