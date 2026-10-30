@@ -14,7 +14,8 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
 
     // 지금 클립보드에 약속한 포맷 → 바이트. UI 스레드에서만 읽고 쓴다
     private Dictionary<uint, byte[]> _pending = [];
-    private ClipboardSnapshot? _writtenFor;
+    // UP이 마지막으로 쓴 복사의 원본 포맷 (종료할 때 되돌린다)
+    private IReadOnlyDictionary<string, byte[]>? _writtenFor;
     private bool _taken;
 
     public ClipboardWriter()
@@ -30,18 +31,19 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
 
     public bool OwnsClipboard => NativeMethods.GetClipboardOwner() == Handle;
 
-    // 붙여넣기 키를 처리하는 중(키보드 훅 안)에 부른다. 썼으면 쓴 뒤의 클립보드 시퀀스 번호, 아니면 null
-    public long? Apply(PastePlan plan, ClipboardSnapshot? snapshot, TargetApp target)
+    // 붙여넣기 키를 처리하는 중(키보드 훅 안)에 부른다. 썼으면 쓴 뒤의 클립보드 시퀀스 번호, 아니면 null.
+    // original: 원본을 되돌릴 때 쓸 포맷, 복사한 순서대로 (#80, CopyTracker.OriginalOf)
+    public long? Apply(PastePlan plan, ClipboardSnapshot? snapshot, IReadOnlyDictionary<string, byte[]> original, TargetApp target)
     {
         if (snapshot is null || plan.Action == PasteAction.Leave)
             return null;
 
-        var payload = plan.Action == PasteAction.WriteResult ? plan.Payload : snapshot.Formats;
+        var payload = plan.Action == PasteAction.WriteResult ? plan.Payload : original;
         if (!Promise(payload))
             return null;
 
         LastWrite = new LastWrite(snapshot.SequenceNumber, plan.Action == PasteAction.WriteResult ? target : null);
-        _writtenFor = snapshot;
+        _writtenFor = original;
         return ClipboardReader.SequenceNumber();
     }
 
@@ -55,7 +57,7 @@ internal sealed class ClipboardWriter : NativeWindow, IDisposable
         try
         {
             NativeMethods.EmptyClipboard();
-            foreach (var (name, data) in _writtenFor.Formats)
+            foreach (var (name, data) in _writtenFor)
             {
                 var id = ClipboardReader.FormatId(name);
                 if (id != 0)

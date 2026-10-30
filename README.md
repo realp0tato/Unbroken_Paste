@@ -238,6 +238,7 @@ dotnet run --project src/ClipBridge.Windows
   ```text
   10:21:03.512 [copy] copy seq=812 app=EXCEL.EXE formats=HTML Format,CF_UNICODETEXT,...
   10:21:03.540 [convert] results seq=812 source=Excel Hangul=C1 Notion=C2 Word=PASS Excel=PASS Other=PASS prepare=24.0ms
+  10:21:03.598 [copy] original seq=812 formats=19 bytes=48213 skipped=DataObject,Ole Private Data,CF_ENHMETAFILE,CF_BITMAP elapsed=58.2ms
   10:21:07.115 [paste] paste key=Ctrl+V target=Hangul app=Hwp.exe converter=C1 plan=WriteResult elapsed=1.8ms
   10:21:07.131 [paste] data taken format=HTML Format
   ```
