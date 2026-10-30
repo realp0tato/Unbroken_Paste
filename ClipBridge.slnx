@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/ClipBridge.Core/ClipBridge.Core.csproj" />
     <Project Path="src/ClipBridge.Windows/ClipBridge.Windows.csproj" />
+    <Project Path="src/ClipBridge.Helper/ClipBridge.Helper.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ClipBridge.Core.Tests/ClipBridge.Core.Tests.csproj" />
