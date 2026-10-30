@@ -44,8 +44,8 @@ public sealed class UpClipConverter : IClipConverter
             // Excel → Word는 Office 기본 붙여넣기 (PRD 6.2)
             (SourceKind.Markdown, TargetApp.Hangul) => Markdown(snapshot, text => MarkdownToHangulConverter.Convert(text, mode)),   // C5
             (SourceKind.Markdown, TargetApp.Notion) => Markdown(snapshot, text => MarkdownToNotionConverter.Convert(text, mode)),   // C6
-            (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot),   // C3
-            (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot),   // C4
+            (SourceKind.Web, TargetApp.Hangul) => WebToHangulConverter.Convert(snapshot, mode),   // C3
+            (SourceKind.Web, TargetApp.Notion) => WebToNotionConverter.Convert(snapshot, mode),   // C4
             (SourceKind.PlainText, TargetApp.Hangul or TargetApp.Notion or TargetApp.Word) => PlainTextConverter.Convert(snapshot, target),   // TX
             // 아직 없음: C7 인터넷 → Word(#10), C8 Markdown → Word(#12)
             _ => ConversionResult.Passthrough,

@@ -19,6 +19,10 @@ public class MarkdownStripTests
     [InlineData("_기울임_", "기울임")]
     [InlineData("~~취소선~~", "취소선")]
     [InlineData("앞 **굵게** 뒤", "앞 굵게 뒤")]
+    // 닫는 기호 앞이 문장 부호이고 뒤가 조사여도 강조 (CommonMark만으로는 기호가 남는다)
+    [InlineData("**어디서 복사했는지(출처)**와 **대상(앱)**을", "어디서 복사했는지(출처)와 대상(앱)을")]
+    [InlineData("**“인용”**이라고", "“인용”이라고")]
+    [InlineData("*기울임(괄호)*은", "기울임(괄호)은")]
     // 인라인 코드
     [InlineData("`코드`", "코드")]
     // 인용

@@ -40,7 +40,11 @@ public static partial class WebHtmlCleaner
         "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "pre", "blockquote", "table", "dl", "dt", "dd", "hr",
     };
 
-    public static WebCleanResult ToMarkdown(string html, bool keepLinks)
+    private readonly record struct Options(bool KeepLinks, MarkdownMode Mode);
+
+    // mode: 화면에 글자로 보이는 **…**(사이트가 Markdown 굵게를 해석하지 못한 것)를 Markdown 처리 옵션대로 다룬다.
+    // 서식 적용이면 굵게, 기호 제거면 기호만 뺀다. 그 밖의 정리는 모드와 상관없다
+    public static WebCleanResult ToMarkdown(string html, bool keepLinks, MarkdownMode mode = MarkdownMode.Format)
     {
         var document = new HtmlParser().ParseDocument(html);
         var root = (IElement?)document.Body ?? document.DocumentElement;
@@ -73,13 +77,13 @@ public static partial class WebHtmlCleaner
         RemoveCodeHeaders(root);
 
         var markdown = new StringBuilder();
-        WriteBlocks(markdown, root, keepLinks, listDepth: 0);
+        WriteBlocks(markdown, root, new Options(keepLinks, mode), listDepth: 0);
         return new WebCleanResult(BlankLines().Replace(markdown.ToString(), "\n\n").Trim('\n'), signals);
     }
 
     // ---- 블록 ----
 
-    private static void WriteBlocks(StringBuilder md, INode parent, bool keepLinks, int listDepth)
+    private static void WriteBlocks(StringBuilder md, INode parent, Options options, int listDepth)
     {
         var inline = new StringBuilder();
         void FlushInline()
@@ -96,53 +100,53 @@ public static partial class WebHtmlCleaner
             if (node is IElement element && (BlockTags.Contains(element.LocalName) || element.QuerySelector(BlockSelector) is not null))
             {
                 FlushInline();
-                WriteBlock(md, element, keepLinks, listDepth);
+                WriteBlock(md, element, options, listDepth);
             }
             else
-                WriteInline(inline, node, keepLinks);
+                WriteInline(inline, node, options);
         }
         FlushInline();
     }
 
-    private static void WriteBlock(StringBuilder md, IElement element, bool keepLinks, int listDepth)
+    private static void WriteBlock(StringBuilder md, IElement element, Options options, int listDepth)
     {
         switch (element.LocalName)
         {
             case "h1" or "h2" or "h3" or "h4" or "h5" or "h6":
                 // 제목을 감싼 링크는 사이트의 고정 링크(#앵커)라 글자만 남긴다
-                var text = InlineText(element, keepLinks: false);
+                var text = InlineText(element, options with { KeepLinks = false });
                 if (text.Length > 0)
                     Block(md, new string('#', element.LocalName[1] - '0') + " " + text);
                 break;
             case "p" or "dt" or "dd" or "figcaption":
-                var paragraph = InlineText(element, keepLinks);
+                var paragraph = InlineText(element, options);
                 if (paragraph.Length > 0)
                     Block(md, EscapeLineStart(paragraph));
                 break;
             case "ul" or "ol":
-                WriteList(md, element, keepLinks, listDepth);
+                WriteList(md, element, options, listDepth);
                 break;
             case "pre":
                 WriteCode(md, element);
                 break;
             case "blockquote":
                 var quote = new StringBuilder();
-                WriteBlocks(quote, element, keepLinks, listDepth);
+                WriteBlocks(quote, element, options, listDepth);
                 var lines = quote.ToString().Trim('\n').Split('\n').Select(line => line.Length == 0 ? ">" : "> " + line);
                 Block(md, string.Join('\n', lines));
                 break;
             case "table":
-                WriteTable(md, element, keepLinks);
+                WriteTable(md, element, options);
                 break;
             case "hr":
                 break;
             default:
-                WriteBlocks(md, element, keepLinks, listDepth);
+                WriteBlocks(md, element, options, listDepth);
                 break;
         }
     }
 
-    private static void WriteList(StringBuilder md, IElement list, bool keepLinks, int depth)
+    private static void WriteList(StringBuilder md, IElement list, Options options, int depth)
     {
         var ordered = list.LocalName == "ol";
         var number = int.TryParse(list.GetAttribute("start"), out var start) ? start : 1;
@@ -157,11 +161,11 @@ public static partial class WebHtmlCleaner
             foreach (var node in item.ChildNodes)
             {
                 if (node is IElement child && child.LocalName is "ul" or "ol")
-                    WriteList(nested, child, keepLinks, depth + 1);
+                    WriteList(nested, child, options, depth + 1);
                 else if (node is IElement block && BlockTags.Contains(block.LocalName))
-                    text.Append(' ').Append(InlineText(block, keepLinks));
+                    text.Append(' ').Append(InlineText(block, options));
                 else
-                    WriteInline(text, node, keepLinks);
+                    WriteInline(text, node, options);
             }
             var line = Whitespace().Replace(text.ToString(), " ").Trim();
             if (line.Length == 0 && nested.Length == 0)
@@ -189,12 +193,12 @@ public static partial class WebHtmlCleaner
     }
 
     // 파이프 표. 병합 칸은 풀어서 첫 칸에 값, 나머지는 빈 칸 (PRD 6.3.2·6.3.4)
-    private static void WriteTable(StringBuilder md, IElement table, bool keepLinks)
+    private static void WriteTable(StringBuilder md, IElement table, Options options)
     {
         if (table.QuerySelector("table") is not null)
         {
             // 중첩 표는 표로 만들지 않고 글자로 (PRD 6.3.10)
-            WriteBlocks(md, table, keepLinks, 0);
+            WriteBlocks(md, table, options, 0);
             return;
         }
 
@@ -209,7 +213,7 @@ public static partial class WebHtmlCleaner
             {
                 while (pending.Remove((r, col)))
                     row.Add("");
-                row.Add(EscapeCell(InlineText(cell, keepLinks)));
+                row.Add(EscapeCell(InlineText(cell, options)));
                 var colSpan = Math.Max(1, int.TryParse(cell.GetAttribute("colspan"), out var cs) ? cs : 1);
                 var rowSpan = Math.Max(1, int.TryParse(cell.GetAttribute("rowspan"), out var rs) ? rs : 1);
                 for (var i = 1; i < colSpan; i++)
@@ -242,19 +246,19 @@ public static partial class WebHtmlCleaner
 
     // ---- 인라인 ----
 
-    private static string InlineText(INode node, bool keepLinks)
+    private static string InlineText(INode node, Options options)
     {
         var text = new StringBuilder();
         foreach (var child in node.ChildNodes)
-            WriteInline(text, child, keepLinks);
+            WriteInline(text, child, options);
         return Whitespace().Replace(text.ToString(), " ").Trim();
     }
 
-    private static void WriteInline(StringBuilder md, INode node, bool keepLinks)
+    private static void WriteInline(StringBuilder md, INode node, Options options)
     {
         if (node is IText text)
         {
-            md.Append(Escape(text.Data));
+            md.Append(Escape(text.Data, options.Mode));
             return;
         }
         if (node is not IElement element)
@@ -265,14 +269,19 @@ public static partial class WebHtmlCleaner
             case "br":
                 md.Append(' ');
                 break;
+            // 이미 굵은 글 안의 굵게는 기호를 겹치지 않는다 ("****…**…**"는 짝이 엇갈려 기호가 글자로 남는다)
+            case "strong" or "b" when IsInsideBold(element):
+                foreach (var child in element.ChildNodes)
+                    WriteInline(md, child, options);
+                break;
             case "strong" or "b":
-                Wrap(md, "**", InlineText(element, keepLinks));
+                Wrap(md, "**", InlineText(element, options));
                 break;
             case "em" or "i":
-                Wrap(md, "*", InlineText(element, keepLinks));
+                Wrap(md, "*", InlineText(element, options));
                 break;
             case "del" or "s" or "strike":
-                Wrap(md, "~~", InlineText(element, keepLinks));
+                Wrap(md, "~~", InlineText(element, options));
                 break;
             case "code" or "kbd" or "samp":
                 var code = Whitespace().Replace(element.TextContent, " ").Trim();
@@ -283,16 +292,16 @@ public static partial class WebHtmlCleaner
                 }
                 break;
             case "a":
-                var label = InlineText(element, keepLinks);
+                var label = InlineText(element, options);
                 var href = element.GetAttribute("href");
-                if (keepLinks && label.Length > 0 && href is not null && IsWebLink(href))
+                if (options.KeepLinks && label.Length > 0 && href is not null && IsWebLink(href))
                     md.Append('[').Append(label).Append("](").Append(href.Replace(" ", "%20").Replace("(", "%28").Replace(")", "%29")).Append(')');
                 else
                     md.Append(label);
                 break;
             default:
                 foreach (var child in element.ChildNodes)
-                    WriteInline(md, child, keepLinks);
+                    WriteInline(md, child, options);
                 break;
         }
     }
@@ -334,8 +343,31 @@ public static partial class WebHtmlCleaner
         || href.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
         || href.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase);
 
-    // Markdown 기호로 읽힐 글자는 이스케이프한다 (원래 글자가 그대로 보이게)
-    private static string Escape(string text) => MarkdownChars().Replace(text, @"\$0");
+    // Markdown 기호로 읽힐 글자는 이스케이프한다 (원래 글자가 그대로 보이게).
+    // 단, 한 글 조각 안에서 짝이 맞는 **…**는 사이트가 Markdown 굵게를 해석하지 못해 글자로 보인 것이다
+    // (GitHub의 "**…(출처)**와"처럼 닫는 기호 앞이 문장 부호이고 뒤가 조사인 경우). 옵션대로 굵게로 살리거나 기호만 뺀다
+    private static string Escape(string text, MarkdownMode mode)
+    {
+        var result = new StringBuilder();
+        var last = 0;
+        foreach (Match bold in LiteralBold().Matches(text))
+        {
+            var inner = EscapeChars(bold.Groups[1].Value);
+            result.Append(EscapeChars(text[last..bold.Index])).Append(mode == MarkdownMode.Format ? $"**{inner}**" : inner);
+            last = bold.Index + bold.Length;
+        }
+        return result.Append(EscapeChars(text[last..])).ToString();
+    }
+
+    private static string EscapeChars(string text) => MarkdownChars().Replace(text, @"\$0");
+
+    private static bool IsInsideBold(IElement element)
+    {
+        for (var parent = element.ParentElement; parent is not null; parent = parent.ParentElement)
+            if (parent.LocalName is "strong" or "b")
+                return true;
+        return false;
+    }
 
     // 줄 맨 앞의 #·-·+·"숫자." 는 제목·목록으로 읽히므로 이스케이프한다 ("1." → "1\.")
     private static string EscapeLineStart(string text) =>
@@ -347,6 +379,9 @@ public static partial class WebHtmlCleaner
 
     [GeneratedRegex(@"[\\`*_\[\]|<>~]")]
     private static partial Regex MarkdownChars();
+    // 안쪽은 공백으로 시작·끝나지 않고 *가 없다 ("2 ** 3 ** 4" 같은 수식은 굵게가 아니다)
+    [GeneratedRegex(@"\*\*([^\s*](?:[^*]*[^\s*])?)\*\*")]
+    private static partial Regex LiteralBold();
     [GeneratedRegex(@"^(\s*)(#|[-+](?=\s)|(\d+)([.)])(?=\s))")]
     private static partial Regex LineStartSyntax();
     [GeneratedRegex(@"\s+")]

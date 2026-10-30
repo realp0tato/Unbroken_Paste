@@ -20,6 +20,22 @@ public class MarkdownToHangulTests
         Assert.DoesNotMatch("<h[1-6]", html);
     }
 
+    // 일반 텍스트만 주면 한글이 커서 자리의 글자 모양(검은 배경 등)을 이어받는다
+    [Fact]
+    public void Strip_GivesUnformattedParagraphHtml()
+    {
+        var result = MarkdownToHangulConverter.Convert("## 제목\n\n**강조 내용**과 본문", MarkdownMode.Strip);
+
+        Assert.Equal("<p style=\"margin:0 0 10pt\">제목</p><p style=\"margin:0 0 0\">강조 내용과 본문</p>", result.Html);
+        Assert.Equal("제목\n\n강조 내용과 본문", result.PlainText);
+    }
+
+    [Fact]
+    public void BoldBeforeParticle_IsBold()
+    {
+        Assert.Contains("<b>복사했는지(출처)</b>와", Html("**복사했는지(출처)**와"));
+    }
+
     [Fact]
     public void Lists_UseMarkersAndExplicitIndent_NoListTags()
     {
@@ -150,15 +166,6 @@ public class MarkdownToHangulTests
         Assert.Equal("C5", result.ConverterId);
         Assert.False(result.IsPassthrough);
         Assert.Equal("주요 결과\n중요", result.PlainText);
-    }
-
-    [Fact]
-    public void Strip_HasNoHtml()
-    {
-        var result = MarkdownToHangulConverter.Convert("## 주요 결과", MarkdownMode.Strip);
-
-        Assert.Null(result.Html);
-        Assert.Equal("주요 결과", result.PlainText);
     }
 
     [Fact]

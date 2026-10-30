@@ -38,8 +38,8 @@ public static class PlainTextConverter
     }
 
     // 줄마다 한 문단. 빈 줄은 문단으로 만들지 않고 바로 위 문단의 아래 여백으로 바꾼다 (PRD 6.4).
-    // 줄 앞·연속 공백은 HTML에서 하나로 줄어들므로 &nbsp;로 지킨다
-    private static string TextHtml(string plain)
+    // 줄 앞·연속 공백은 HTML에서 하나로 줄어들므로 &nbsp;로 지킨다. C5 기호 제거 모드도 쓴다
+    internal static string TextHtml(string plain)
     {
         var lines = plain.Split('\n');
         var html = new StringBuilder();

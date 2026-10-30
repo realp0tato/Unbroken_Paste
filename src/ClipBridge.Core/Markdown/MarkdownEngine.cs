@@ -13,10 +13,13 @@ public sealed record MarkdownOutput(string? Html, string PlainText, IReadOnlyLis
 public static class MarkdownEngine
 {
     // 원시 HTML은 글자로 취급한다 (실행 금지).
-    // AI 답변은 줄바꿈 하나로 줄을 나누는 경우가 많아 문단 안 줄바꿈도 <br>로 살린다
+    // AI 답변은 줄바꿈 하나로 줄을 나누는 경우가 많아 문단 안 줄바꿈도 <br>로 살린다.
+    // CommonMark는 "**…(출처)**와"처럼 닫는 기호 앞이 문장 부호이고 뒤가 글자(조사)이면 강조로 보지 않아
+    // 기호가 그대로 남는다. 한·중·일 글자 옆에서는 이 제한을 푸는 확장을 쓴다
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UsePipeTables()
         .UseEmphasisExtras(EmphasisExtraOptions.Strikethrough)
+        .UseCjkFriendlyEmphasis()
         .UseSoftlineBreakAsHardlineBreak()
         .DisableHtml()
         .Build();
