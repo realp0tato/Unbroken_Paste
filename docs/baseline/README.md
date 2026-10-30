@@ -3,7 +3,8 @@
 UP 없이 그냥 붙여넣었을 때 대상 앱에서 어떻게 보이는지 기록한다. 입력은 `tests/fixtures`의 샘플을 `restore-mac-clipboard.swift`로 클립보드에 되돌려 넣어 매번 같게 맞춘다.
 
 - **판정:** 정상(손볼 것 없음) / 일부 깨짐(조금 손봐야 함) / 깨짐(다시 정리해야 함)
-- **환경:** macOS 26.6.2 · Notion 7.41.1 · Word 16.114.3
+- **환경:** macOS 26.6.2 · Notion 7.41.1 · Word 16.114.3 · 한컴독스(웹, Chrome 156, 한글 문서)
+- **한컴독스:** 한글을 대신하는 참고 자료. 웹 편집기라 데스크톱 한글과 결과가 다를 수 있고, Word 문서로 열어도 Microsoft Word 결과로 보지 않는다
 
 ## 요약 (Notion, 13개)
 
@@ -28,7 +29,7 @@ UP 없이 그냥 붙여넣었을 때 대상 앱에서 어떻게 보이는지 기
 
 | 부분 | 값 |
 |---|---|
-| 대상 앱 폴더 | `notion/`, `word/`, `hangul/` |
+| 대상 앱 폴더 | `notion/`, `word/`, `hangul/`, `hancomdocs/` |
 | 샘플 경로 | `tests/fixtures/` 아래 경로의 `/`를 `-`로 (`web/mac-safari-blog` → `web-mac-safari-blog`) |
 | 판정 | `ok` 정상 / `near-ok` 정상에 가까움 / `partial` 일부 깨짐 / `broken` 깨짐 |
 | 번호 | 한 결과를 여러 장으로 나눠 찍었을 때 위에서부터 1, 2, 3 |
@@ -39,21 +40,21 @@ UP 없이 그냥 붙여넣었을 때 대상 앱에서 어떻게 보이는지 기
 
 ## 결과
 
-| 샘플 | Notion | Word | 한글 |
-|---|---|---|---|
-| `markdown/mac-claude-answer` | **정상** | | |
-| `web/mac-safari-table` | **일부 깨짐** | | |
-| `web/mac-chrome-table` | **일부 깨짐** | | |
-| `web/mac-chrome-blog` | **일부 깨짐** (정리할 것 많음) | | |
-| `web/mac-safari-blog` | **깨짐** | | |
-| `web/mac-chrome-article` | **일부 깨짐** | | |
-| `web/mac-safari-article` | **일부 깨짐** | | |
-| `web/mac-chrome-mixed` | **일부 깨짐** | | |
-| `web/mac-safari-mixed` | **일부 깨짐** | | |
-| `excel/mac-basic-table` | **일부 깨짐** | | |
-| `excel/mac-merged-table` | **일부 깨짐** | | |
-| `excel/mac-formula-table` | **정상에 가까움** (굵게만 빠짐) | | |
-| `excel/mac-single-column` | **일부 깨짐** | | |
+| 샘플 | Notion | Word | 한글 | 한컴독스(hwp) |
+|---|---|---|---|---|
+| `markdown/mac-claude-answer` | **정상** | | | **깨짐** |
+| `web/mac-safari-table` | **일부 깨짐** | | | |
+| `web/mac-chrome-table` | **일부 깨짐** | | | |
+| `web/mac-chrome-blog` | **일부 깨짐** (정리할 것 많음) | | | |
+| `web/mac-safari-blog` | **깨짐** | | | |
+| `web/mac-chrome-article` | **일부 깨짐** | | | |
+| `web/mac-safari-article` | **일부 깨짐** | | | |
+| `web/mac-chrome-mixed` | **일부 깨짐** | | | |
+| `web/mac-safari-mixed` | **일부 깨짐** | | | |
+| `excel/mac-basic-table` | **일부 깨짐** | | | |
+| `excel/mac-merged-table` | **일부 깨짐** | | | |
+| `excel/mac-formula-table` | **정상에 가까움** (굵게만 빠짐) | | | |
+| `excel/mac-single-column` | **일부 깨짐** | | | |
 
 ## 샘플별 기록
 
@@ -65,7 +66,15 @@ UP 없이 그냥 붙여넣었을 때 대상 앱에서 어떻게 보이는지 기
 - 원문의 연속 빈 줄 2–3줄은 사라지고 블록 간격이 일정함
 - Notion이 Markdown 원문 대신 함께 들어간 HTML을 쓴 것으로 보임
 
-**판단:** 이 조합은 기본 붙여넣기로도 깨지지 않는다. 당시 UP 기본값(기호 제거)을 적용하면 오히려 서식이 사라져 기준선보다 나빠졌다 → 기본값을 서식 적용으로 바꿈 (PRD v1.12, #57).
+**한컴독스(한글 문서) — 깨짐** ([스크린샷](hancomdocs/markdown-mac-claude-answer__broken__1.png))
+
+- 목록·제목의 들여쓰기가 점점 왼쪽으로 밀려 **글이 페이지 밖으로 잘림** (`md+V로`, `원 대상`, `own`)
+- 중첩 목록이 풀려 하위 항목이 같은 단계가 되고, `줄간격 보정`은 글머리 기호가 사라짐
+- 표 테두리가 사라지고 첫 열이 잘림, 코드 블록 상자가 사라짐
+- 제목 크기·굵게·기울임·링크는 유지
+- **UP 시험 모드(C5, 서식 적용)로 붙여도 같은 결과**: 지금 Markdown 엔진의 HTML이 Claude가 넣는 HTML과 태그 구조가 같기 때문. C5(#18)에서 한글용 HTML(제목 크기·굵기, 목록 들여쓰기 직접 지정, 표 테두리·너비, 코드는 테두리 칸 + 고정폭)을 만들어야 달라진다 → **시연 후보**
+
+**판단(Notion):** 이 조합은 기본 붙여넣기로도 깨지지 않는다. 당시 UP 기본값(기호 제거)을 적용하면 오히려 서식이 사라져 기준선보다 나빠졌다 → 기본값을 서식 적용으로 바꿈 (PRD v1.12, #57).
 
 ### `web/mac-safari-table` (위키백과 표, Safari)
 
