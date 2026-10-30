@@ -19,8 +19,9 @@ internal static class ClipboardReader
             SequenceNumber);
     }
 
-    // 클립보드를 열지 못하면 null. owner는 클립보드를 여는 창 핸들(0이면 현재 작업)
-    public static Result? Read(nint owner = 0, long maxBytesPerFormat = long.MaxValue)
+    // 클립보드를 열지 못하면 null. owner는 클립보드를 여는 창 핸들(0이면 현재 작업).
+    // include가 있으면 그 포맷만 데이터를 읽는다 (지연 렌더링 포맷은 읽을 때 원본 앱이 데이터를 만든다)
+    public static Result? Read(nint owner = 0, long maxBytesPerFormat = long.MaxValue, Func<string, bool>? include = null)
     {
         if (!TryOpen(owner))
             return null;
@@ -31,7 +32,10 @@ internal static class ClipboardReader
             long sequenceNumber = NativeMethods.GetClipboardSequenceNumber();
             var formats = new List<Entry>();
             for (uint id = NativeMethods.EnumClipboardFormats(0); id != 0; id = NativeMethods.EnumClipboardFormats(id))
-                formats.Add(ReadFormat(id, maxBytesPerFormat));
+            {
+                var name = FormatName(id);
+                formats.Add(include is null || include(name) ? ReadFormat(id, name, maxBytesPerFormat) : new Entry(id, name, null, "읽지 않음"));
+            }
             return new Result(sequenceNumber, GetOwnerPath(), formats);
         }
         finally
@@ -65,9 +69,8 @@ internal static class ClipboardReader
         return false;
     }
 
-    private static Entry ReadFormat(uint id, long maxBytes)
+    private static Entry ReadFormat(uint id, string name, long maxBytes)
     {
-        var name = FormatName(id);
         if (IsHandleFormat(id))
             return new Entry(id, name, null, "GDI 핸들 포맷");
 

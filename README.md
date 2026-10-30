@@ -109,7 +109,7 @@ macOS 메뉴 막대에는 이 밖에 상태 표시·변경, 최근 복사 10개(
 ## 저장소 구조
 
 ```text
-ClipBridge.slnx            # 솔루션: C# 프로젝트 6개를 묶는 목록
+ClipBridge.slnx            # 솔루션: C# 프로젝트 7개를 묶는 목록
 global.json                # 모두 같은 .NET 10 SDK로 빌드하도록 고정
 Directory.Build.props      # 모든 C# 프로젝트 공통 설정
 .gitignore                 # Git에 올리지 않을 파일 (빌드 결과물, API 키 등)
@@ -120,6 +120,7 @@ src/
 tests/
   ClipBridge.Core.Tests/   # ④ 변환기 단위 테스트
   ClipBridge.Helper.Tests/ # ③ Helper 테스트
+  ClipBridge.Windows.Tests/ # ② 중 Windows API를 쓰지 않는 부분 테스트 (macOS에서도 실행)
   fixtures/                # ⑤ Windows·macOS에서 수집한 클립보드 원본 샘플
 tools/
   ClipBridge.FixtureDump/  # ⑤를 만드는 Windows 클립보드 샘플 저장 도구
