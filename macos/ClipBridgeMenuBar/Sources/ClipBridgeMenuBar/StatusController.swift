@@ -1,4 +1,5 @@
 import AppKit
+import ClipBridgeContracts
 import UserNotifications
 
 @MainActor
@@ -66,8 +67,8 @@ final class StatusController: NSObject {
 
         // PRD 4.2 menu
         let markdown = addSubmenu("Markdown 처리", to: menu)
-        markdownItems[.stripSymbols] = addItem("기호 제거 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.stripSymbols.rawValue)
-        markdownItems[.applyFormatting] = addItem("서식 적용", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.applyFormatting.rawValue)
+        markdownItems[.strip] = addItem("기호 제거 (기본)", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.strip.rawValue)
+        markdownItems[.format] = addItem("서식 적용", to: markdown, action: #selector(pickMarkdown(_:)), object: MarkdownMode.format.rawValue)
 
         let ai = addSubmenu("AI 검증 (외부 API 사용)", to: menu)
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
@@ -233,13 +234,12 @@ final class StatusController: NSObject {
     private func notify(_ body: String) {
         // Notifications need an app bundle; `swift run` has none, so skip there.
         guard Bundle.main.bundleIdentifier != nil else { return }
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, _ in
             guard granted else { return }
             let content = UNMutableNotificationContent()
             content.title = "ClipBridge"
             content.body = body
-            center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
         }
     }
 }
