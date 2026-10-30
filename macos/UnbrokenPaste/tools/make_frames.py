@@ -161,8 +161,9 @@ def render_stickman(t, size):
     Points to keep from the reference dance: the body turned about 45 degrees (shoulders and feet
     staggered, face turned right), one arm only moving (its hand slides down across the chest and back up
     four times per cycle while the other arm hangs), a big chest bounce at half the arm's speed (twice per
-    1.5 s cycle: the chest swells forward, the torso leans and the shoulders rise), and the head tilted to
-    the side, nodding with the bounce. The figure faces left.
+    1.5 s cycle: the torso is two segments joined at an unseen point on the chest, and on the beat that
+    point kicks up and back so the torso bends there and the shoulders and head ride up with it), and the
+    head tilted to the side. The figure faces left.
     Coordinates are in @2x pixels on a 44 px tall canvas; the active arm gets a thin cut-out edge where it
     crosses the body so it still reads in one colour."""
     cw, ch = size[0] * SS, size[1] * SS
@@ -172,10 +173,11 @@ def render_stickman(t, size):
     cx = size[0] / 2
 
     hip = (cx - 0.5, 29.5)
-    # The chest pushes out toward the figure's back (the right of the frame once mirrored).
-    neck = (cx + 0.6 - 1.6 * pop, 16.5 - 0.6 * pop)  # torso leans with the chest and shoulders rise
-    chest = (cx - 0.2 - 3.2 * pop, 20.5 - 0.8 * pop)
-    head = (cx + 0.2 - 1.0 * pop, 9.8 + 0.2 * pop)  # tipped toward the back shoulder, nods with the bounce
+    # Unseen chest joint: kicks up and toward the figure's back (the right of the frame once mirrored);
+    # the upper torso, shoulders and head ride up with it, so the torso bends at the chest.
+    chest = (cx + 0.2 - 2.4 * pop, 22.5 - 3.0 * pop)
+    neck = (cx + 0.6 - 0.6 * pop, 16.5 - 2.2 * pop)
+    head = (cx + 0.2 - 0.4 * pop, 9.8 - 1.8 * pop)  # tipped toward the back shoulder, lifts with the chest
     tilt = math.radians(18 + 8 * pop)  # head tilted to the side
 
     body = Image.new("L", (cw, ch), 0)
@@ -194,9 +196,9 @@ def render_stickman(t, size):
     line(body, (cx + 2.2, 36.5), (cx + 3.4, 42.5), 2.6)
     line(body, hip, (cx - 2.6, 36.0), 2.6)
     line(body, (cx - 2.6, 36.0), (cx - 3.8, 42.5), 2.6)
-    # Torso and a round chest that pops forward.
-    line(body, hip, neck, 3.6)
-    disc(body, chest, 3.0 + 1.8 * pop)
+    # Torso: two segments that bend at the chest joint.
+    line(body, hip, chest, 3.6)
+    line(body, chest, neck, 3.6)
     # Back arm hangs (far shoulder, slightly behind).
     back_shoulder = (neck[0] - 2.4, neck[1] + 1.4)
     line(body, back_shoulder, (cx - 5.6, 23.6), 2.2)
@@ -213,7 +215,7 @@ def render_stickman(t, size):
 
     # Active arm: front shoulder, elbow out to the side, hand sliding down across the chest and back.
     shoulder = (neck[0] + 2.2, neck[1] + 1.2)
-    hand = (cx + 4.2 - 1.6 * pop - 5.4 * sweep, 18.2 - 0.6 * pop + 7.6 * sweep)
+    hand = (cx + 4.2 - 0.8 * pop - 5.4 * sweep, 18.2 - 1.8 * pop + 7.6 * sweep)
     elbow = (cx + 7.4 - 0.8 * sweep, 21.0 + 3.2 * sweep)
     arm = Image.new("L", (cw, ch), 0)
     edge = Image.new("L", (cw, ch), 0)
