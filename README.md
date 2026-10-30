@@ -82,6 +82,49 @@ ClipBridge
 | 붙여넣기 키 | Ctrl+V, Shift+Insert |
 | 지원하지 않음 | 관리자 권한 앱·보안 데스크톱·원격 세션, 이미지·수식·차트 재구성, Linux |
 
+## 기술 스택
+
+변환 로직은 **C# 하나로** 만들어 공유하고, 화면에 붙는 부분만 OS별 언어로 만듭니다.
+
+| 구성 | 기술 | 비고 |
+|---|---|---|
+| 변환기 라이브러리 (`ClipBridge.Core`) | C# · .NET 10 (`net10.0`) | 출처 판별·변환기 C1–C8·줄간격 보정·AI 검증. **Windows API 사용 금지** → macOS에서도 개발·테스트 가능 |
+| HTML 파싱·정리 | [AngleSharp](https://github.com/AngleSharp/AngleSharp), [HtmlSanitizer](https://github.com/mganss/HtmlSanitizer) | 웹·Excel HTML 파싱, 허용 목록 방식 정리 |
+| Markdown | [Markdig](https://github.com/xoofx/markdig) | 서식 적용 모드의 파싱 |
+| 테스트 | xUnit | `tests/fixtures`의 실제 클립보드 샘플로 테스트 |
+| Windows 앱 (`ClipBridge.Windows`) | C# · .NET 10 · WinForms (`net10.0-windows`) | 트레이(`NotifyIcon`), 커서 아이콘 창, P/Invoke로 Win32 호출: 키보드 감지(`WH_KEYBOARD_LL`), 클립보드 감지(`AddClipboardFormatListener`), 지연 렌더링(`WM_RENDERFORMAT`) |
+| macOS 메뉴 막대 앱 | Swift · SwiftUI `MenuBarExtra` | 메뉴(Markdown 처리·AI 검증·종료). macOS 13 이상 |
+| AI 검증 | Claude API (Messages API, `HttpClient`) | 모델 예: Claude Haiku 5.5. API 키는 환경 변수 `ANTHROPIC_API_KEY`에서 읽음 |
+| 배포 | `dotnet publish` self-contained 단일 실행 파일 | Windows에 .NET 설치 없이 실행 |
+
+**서버는 없습니다.** 모든 변환은 사용자 PC에서 이루어지고, AI 검증을 켰을 때만 앱이 AI API를 직접 호출합니다.
+
+## 저장소 구조
+
+```text
+src/
+  ClipBridge.Core/         # 변환기 라이브러리 (OS 무관)
+  ClipBridge.Windows/      # Windows 트레이 앱 (Core 참조)
+tests/
+  ClipBridge.Core.Tests/   # 변환기 단위 테스트
+  fixtures/                # Windows에서 수집한 클립보드 원본 샘플 (Excel·웹·Markdown)
+macos/
+  ClipBridgeMenuBar/       # macOS 메뉴 막대 앱 (Xcode 프로젝트)
+prd.md
+README.md
+```
+
+## 개발 환경
+
+| 담당 | 필요한 도구 |
+|---|---|
+| 변환기 (macOS) | .NET 10 SDK, VS Code + C# Dev Kit 또는 JetBrains Rider |
+| Windows 앱 (Windows) | .NET 10 SDK, Visual Studio 또는 Rider |
+| macOS 메뉴 막대 앱 | Xcode |
+
+- Excel·브라우저가 클립보드에 넣는 HTML은 Windows에서만 정확히 얻을 수 있습니다. Windows PC에서 원본 포맷을 파일로 저장해 `tests/fixtures`에 올리고, 변환기는 이 샘플로 테스트합니다.
+- 한글·Word 실제 붙여넣기 검증은 Windows PC에서만 할 수 있습니다.
+
 ## 설치 및 실행
 
 준비 중입니다. 소스와 실행 방법은 구현 후 추가합니다.
@@ -95,7 +138,7 @@ ClipBridge
 
 | 이름 | 담당 영역 |
 |---|---|
-| 이창민 | Windows 트레이 앱, Windows 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증 |
-| 윤승희 | macOS 메뉴 막대 앱 |
-| 박재현 | 인터넷·Markdown·Notion 변환기, 출처 판별, 줄간격 보정, AI 검증 |
-| 장세찬 | Excel·Word 변환기, 표 공통 모델 |
+| 이창민 | Windows 앱 (C#): 트레이, 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증, 클립보드 샘플 수집 |
+| 윤승희 | macOS 메뉴 막대 앱 (Swift) |
+| 박재현 | 변환기 라이브러리 (C#): 인터넷·Markdown·Notion 변환기, 출처 판별, 줄간격 보정, AI 검증 |
+| 장세찬 | 변환기 라이브러리 (C#): Excel·Word 변환기, 표 공통 모델 |
