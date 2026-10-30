@@ -93,6 +93,40 @@ public class WebHtmlCleanerTests
         Assert.Equal(expected, Md(html, keepLinks));
     }
 
+    // 사이트가 굵게를 해석하지 못해 글자로 보이는 **…**: 서식 적용이면 굵게, 기호 제거면 기호만 뺀다
+    [Theory]
+    [InlineData(MarkdownMode.Format, "<p>평소처럼, **복사했는지(출처)**와 **대상(앱)**을</p>", "평소처럼, **복사했는지(출처)**와 **대상(앱)**을")]
+    [InlineData(MarkdownMode.Strip, "<p>평소처럼, **복사했는지(출처)**와 **대상(앱)**을</p>", "평소처럼, 복사했는지(출처)와 대상(앱)을")]
+    // 짝이 없거나 안쪽이 공백으로 시작하는 *는 글자 그대로
+    [InlineData(MarkdownMode.Strip, "<p>별표 ** 하나</p>", @"별표 \*\* 하나")]
+    [InlineData(MarkdownMode.Format, "<p>2 ** 3 ** 4</p>", @"2 \*\* 3 \*\* 4")]
+    [InlineData(MarkdownMode.Format, "<p>a*b*c</p>", @"a\*b\*c")]
+    public void LiteralBoldPair_FollowsMarkdownMode(MarkdownMode mode, string html, string expected)
+    {
+        Assert.Equal(expected, WebHtmlCleaner.ToMarkdown(html, keepLinks: false, mode).Markdown);
+    }
+
+    [Theory]
+    [InlineData(MarkdownMode.Format, "<b>복사했는지(출처)</b>와 붙인다")]
+    [InlineData(MarkdownMode.Strip, ">복사했는지(출처)와 붙인다")]
+    public void LiteralBoldPair_ToHangul(MarkdownMode mode, string expectedHtml)
+    {
+        var result = WebToHangulConverter.Convert("<h2>제목</h2><p>**복사했는지(출처)**와 붙인다</p>", mode);
+
+        Assert.Contains(expectedHtml, result.Html);
+        Assert.DoesNotContain("**", result.Html);
+        Assert.Equal("제목\n\n복사했는지(출처)와 붙인다", result.PlainText);
+    }
+
+    // 네이버 블로그: 굵은 글 안에 굵게가 또 있음 (tests/fixtures/web/win-blog)
+    [Fact]
+    public void NestedBold_DoesNotStackSymbols()
+    {
+        var md = Md("<p><b><strong>[출처]</strong> 제목<span>|</span><strong>작성자</strong> 이름</b></p>");
+
+        Assert.Equal(@"**\[출처\] 제목\|작성자 이름**", md);
+    }
+
     // 위키백과 주소의 괄호(시_(행정_구역))가 짝이 안 맞으면 Markdown이 링크로 읽지 못해 [글](주소)가 글자로 붙는다
     [Fact]
     public void LinkWithParentheses_StaysLinkInNotionHtml()
