@@ -52,7 +52,7 @@ AI 검증 (외부 API 사용) ▸   ✓ 켜기 (기본) / 끄기 / 외부 API �
 ──────────
 상태 변경 ▸   ✓ 대기 / 분석 중 / 맞춤 완료 효과 보기
 클립보드 ▸    최근 복사 10개 (누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
-캐릭터 ▸      ✓ 기본 슬라임 / 새 캐릭터 (준비 중) / 시즌 한정 캐릭터 (준비 중)
+캐릭터 ▸      ✓ 기본 슬라임 / 고양이 슬라임 / 녹는 슬라임 / 구름 슬라임 / 토끼 슬라임
 ──────────
 UP 종료  ⌘Q
 ```
@@ -127,7 +127,7 @@ UP 종료  ⌘Q
 | `SlimeAnimator.swift` | 시간 기준 프레임 재생, CPU 사용률 측정 |
 | `Settings.swift` | 옵션 저장 |
 | `Characters.swift` | `Resources/characters.json`과 캐릭터 프레임 로드 |
-| `tools/make_frames.py` | 캐릭터 이미지에서 통통 튀는 프레임 생성 (개발용 Python 스크립트) |
+| `tools/make_frames.py` | 캐릭터 이미지에서 메뉴 막대 애니메이션 프레임 생성 (통통 튀기·떠서 물방울 떨어뜨리기, 개발용 Python 스크립트) |
 | `tools/make_icon.py` | 캐릭터 이미지로 앱 아이콘 `Resources/AppIcon.icns` 생성 (개발용 Python 스크립트) |
 | `scripts/build-app.sh` / `scripts/build-dmg.sh` | `.app` 빌드 / 배포용 DMG 만들기 |
 
@@ -136,5 +136,8 @@ UP 종료  ⌘Q
 ## 캐릭터 추가
 
 1. `tools/art/<id>/character.png`에 이미지를 넣어요. 지금 추출기는 "남색 원 안의 흰 캐릭터" 형태를 기준으로 해요.
-2. `Resources/characters.json`에 `{"id": "<id>", "name": "표시 이름"}`을 추가해요. `"coming_soon": true`면 메뉴에 비활성으로 보여요.
-3. `python3 tools/make_frames.py`를 실행하면 `Resources/Characters/<id>/`에 48프레임과 복사 아이콘용 `badge.png`가 생기고, 미리보기 GIF가 `build/previews/`에 만들어져요. (Pillow 필요: `pip install Pillow`)
+2. `Resources/characters.json`에 `{"id": "<id>", "name": "표시 이름"}`을 추가해요. `"coming_soon": true`면 메뉴에 비활성으로 보여요. 필요하면 아래 값을 더해요.
+   - `"height"`: 캐릭터 높이(@2x 픽셀, 기본 26). 귀처럼 위로 솟은 부분이 있으면 키워서 몸통 크기를 다른 캐릭터와 맞춰요(고양이 28, 토끼 30, 구름 24)
+   - `"lift"`: 튀어 오르는 높이(기본 13). 키가 큰 캐릭터는 줄여서 위가 잘리지 않게 해요(토끼 11)
+   - `"motion": "drip"`: 통통 튀는 대신 공중에 떠서 아래로 늘어진 부분 끝에서 물방울이 떨어져요(녹는 슬라임). 물방울 위치는 그림에서 아래로 늘어진 부분을 찾아 정해요
+3. `python3 tools/make_frames.py`를 실행하면 `Resources/Characters/<id>/`에 48프레임과 복사 아이콘용 `badge.png`가 생기고, 미리보기 GIF가 `build/previews/`에 만들어져요. 프레임 너비는 캐릭터 몸통 너비에 맞춰 정해져요(기본 슬라임 16pt). (Pillow 필요: `pip install Pillow`)
