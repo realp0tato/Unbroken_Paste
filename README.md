@@ -2,7 +2,7 @@
 
 평소처럼 복사하고 붙여넣으면, **어디서 복사했는지(출처)** 와 **어디에 붙이는지(대상)** 를 인식해 그 조합에 맞는 변환기로 글·표·줄간격을 정리한 결과를 붙여 주는 백그라운드 앱입니다.
 
-> 대학 AX 해커톤 MVP · **Windows 트레이 앱과 macOS 메뉴 막대 앱이 실제로 동작합니다** (배포 파일: Windows `Unbroken Paste.exe`, macOS DMG). 요구사항은 [PRD](prd.md), 지금 동작하는 범위는 [구현 현황](#구현-현황), 남은 작업은 [이슈](https://github.com/realp0tato/donga_hackathon/issues)에서 확인하세요.
+> 대학 AX 해커톤 MVP · **Windows 트레이 앱과 macOS 메뉴 막대 앱이 실제로 동작합니다** (배포 파일: Windows `Unbroken Paste.exe`, macOS DMG). 요구사항은 [PRD](prd.md), 지금 동작하는 범위는 [구현 현황](#구현-현황), 남은 작업은 [이슈](https://github.com/realp0tato/Unbroken_Paste/issues)에서 확인하세요.
 
 > **이름:** 제품 이름은 **UP**(UnbrokenPaste의 약자)이고, 앱 파일·앱 정보에는 풀네임 **Unbroken Paste**를 씁니다. macOS 앱 코드는 `UnbrokenPaste`로 바뀌었고, C# 폴더·프로젝트·네임스페이스는 아직 `ClipBridge.*`이며 추후 `UnbrokenPaste.*`로 바꿉니다.
 
@@ -207,7 +207,7 @@ Cmd+V ─▶ ⑥ 대상 앱 인식 ─▶ 미리 받은 결과를 클립보드�
 ④ 테스트가 ⑤ 샘플을 ①에 넣어 결과가 맞는지 확인 (macOS에서 실행)
 ```
 
-①과 앱 껍데기(②, ③을 거친 ⑥) 사이에서 주고받는 타입과 호출 방식은 `src/ClipBridge.Core/Contracts/`에 둔다 ([#29](https://github.com/realp0tato/donga_hackathon/issues/29)에서 확정). ③의 요청·응답 형식도 같은 타입을 따른다.
+①과 앱 껍데기(②, ③을 거친 ⑥) 사이에서 주고받는 타입과 호출 방식은 `src/ClipBridge.Core/Contracts/`에 둔다 ([#29](https://github.com/realp0tato/Unbroken_Paste/issues/29)에서 확정). ③의 요청·응답 형식도 같은 타입을 따른다.
 
 ## 개발 환경
 
@@ -287,21 +287,21 @@ open "build/Unbroken Paste.app"
 |---|---|
 | 출처 판별·변환기 자동 선택·줄간격 보정 | 구현 |
 | 변환기 C1–C8, TX | 구현 |
-| Excel 붙여넣기 대상·C9 Excel 외 출처 → Excel (P1, [#25](https://github.com/realp0tato/donga_hackathon/issues/25)) | 구현. 메모장 등 다른 대상은 아직 통과 |
+| Excel 붙여넣기 대상·C9 Excel 외 출처 → Excel (P1, [#25](https://github.com/realp0tato/Unbroken_Paste/issues/25)) | 구현. 메모장 등 다른 대상은 아직 통과 |
 | Word → 한글 (그림으로 붙던 문제) | 구현 (C3 방식, #100) |
 | Excel 표가 한글에 그림으로 붙던 문제 (Windows) | 수정 (복사 직후 다시 읽기, #97·#104) |
 | 붙여넣기 대상 인식 | 한글·Word·Notion·Excel 앱, 브라우저의 Notion 웹(주소로 인식)·한컴독스(macOS는 탭 제목 `… 한컴오피스 Web … 한글`로도 인식) |
 | AI | 검증 과정에 사용 (샘플 분석·테스트·실기기 로그 분석). 변환기는 의심 신호 S2·S3·S4·S7·S9를 기록 |
 | 표 칸 `빈칸` → 빈 칸 | 모든 표에 적용 (Excel·웹·Word·한글·TSV·Markdown) |
-| Windows 앱 (트레이·메뉴 옵션·트레이 추가 메뉴·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/donga_hackathon/issues/24)) |
-| macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/donga_hackathon/issues/39)) |
+| Windows 앱 (트레이·메뉴 옵션·트레이 추가 메뉴·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·배포용 Unbroken Paste.exe) | 구현, 실제 붙여넣기 검증 중 ([#24](https://github.com/realp0tato/Unbroken_Paste/issues/24)) |
+| macOS 앱 (메뉴 막대·Helper 연동·복사/붙여넣기 감지·변환 결과 기록·커서 아이콘·DMG) | 구현, 실제 붙여넣기 검증 중 ([#39](https://github.com/realp0tato/Unbroken_Paste/issues/39)) |
 | 성능·사용자 시간 절감 | 아직 측정하지 않음 |
 
 ## 문서
 
 - [PRD (제품 요구사항 문서)](prd.md)
 - [작업 규칙 (브랜치·PR·리뷰)](CONTRIBUTING.md)
-- [이슈 목록](https://github.com/realp0tato/donga_hackathon/issues)
+- [이슈 목록](https://github.com/realp0tato/Unbroken_Paste/issues)
 
 ## 팀
 

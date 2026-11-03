@@ -681,7 +681,7 @@ B는 아래를 모두 통과해야 채택한다. 하나라도 실패하면 A를 
 
 ## 12. 구현 현황
 
-이 저장소에서 C#·Swift로 새로 구현한다(기술 스택은 [README](README.md#기술-스택) 참고). 2026년 10월 30일 현재 상태이며, 기능별 진행 상황은 [이슈](https://github.com/realp0tato/donga_hackathon/issues)에서 관리한다.
+이 저장소에서 C#·Swift로 새로 구현한다(기술 스택은 [README](README.md#기술-스택) 참고). 2026년 10월 30일 현재 상태이며, 기능별 진행 상황은 [이슈](https://github.com/realp0tato/Unbroken_Paste/issues)에서 관리한다.
 
 | 구분 | 상태 |
 |---|---|
@@ -701,4 +701,4 @@ B는 아래를 모두 통과해야 채택한다. 하나라도 실패하면 A를 
 ### 관련 문서
 
 - [README](README.md)
-- [이슈 목록](https://github.com/realp0tato/donga_hackathon/issues)
+- [이슈 목록](https://github.com/realp0tato/Unbroken_Paste/issues)
