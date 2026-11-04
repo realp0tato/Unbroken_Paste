@@ -72,7 +72,7 @@ internal sealed class SlimeAnimation : IDisposable
             frame.Dispose();
     }
 
-    private static double Now => Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+    public static double Now => Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
 
     private void ShowFrame()
     {
@@ -84,21 +84,26 @@ internal sealed class SlimeAnimation : IDisposable
         _tray.Icon = _frames[index];
     }
 
-    private static Icon[] LoadFrames(TrayCharacter character, Size size)
+    private static Icon[] LoadFrames(TrayCharacter character, Size size) => Load(character, image => ToIcon(image, size));
+
+    // 캐릭터 메뉴 미리보기용 프레임. 읽지 못하면 빈 배열
+    public static Bitmap[] LoadImages(TrayCharacter character) => Load(character, image => new Bitmap(image));
+
+    private static T[] Load<T>(TrayCharacter character, Func<Image, T> convert) where T : IDisposable
     {
         var assembly = typeof(SlimeAnimation).Assembly;
         var names = assembly.GetManifestResourceNames()
             .Where(name => name.StartsWith(character.FramePrefix, StringComparison.Ordinal))
             .Order(StringComparer.Ordinal);
 
-        var frames = new List<Icon>();
+        var frames = new List<T>();
         try
         {
             foreach (var name in names)
             {
                 using var stream = assembly.GetManifestResourceStream(name)!;
                 using var image = Image.FromStream(stream);
-                frames.Add(ToIcon(image, size));
+                frames.Add(convert(image));
             }
             return [.. frames];
         }

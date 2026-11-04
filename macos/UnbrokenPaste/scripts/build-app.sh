@@ -48,5 +48,15 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-codesign --force --sign - "$APP"
+# iCloud-style synced folders keep adding com.apple.FinderInfo to the bundle, which codesign refuses.
+# Sign a clean copy outside the project, then bring it back: the signature does not cover that attribute.
+SIGN_DIR="$(mktemp -d)"
+trap 'rm -rf "$SIGN_DIR"' EXIT
+SIGNED="$SIGN_DIR/$(basename "$APP")"
+ditto --norsrc --noextattr --noqtn "$APP" "$SIGNED"
+codesign --force --sign - "$SIGNED"
+codesign --verify --strict "$SIGNED"
+rm -rf "$APP"
+ditto --noqtn "$SIGNED" "$APP"
+codesign --verify "$APP"
 echo "Built $APP"
