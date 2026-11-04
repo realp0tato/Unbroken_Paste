@@ -30,6 +30,8 @@ mkdir -p "$MOUNT"
 trap 'hdiutil detach -quiet "$MOUNT" 2>/dev/null || true' EXIT
 hdiutil attach -quiet -nobrowse -noautoopen -mountpoint "$MOUNT" "$RW"
 SetFile -a C "$MOUNT"  # use .VolumeIcon.icns as the volume icon
+xattr -cr "$MOUNT/$(basename "$APP")"  # drop what a synced project folder added to the copy
+codesign --verify --strict "$MOUNT/$(basename "$APP")"
 hdiutil detach -quiet "$MOUNT"
 trap - EXIT
 hdiutil convert -quiet "$RW" -format UDZO -o "$DMG"
