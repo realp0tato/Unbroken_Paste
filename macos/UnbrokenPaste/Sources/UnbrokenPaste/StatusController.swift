@@ -107,7 +107,7 @@ final class StatusController: NSObject {
         aiItems[true] = addItem("켜기 (기본)", to: ai, action: #selector(pickAI(_:)), object: true)
         aiItems[false] = addItem("끄기", to: ai, action: #selector(pickAI(_:)), object: false)
         ai.addItem(.separator())
-        addItem("켜져 있으면 복사 내용 일부가 외부 AI API로 전송돼요", to: ai, action: nil)
+        addItem("아직 구현 전이라 복사 내용을 외부로 보내지 않아요", to: ai, action: nil)
         menu.addItem(.separator())
 
         // Clipboard and character extras (PRD 4.2.2)

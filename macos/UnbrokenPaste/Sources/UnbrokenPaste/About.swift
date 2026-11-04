@@ -8,8 +8,8 @@ enum About {
         ("이창민", "Windows 앱"),
         ("윤승희", "macOS 앱"),
     ]
-    static let copyright = "© 2026 UP 팀 (장세찬 · 박재현 · 이창민 · 윤승희). All rights reserved."
-    static let repository = URL(string: "https://github.com/realp0tato/donga_hackathon")!
+    static let copyright = "© 2026 UP 팀 (장세찬 · 박재현 · 이창민 · 윤승희). GPLv3 라이선스."
+    static let repository = URL(string: "https://github.com/realp0tato/Unbroken_Paste")!
 
     @MainActor
     static func show() {

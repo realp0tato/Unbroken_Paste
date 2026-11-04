@@ -127,10 +127,10 @@ internal sealed class TrayApp : ApplicationContext
         _aiOnItem.Click += (_, _) => SetOptions(_options with { AiVerification = true });
         _aiOffItem.Click += (_, _) => SetOptions(_options with { AiVerification = false });
         var ai = new ToolStripMenuItem("AI 검증");
-        // 켜져 있을 때 무엇이 밖으로 나가는지 알린다 (PRD 6.6)
+        // AI 검증(#20)을 구현하면 켜져 있을 때 무엇이 밖으로 나가는지 알리는 문구로 바꾼다 (PRD 6.6)
         ai.DropDownItems.AddRange([
             _aiOnItem, _aiOffItem, new ToolStripSeparator(),
-            new ToolStripMenuItem("켜져 있으면 복사 내용 일부가 외부 AI API로 전송돼요") { Enabled = false },
+            new ToolStripMenuItem("아직 구현 전이라 복사 내용을 외부로 보내지 않아요") { Enabled = false },
         ]);
 
         // 상태 변경: 슬라임 속도만 바뀐다. 맞춤 완료 효과 보기는 시연용이고 실제 변환과 무관하다 (PRD 4.2.2, 10)
