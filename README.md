@@ -6,6 +6,40 @@
 
 > **이름:** 제품 이름은 **UP**(UnbrokenPaste의 약자)이고, 앱 파일·앱 정보에는 풀네임 **Unbroken Paste**를 씁니다. macOS 앱 코드는 `UnbrokenPaste`로 바뀌었고, C# 폴더·프로젝트·네임스페이스는 아직 `ClipBridge.*`이며 추후 `UnbrokenPaste.*`로 바꿉니다.
 
+## 설치
+
+[최신 Release](https://github.com/realp0tato/Unbroken_Paste/releases/latest)에서 내 컴퓨터에 맞는 파일을 내려받으세요. 직접 빌드하려면 [소스에서 빌드](#소스에서-빌드)를 보세요.
+
+**macOS** (13 이상, Apple Silicon·Intel)
+
+1. `UnbrokenPaste-<버전>.dmg`를 열고 앱을 `Applications`로 끌어다 놓습니다.
+2. 앱을 실행합니다. 서명·공증이 되지 않은 앱이라 처음에는 열 수 없다는 경고가 뜹니다. 경고를 닫고 시스템 설정 → 개인정보 보호 및 보안 맨 아래의 **그래도 열기**를 누릅니다.
+3. 메뉴 막대에 슬라임 아이콘이 생깁니다. 메뉴의 `⚠︎ 손쉬운 사용 권한 필요`를 눌러 Unbroken Paste를 허용합니다. 허용하지 않으면 붙여넣기가 변환되지 않고 원본 그대로 붙습니다.
+
+**Windows** (10/11 x64)
+
+1. `UnbrokenPaste-<버전>-windows-x64.exe`를 실행합니다. 설치 과정은 없고 .NET도 필요 없습니다. 첫 실행은 몇 초 걸릴 수 있습니다.
+2. "Windows의 PC 보호" 창이 뜨면 `추가 정보` → `실행`을 누릅니다.
+3. 트레이에 UP 아이콘이 생깁니다. 보이지 않으면 작업 표시줄의 `^` 안을 확인하세요.
+
+Windows를 켤 때 자동으로 실행하려면 `Win+R` → `shell:startup` 폴더에 실행 파일의 바로가기를 넣으세요.
+
+## 사용 방법
+
+1. UP을 켜 둔 채 평소처럼 복사합니다 (`Cmd+C`·`Ctrl+C`·복사 메뉴). 포인터 옆에 UP 아이콘이 잠깐 나타납니다.
+2. 한글·HOP·한컴독스, Notion(앱·웹), Word, Excel에 붙여넣습니다 (`Cmd+V`·`Ctrl+V`·`Shift+Insert`). 그 앱에 맞게 정리된 결과가 붙습니다.
+
+변환 버튼이나 모드 선택은 없습니다. 같은 내용을 여러 앱에 차례로 붙여도 되고, 그 밖의 앱에는 원본 그대로 붙습니다.
+
+- **옵션:** 메뉴 막대(macOS) 또는 트레이(Windows, 오른쪽 클릭)의 UP 아이콘에서 엽니다. 자세한 내용은 [메뉴와 옵션](#메뉴와-옵션)을 보세요.
+- **Markdown 기호까지 없애고 싶을 때:** `Markdown 처리`를 `기호 제거`로 바꿉니다.
+- **원본 그대로 붙을 때 (macOS):** 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 Unbroken Paste가 켜져 있는지 확인합니다. 새 버전을 설치한 뒤라면 목록에서 지우고(−) 다시 추가(+)합니다.
+
+**삭제**
+
+- **macOS:** 메뉴에서 `UP 종료`를 누르고 `Applications`의 앱을 지운 뒤, 손쉬운 사용 목록에서도 지웁니다.
+- **Windows:** 메뉴에서 `UP 종료`를 누르고 실행 파일을 지웁니다. 설정까지 지우려면 `%APPDATA%\UnbrokenPaste` 폴더도 지웁니다.
+
 ## 해결하려는 문제
 
 - Excel 표를 한글·Notion에 붙이면 서식이 엉키거나 셀 구분이 깨진다.
@@ -79,7 +113,7 @@ UP
 ├─ Markdown 처리
 │   ├─ ● 서식 적용 (기본)
 │   └─ ○ 기호 제거
-├─ AI 검증
+├─ AI 검증        아직 구현 전 (켜고 꺼도 동작이 같고 외부 전송 없음)
 │   ├─ ● 켜기 (기본)
 │   └─ ○ 끄기
 ├─ 클립보드       최근 복사 10개(누르면 다시 복사) / 기록 지우기 / 복사하면 슬라임 반응
@@ -231,9 +265,9 @@ dotnet test                    # 변환기 단위 테스트
 - 외부 패키지(AngleSharp, Markdig 등)는 `dotnet add src/ClipBridge.Core package <이름>`으로 추가합니다.
 - 변환 결과를 실제 앱에 붙여 보려면 macOS 시험 모드를 씁니다: `swift tools/ClipBridge.TryMode/try-mode.swift --target Hangul --mode Format` ([설명](tools/ClipBridge.TryMode/README.md))
 
-## 설치 및 실행
+## 소스에서 빌드
 
-빌드 없이 쓰려면 [최신 Release](https://github.com/realp0tato/Unbroken_Paste/releases/latest)에서 내려받으세요. 아래는 소스에서 직접 빌드하는 방법입니다.
+필요한 도구는 [개발 환경](#개발-환경)을 보세요.
 
 **Windows 앱 (배포용, #27)**
 
@@ -243,7 +277,7 @@ dotnet test                    # 변환기 단위 테스트
 dotnet publish src/ClipBridge.Windows -p:PublishProfile=win-x64
 ```
 
-- `publish\windows\Unbroken Paste.exe` 파일 하나가 생깁니다(약 76MB). .NET을 함께 넣어서 **이 파일만 옮기면** .NET이 설치되지 않은 Windows 10/11 x64 PC에서도 실행됩니다.
+- `publish\windows\Unbroken Paste.exe` 파일 하나가 생깁니다(약 73MB). .NET을 함께 넣어서 **이 파일만 옮기면** .NET이 설치되지 않은 Windows 10/11 x64 PC에서도 실행됩니다.
 - 처음 실행할 때 "Windows의 PC 보호"(SmartScreen) 창이 뜨면 `추가 정보` → `실행`을 누르세요. 서명하지 않은 파일이라 인터넷에서 받으면 뜹니다.
 - 첫 실행은 몇 초 걸릴 수 있습니다(필요한 파일을 `%TEMP%\.net`에 풉니다). 다음부터는 바로 뜹니다.
 - Windows를 켤 때 자동으로 실행하려면 `Win+R` → `shell:startup` 폴더에 `Unbroken Paste.exe` 바로가기를 넣으세요.
