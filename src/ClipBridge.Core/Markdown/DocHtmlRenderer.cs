@@ -54,13 +54,15 @@ internal static class DocHtmlRenderer
         switch (block)
         {
             case HeadingBlock heading:
+                // 한글 계열 HTML 임포터는 <p style> 레벨의 font-size를 무시하고 <span> 레벨만 반영한다
                 var size = heading.Level <= HeadingSizes.Length ? HeadingSizes[heading.Level - 1] : null;
-                html.Append("<p style=\"").Append(Margin(depth, "6pt 0 3pt")).Append(";font-weight:bold");
+                html.Append("<p style=\"").Append(Margin(depth, "6pt 0 3pt")).Append("\">");
+                html.Append("<span style=\"font-weight:bold");
                 if (size is not null)
                     html.Append(";font-size:").Append(size);
                 html.Append("\">");
                 WriteInline(html, heading.Inline);
-                html.Append("</p>");
+                html.Append("</span></p>");
                 break;
             case ParagraphBlock paragraph:
                 Paragraph(html, depth, quote, () => WriteInline(html, paragraph.Inline));

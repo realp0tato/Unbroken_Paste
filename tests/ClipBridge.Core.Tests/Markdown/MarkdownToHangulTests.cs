@@ -8,10 +8,10 @@ public class MarkdownToHangulTests
     private static string Html(string markdown) => MarkdownToHangulConverter.Convert(markdown, MarkdownMode.Format).Html!;
 
     [Theory]
-    [InlineData("# 제목", "font-weight:bold;font-size:20pt\">제목</p>")]
-    [InlineData("## 제목", "font-weight:bold;font-size:16pt\">제목</p>")]
-    [InlineData("### 제목", "font-weight:bold;font-size:13pt\">제목</p>")]
-    [InlineData("#### 제목", "font-weight:bold\">제목</p>")]
+    [InlineData("# 제목", "font-weight:bold;font-size:20pt\">제목</span></p>")]
+    [InlineData("## 제목", "font-weight:bold;font-size:16pt\">제목</span></p>")]
+    [InlineData("### 제목", "font-weight:bold;font-size:13pt\">제목</span></p>")]
+    [InlineData("#### 제목", "font-weight:bold\">제목</span></p>")]
     public void Heading_IsSizedBoldParagraph(string markdown, string expected)
     {
         var html = Html(markdown);
