@@ -120,7 +120,7 @@ UP을 만들고 검증하는 과정에서 AI(Claude)를 사용했습니다.
 | 항목 | 내용 |
 |---|---|
 | Windows | Windows 10/11 x64, 일반 사용자 권한 (트레이 앱) |
-| macOS | macOS 13 이상 (메뉴 막대 앱). 처음 실행할 때 **손쉬운 사용** 권한 허용 필요 (Cmd+V 감지용) |
+| macOS | macOS 13 이상, Apple Silicon·Intel (메뉴 막대 앱). 처음 실행할 때 **손쉬운 사용** 권한 허용 필요 (Cmd+V 감지용) |
 | 붙여넣기 키 | Windows: Ctrl+V, Shift+Insert / macOS: Cmd+V |
 | 지원하지 않음 | 관리자 권한 앱·보안 데스크톱·원격 세션, 이미지·수식·차트 재구성, Linux |
 
@@ -233,6 +233,8 @@ dotnet test                    # 변환기 단위 테스트
 
 ## 설치 및 실행
 
+빌드 없이 쓰려면 [최신 Release](https://github.com/realp0tato/Unbroken_Paste/releases/latest)에서 내려받으세요. 아래는 소스에서 직접 빌드하는 방법입니다.
+
 **Windows 앱 (배포용, #27)**
 
 저장소 루트에서 배포용 파일을 만듭니다.
@@ -311,3 +313,9 @@ open "build/Unbroken Paste.app"
 | 장세찬 | 변환 로직 (C#, Core): Core ↔ 앱 계약, 표 공통 모델, Excel 변환기(C1·C2), Word 변환기(C7·C8), Excel 대상(C9), Word → 한글, macOS용 Helper, Windows 복사 직후 다시 읽기 |
 | 이창민 | Windows 앱 껍데기 (C#): 트레이, 클립보드·붙여넣기 연동, 커서 아이콘, Windows 검증·샘플 수집 |
 | 윤승희 | macOS 앱 껍데기 (Swift): 메뉴 막대, 클립보드·붙여넣기 연동, 커서 아이콘, Helper 연동, macOS 검증·샘플 수집 |
+
+## 라이선스
+
+Copyright (C) 2026 UP 팀 (장세찬 · 박재현 · 이창민 · 윤승희)
+
+[GNU GPL v3](LICENSE)로 배포합니다.

@@ -13,7 +13,7 @@
     <AssemblyTitle>Unbroken Paste</AssemblyTitle>
     <Product>Unbroken Paste</Product>
     <!-- 파일 속성의 버전 (macOS DMG와 같은 번호). 제품 버전에 커밋 해시를 붙이지 않는다 -->
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <!-- 커서 아이콘(#5)이 포인터가 있는 모니터의 DPI를 따르도록 -->
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>

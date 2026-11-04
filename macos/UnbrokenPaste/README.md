@@ -20,7 +20,7 @@ swift run
 open "build/Unbroken Paste.app"
 ```
 
-`build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 이 Mac의 아키텍처용으로 빌드해 `Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-arm64`(또는 `-x64`)로 넣어요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
+`build-app.sh`는 .NET SDK가 있으면 `src/ClipBridge.Helper`를 Apple Silicon·Intel용으로 모두 빌드해 `Unbroken Paste.app/Contents/MacOS/UnbrokenPaste.Helper-arm64`와 `-x64`로 넣어요. 앱도 두 아키텍처를 합친 유니버설 파일이에요. `swift run`일 때는 `build/helper-arm64/ClipBridge.Helper`(Intel은 `helper-x64`)를 쓰니, 빌드 스크립트를 한 번 실행해 두세요. 다른 위치의 Helper를 쓰려면 환경 변수 `UP_HELPER`에 경로를 넣어요.
 
 배포용 DMG 만들기 (#40):
 
