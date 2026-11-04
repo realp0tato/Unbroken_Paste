@@ -34,6 +34,9 @@ final class StatusController: NSObject {
     private var markdownItems: [MarkdownMode: NSMenuItem] = [:]
     private var aiItems: [Bool: NSMenuItem] = [:]
     private var characterItems: [String: NSMenuItem] = [:]
+    private var characterFrames: [String: [NSImage]] = [:]
+    private var characterMenuOpen = false
+    private var shownCharacterFrame = -1
 
     override init() {
         let settings = Settings()
@@ -113,8 +116,16 @@ final class StatusController: NSObject {
         menu.addItem(clipboard)
 
         let character = addSubmenu("캐릭터", to: menu)
+        character.delegate = self
         for entry in characters {
-            let item = addItem(entry.name, to: character, action: entry.isReady ? #selector(pickCharacter(_:)) : nil, object: entry.id)
+            // 이름 대신 캐릭터 모양 자체로 알아보게: 메뉴 막대와 같은 템플릿 프레임(투명 배경)을 아이콘으로 쓴다.
+            // 메뉴가 열려 있는 동안은 통통 뛰는 모습까지 미리 보여준다 (tick() 참고)
+            let previewFrames = entry.frames()
+            let item = addItem(previewFrames.isEmpty ? entry.name : "", to: character, action: entry.isReady ? #selector(pickCharacter(_:)) : nil, object: entry.id)
+            characterFrames[entry.id] = previewFrames
+            if let first = previewFrames.first {
+                item.image = Self.squareIcon(first, name: entry.name)
+            }
             characterItems[entry.id] = item
         }
         menu.addItem(.separator())
@@ -139,6 +150,20 @@ final class StatusController: NSObject {
         item.submenu = submenu
         menu.addItem(item)
         return submenu
+    }
+
+    /// 캐릭터 프레임(세로로 긴 템플릿 이미지)을 비율 그대로 정사각형 칸 가운데에 맞춰, 메뉴 아이콘 칸이 찌그러뜨리지 않게 한다
+    private static func squareIcon(_ source: NSImage, side: CGFloat = 20, name: String) -> NSImage {
+        let canvas = NSImage(size: NSSize(width: side, height: side))
+        canvas.isTemplate = true
+        canvas.accessibilityDescription = name
+        let aspect = source.size.width / max(source.size.height, 0.01)
+        let fit = aspect >= 1 ? NSSize(width: side, height: side / aspect) : NSSize(width: side * aspect, height: side)
+        let origin = NSPoint(x: (side - fit.width) / 2, y: (side - fit.height) / 2)
+        canvas.lockFocus()
+        source.draw(in: NSRect(origin: origin, size: fit), from: .zero, operation: .sourceOver, fraction: 1)
+        canvas.unlockFocus()
+        return canvas
     }
 
     private func refreshOptions() {
@@ -264,6 +289,17 @@ final class StatusController: NSObject {
                 shownFrame = index
             }
         }
+        if characterMenuOpen, let count = characterFrames.values.first?.count, count > 0 {
+            let phase = (now / SlimeAnimator.idleCycle).truncatingRemainder(dividingBy: 1)
+            let index = min(Int(phase * Double(count)), count - 1)
+            if index != shownCharacterFrame {
+                shownCharacterFrame = index
+                for entry in characters {
+                    guard let item = characterItems[entry.id], let frame = characterFrames[entry.id]?[index] else { continue }
+                    item.image = Self.squareIcon(frame, name: entry.name)
+                }
+            }
+        }
         if now >= nextPoll {
             nextPoll = now + Self.pollInterval
             switch monitor.poll() {
@@ -303,5 +339,18 @@ final class StatusController: NSObject {
         let ms = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
         Self.log.info("paste \(action, privacy: .public) converter=\(result.converterId, privacy: .public) target=\(paste.target.rawValue, privacy: .public) \(ms, privacy: .public)ms")
         return converted
+    }
+}
+
+// MARK: - Character menu animation
+
+extension StatusController: NSMenuDelegate {
+    func menuWillOpen(_ menu: NSMenu) {
+        characterMenuOpen = true
+        shownCharacterFrame = -1  // 다음 tick()에서 곧바로 한 프레임을 그리게
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        characterMenuOpen = false
     }
 }

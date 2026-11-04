@@ -27,6 +27,10 @@ internal sealed class TrayApp : ApplicationContext
     private readonly ToolStripMenuItem _busyItem = new("분석 중");
     private readonly ToolStripMenuItem _clipboardItem = new("클립보드");
     private readonly ToolStripMenuItem _characterItem = new("캐릭터");
+    // 캐릭터 메뉴 미리보기: 메뉴가 열려 있는 동안만 움직인다 (macOS와 같음)
+    private readonly Dictionary<ToolStripMenuItem, Bitmap[]> _previews = [];
+    private readonly System.Windows.Forms.Timer _previewTimer = new() { Interval = 1000 / 30 };
+    private readonly SlimeClock _previewClock = new(0);
     private readonly ClipboardHistory _history = new();  // UI 스레드에서만 쓴다
     // 앞 창 미리 쓰기 (#26): 앞 창이 잠깐 머문 뒤에 쓴다. Alt+Tab으로 지나가는 창마다 클립보드를 바꾸지 않도록
     private readonly System.Windows.Forms.Timer _focusTimer = new() { Interval = 150 };
@@ -75,6 +79,7 @@ internal sealed class TrayApp : ApplicationContext
     {
         // 알림 영역에 아이콘이 남지 않게 메시지 루프가 끝나기 전에 숨긴다
         _focusTimer.Stop();
+        _previewTimer.Stop();
         _animation?.Stop();
         _tray.Visible = false;
         _paste.Dispose();
@@ -102,7 +107,10 @@ internal sealed class TrayApp : ApplicationContext
             _copies.Dispose();
             _overlay.Dispose();
             _tray.Dispose();
+            _previewTimer.Dispose();
             _menu.Dispose();
+            foreach (var frame in _previews.Values.SelectMany(frames => frames))
+                frame.Dispose();
             _icon.Dispose();
         }
         base.Dispose(disposing);
@@ -135,8 +143,7 @@ internal sealed class TrayApp : ApplicationContext
         _clipboardItem.DropDownItems.Add(new ToolStripMenuItem("…") { Enabled = false });
         _clipboardItem.DropDownOpening += (_, _) => RefreshClipboard();
 
-        foreach (var character in TrayCharacter.All)
-            _characterItem.DropDownItems.Add(new ToolStripMenuItem(character.Name, null, (_, _) => SetCharacter(character)) { Tag = character.Id });
+        BuildCharacterMenu();
 
         _menu.Items.AddRange([
             _headerItem, new ToolStripSeparator(),
@@ -145,6 +152,40 @@ internal sealed class TrayApp : ApplicationContext
             new ToolStripMenuItem("UP 종료", null, (_, _) => ExitThread()),
         ]);
         RefreshMenu();
+    }
+
+    // 이름 대신 캐릭터 모습으로 고른다. 프레임을 읽지 못한 캐릭터만 이름을 보여 준다
+    private void BuildCharacterMenu()
+    {
+        var side = SystemInformation.SmallIconSize.Width * 3 / 2;
+        _characterItem.DropDown.ImageScalingSize = new Size(side, side);
+        foreach (var character in TrayCharacter.All)
+        {
+            var frames = SlimeAnimation.LoadImages(character);
+            var item = new ToolStripMenuItem(frames.Length == 0 ? character.Name : "", frames.FirstOrDefault(), (_, _) => SetCharacter(character))
+            {
+                Tag = character.Id,
+                AccessibleName = character.Name,
+                ToolTipText = character.Name,
+            };
+            _previews[item] = frames;
+            _characterItem.DropDownItems.Add(item);
+        }
+
+        _previewClock.FrameCount = _previews.Values.Max(frames => frames.Length);
+        _previewTimer.Tick += (_, _) => ShowPreviewFrame();
+        _characterItem.DropDownOpened += (_, _) => _previewTimer.Start();
+        _characterItem.DropDownClosed += (_, _) => _previewTimer.Stop();
+    }
+
+    private void ShowPreviewFrame()
+    {
+        var index = _previewClock.NextFrame(SlimeAnimation.Now);
+        foreach (var (item, frames) in _previews)
+        {
+            if (index < frames.Length && !ReferenceEquals(item.Image, frames[index]))
+                item.Image = frames[index];
+        }
     }
 
     private void RefreshMenu()
